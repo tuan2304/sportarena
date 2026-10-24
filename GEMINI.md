@@ -23,8 +23,8 @@
 - [x] **Giai đoạn 8: Triển khai Production (Deploy Web)** (Hoàn thành)
 - [x] **Giai đoạn 9: Nâng cấp Live Chat & Đánh giá/Review** (Hoàn thành)
 - [x] **Giai đoạn 10: Hardening - Bảo mật RLS, thanh toán PayOS thật, hết hạn giữ chỗ** (Hoàn thành, đã áp lên production)
-- [ ] **Giai đoạn 11: Mỗi chủ sân dùng PayOS riêng + sổ đối soát chi trả** (Code xong trên nhánh `phase-11-12-per-club-payos`, chờ `supabase db push` + deploy)
-- [ ] **Giai đoạn 12: Thuê bao gói Free/Pro theo cụm sân** (Code xong cùng nhánh, đang miễn phí cho tới khi đặt `BILLING_ENFORCED_FROM`)
+- [x] **Giai đoạn 11: Mỗi chủ sân dùng PayOS riêng** (Hoàn thành, đã merge vào `master`, migration đã áp lên production; phần sổ đối soát chi trả đã gỡ vì nền tảng không còn thu hộ cọc)
+- [x] **Giai đoạn 12: Thuê bao gói Free/Pro theo cụm sân** (Hoàn thành, đang miễn phí cho tới khi đặt `BILLING_ENFORCED_FROM`)
 
 ## 📝 Nhật ký hoạt động (Activity Log)
 - **2024-05-20:** Khởi tạo file `GEMINI.md` và thiết lập quy trình làm việc.
@@ -233,3 +233,11 @@
     - Bỏ màn ghi nhận chi trả ở `/admin/finance` (nay là trang Gói dịch vụ), bỏ action `recordPayout`, ô số dư thu hộ ở trang Nhận thanh toán của chủ sân, thẻ "đang nợ chủ sân" và cảnh báo hoàn cọc ở thống kê. Giữ bảng `payouts`/`club_balances` trong DB để không mất sổ cũ.
     - Thêm nút vàng **Trang quản trị** trên thanh đầu trang chủ và thanh điều hướng (chỉ admin thấy, có trên điện thoại); admin đăng nhập xong vào thẳng `/admin`.
 - **2026-10-23 (Dọn tài liệu):** Gỡ `IMPROVEMENTS.md` (báo cáo rà soát đã xử lý xong; việc còn lại chuyển sang mục "Việc chưa làm" của [README.md](README.md)) và `web/README.md` (bản mẫu create-next-app). Giữ `AGENTS.md`/`CLAUDE.md` vì là hướng dẫn cho công cụ AI.
+- **2026-10-25 (Hướng phát triển: mobile, CSP, e2e):**
+    - Mobile: đổi ảnh đại diện (chọn ảnh, cắt vuông, tải lên bucket `avatars/<user_id>/`, dọn ảnh cũ; nhấn giữ để gỡ), màn hồ sơ công khai người chơi `PlayerProfile` (số liệu `player_public_stats` + kèo đang mở; mở từ chủ kèo và thành viên trong chi tiết kèo), mở kèo ghép ngay lúc đặt sân (API `/api/mobile/bookings` nhận thêm `match`, server tính chi phí mỗi người). `image-upload.ts` thêm vào nhóm file dùng chung web/mobile.
+    - Thông báo đẩy: migration `20261102000000_push_tokens.sql` (bảng `push_tokens` khóa hoàn toàn, chỉ qua `register_push_token`/`unregister_push_token`), [lib/push.ts](web/src/lib/push.ts) gửi qua Expo Push Service (chia lô 100, tự xóa token `DeviceNotRegistered`), `notifyUser`/`notifyAdmins`/thông báo cập nhật đều kèm đẩy, chạy sau khi trả lời (`after`). App đăng ký token khi có phiên, gỡ trước khi đăng xuất, chạm thông báo mở đúng màn hình.
+    - CSP có nonce: [lib/csp.ts](web/src/lib/csp.ts) dựng chính sách cho từng request trong [proxy.ts](web/src/proxy.ts); `script-src` chỉ nhận nonce + `strict-dynamic`, không còn `unsafe-inline`. Layout đọc nonce từ header `x-nonce` nên mọi trang render lúc có request. Vẫn giữ `style-src 'unsafe-inline'` (thuộc tính `style=` của React không dùng nonce được).
+    - Playwright: [web/e2e/](web/e2e) chạy trên bản build production với Supabase giả (`mock-supabase.mjs`, không cần Docker hay database thật; biến môi trường ghi đè `.env.local` nên không chạm dữ liệu thật). 18 ca: nonce khác nhau mỗi request, không vi phạm CSP trên các trang công khai, chặn `onerror` chèn vào trang, đăng nhập sai, chuyển hướng trang cần đăng nhập, API mobile 401, webhook PayOS. Job `e2e` trong CI. Lệnh: `npm run e2e` (lần đầu `npm run e2e:install`).
+    - Kiểm thử: 288 test vitest, 192/192 ca DB (thêm 13 ca push token), 18 ca Playwright.
+    - Chưa làm (cần tài khoản bên ngoài): hoàn cọc tự động và cổng MoMo/VNPay.
+

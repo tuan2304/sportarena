@@ -1,5 +1,23 @@
+import { after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { pushToAudience, pushToUsers, type PushPayload } from '@/lib/push'
 import type { NotificationType } from '@/types/database'
+
+/**
+ * Gửi thông báo đẩy sau khi đã trả lời người dùng, để việc gọi Expo không làm chậm thao tác chính.
+ * Ngoài phạm vi một request (script, test) thì `after` không dùng được nên chạy ngay.
+ */
+export async function pushAfterResponse(task: () => Promise<void>): Promise<void> {
+  try {
+    after(task)
+  } catch {
+    await task()
+  }
+}
+
+export function pushAnnouncement(audience: 'all' | 'owners' | 'players', payload: PushPayload) {
+  return pushAfterResponse(() => pushToAudience(audience, payload))
+}
 
 /**
  * Tạo thông báo cho một người dùng. Đặt ở lib (không phải 'use server') để KHÔNG bị lộ thành
@@ -26,6 +44,7 @@ export async function notifyUser(params: {
     console.error('Không tạo được thông báo:', error)
     return false
   }
+  await pushAfterResponse(() => pushToUsers([params.userId], { title: params.title, message: params.message, link: params.link }))
   return true
 }
 
@@ -52,5 +71,8 @@ export async function notifyAdmins(params: { title: string; message: string; lin
     console.error('Không tạo được thông báo cho quản trị viên:', error)
     return false
   }
+  await pushAfterResponse(() =>
+    pushToUsers(admins.map((a) => a.id), { title: params.title, message: params.message, link: params.link })
+  )
   return true
 }

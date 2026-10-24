@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Be_Vietnam_Pro, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -45,7 +46,9 @@ export const metadata: Metadata = {
   twitter: { card: "summary" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Nonce do proxy.ts tạo cho từng request; đọc header khiến mọi trang render lúc có request (cần cho CSP có nonce)
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="vi"
@@ -54,7 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         {/* Đặt giao diện sáng/tối trước khi vẽ trang để không bị nháy */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
         <ConfirmProvider>{children}</ConfirmProvider>

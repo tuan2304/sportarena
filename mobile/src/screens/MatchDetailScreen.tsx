@@ -12,6 +12,7 @@ import {
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { Match } from '../types'
+import Avatar from '../components/Avatar'
 import {
   ChevronLeft,
   Flame,
@@ -40,6 +41,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
           creator:profiles (
             id,
             full_name,
+            avatar_url,
             rating,
             skill_level
           ),
@@ -64,7 +66,9 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             message,
             joined_at,
             profile:profiles (
+              id,
               full_name,
+              avatar_url,
               rating,
               skill_level
             )
@@ -216,19 +220,21 @@ export default function MatchDetailScreen({ route, navigation }: any) {
 
           {/* Creator Info */}
           <Text style={styles.sectionTitle}>Chủ Kèo</Text>
-          <View style={styles.creatorCard}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarText}>
-                {match.creator?.full_name?.charAt(0).toUpperCase() || 'U'}
-              </Text>
-            </View>
+          <TouchableOpacity
+            style={styles.creatorCard}
+            disabled={!match.creator?.id}
+            onPress={() => navigation.navigate('PlayerProfile', { userId: match.creator!.id })}
+            accessibilityRole="button"
+            accessibilityLabel={`Xem hồ sơ ${match.creator?.full_name ?? 'chủ kèo'}`}
+          >
+            <Avatar name={match.creator?.full_name} uri={match.creator?.avatar_url} size={44} />
             <View style={{ flex: 1 }}>
               <Text style={styles.creatorName}>{match.creator?.full_name || 'Người dùng'}</Text>
               <Text style={styles.creatorSub}>
                 ⭐ Đánh giá: {match.creator?.rating || '5.0'} • Trình độ: {match.creator?.skill_level || 'Cơ bản'}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Participants List */}
           <Text style={styles.sectionTitle}>
@@ -238,12 +244,14 @@ export default function MatchDetailScreen({ route, navigation }: any) {
           {match.participants && match.participants.length > 0 ? (
             <View style={styles.participantsList}>
               {match.participants.map((p) => (
-                <View key={p.id} style={styles.participantItem}>
-                  <View style={styles.pAvatar}>
-                    <Text style={styles.pAvatarText}>
-                      {p.profile?.full_name?.charAt(0).toUpperCase() || 'P'}
-                    </Text>
-                  </View>
+                <TouchableOpacity
+                  key={p.id}
+                  style={styles.participantItem}
+                  disabled={!p.user_id}
+                  onPress={() => navigation.navigate('PlayerProfile', { userId: p.user_id })}
+                  accessibilityRole="button"
+                >
+                  <Avatar name={p.profile?.full_name} uri={p.profile?.avatar_url} size={36} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.pName}>{p.profile?.full_name || 'Ứng viên'}</Text>
                     {p.message && <Text style={styles.pMsg}>"{p.message}"</Text>}
@@ -258,7 +266,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
                       {p.status === 'accepted' ? 'Đã duyệt' : 'Chờ duyệt'}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           ) : (

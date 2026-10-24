@@ -11,13 +11,10 @@ function supabaseHostname(): string | null {
 const supabaseHost = supabaseHostname();
 
 /**
- * Header bảo mật cho mọi trang.
- * CSP ở đây chỉ gồm các chỉ thị không ảnh hưởng tới script/style hiện có (chống nhúng khung, đổi base URL,
- * gửi form ra ngoài, plugin). Chưa có script-src vì giao diện dùng script nội tuyến (khởi tạo giao diện sáng/tối,
- * JSON-LD); thêm nonce cho từng request là bước riêng.
+ * Header bảo mật cho mọi trang. Content-Security-Policy (có nonce cho script) được tạo riêng cho từng request
+ * ở src/proxy.ts, nên không đặt ở đây.
  */
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

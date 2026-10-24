@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth-guards'
 import { validateAnnouncement } from '@/lib/support'
+import { pushAnnouncement } from '@/lib/notify'
 
 /** Gửi thông báo cập nhật tới người dùng: mỗi người nhận một thông báo trong chuông. Chỉ quản trị mới gọi được. */
 export async function sendAnnouncement(input: {
@@ -37,6 +38,12 @@ export async function sendAnnouncement(input: {
     await admin.from('announcements').delete().eq('id', row.id)
     return { error: 'Không gửi được thông báo. Vui lòng thử lại.' }
   }
+
+  await pushAnnouncement(parsed.value.audience, {
+    title: parsed.value.title,
+    message: parsed.value.body,
+    link: parsed.value.link,
+  })
 
   revalidatePath('/admin/announcements')
   return { sent: sent ?? 0 }

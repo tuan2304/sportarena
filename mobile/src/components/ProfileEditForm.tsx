@@ -11,7 +11,7 @@ interface ProfileEditFormProps {
   onCancel: () => void
 }
 
-/** Sửa tên, số điện thoại và trình độ của chính mình. Ảnh đại diện đổi trên web. */
+/** Sửa tên, số điện thoại và trình độ của chính mình. Ảnh đại diện đổi bằng cách chạm vào ảnh ở thẻ hồ sơ. */
 export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: ProfileEditFormProps) {
   const [fullName, setFullName] = useState(initial.fullName)
   const [phone, setPhone] = useState(initial.phone)

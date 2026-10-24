@@ -305,6 +305,21 @@ SELECT t(NULL,'anon',$$SELECT bookings_played::text FROM player_public_stats('b0
 SELECT t(NULL,'anon',$$SELECT (matches_created + matches_joined + bookings_played)::text FROM player_public_stats('99999999-9999-9999-9999-999999999998')$$,'0','người không tồn tại trả về toàn số 0');
 SELECT t(NULL,'anon',$$SELECT count(*)::text FROM player_public_stats('a0000000-0000-0000-0000-00000000000a')$$,'1','hàm thống kê chỉ trả một dòng con số, không lộ dữ liệu đơn');
 
+-- ---------------------------------------------------------------- 17. Thông báo đẩy (push token)
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT register_push_token('ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]','android')::text$$,'','đăng ký push token cho chính mình');
+SELECT t(NULL,'postgres',$$SELECT user_id::text FROM push_tokens WHERE token='ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]'$$,'c0000000-0000-0000-0000-00000000000c','token gắn đúng người đăng nhập');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$SELECT register_push_token('ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]','ios')::text$$,'','đăng nhập tài khoản khác trên cùng máy thì token chuyển sang tài khoản đó');
+SELECT t(NULL,'postgres',$$SELECT user_id::text FROM push_tokens WHERE token='ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]'$$,'d0000000-0000-0000-0000-00000000000d','token chỉ thuộc một người tại một thời điểm');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT 'ok' FROM (SELECT unregister_push_token('ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]')) x$$,'ok','gỡ token của người khác không báo lỗi');
+SELECT t(NULL,'postgres',$$SELECT count(*)::text FROM push_tokens WHERE token='ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]'$$,'1','nhưng không xóa được token không phải của mình');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$SELECT 'ok' FROM (SELECT unregister_push_token('ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]')) x$$,'ok','gỡ token của chính mình khi đăng xuất');
+SELECT t(NULL,'postgres',$$SELECT count(*)::text FROM push_tokens$$,'0','token đã được gỡ');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT register_push_token('khong-phai-expo-token','android')::text$$,'ERR','token sai định dạng bị từ chối');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT register_push_token('ExponentPushToken[bbbbbbbbbbbbbbbbbbbbbb]','windows')::text$$,'ERR','nền tảng lạ bị từ chối');
+SELECT t(NULL,'anon',$$SELECT register_push_token('ExponentPushToken[cccccccccccccccccccccc]','ios')::text$$,'ERR','khách không đăng ký được push token');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM push_tokens$$,'ERR','người dùng không đọc trực tiếp được bảng push_tokens');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$INSERT INTO push_tokens(user_id,token,platform) VALUES ('d0000000-0000-0000-0000-00000000000d','ExponentPushToken[dddddddddddddddddddddd]','ios') RETURNING 'x'$$,'ERR','không chèn trực tiếp token cho người khác');
+
 -- ---------------------------------------------------------------- Tổng kết
 SELECT CASE WHEN ok THEN 'PASS' ELSE 'FAIL' END AS ket_qua, label AS ca_kiem_thu, CASE WHEN ok THEN '' ELSE detail END AS chi_tiet FROM test_results ORDER BY ok, label;
 DO $$

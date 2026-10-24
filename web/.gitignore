@@ -42,3 +42,7 @@ next-env.d.ts
 
 # giữ lại file mẫu biến môi trường
 !.env.example
+
+# playwright
+/test-results/
+/playwright-report/

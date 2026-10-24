@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 // Phải khớp SHARED_FILES trong scripts/sync-mobile-shared.mjs
-const SHARED_FILES = ['datetime.ts', 'pricing.ts', 'booking-slots.ts', 'cancellation.ts', 'profile.ts']
+const SHARED_FILES = ['datetime.ts', 'pricing.ts', 'booking-slots.ts', 'cancellation.ts', 'profile.ts', 'image-upload.ts']
 
 const read = (path: string) => readFileSync(path, 'utf-8').replace(/\r\n/g, '\n')
 

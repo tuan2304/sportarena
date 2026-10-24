@@ -35,6 +35,30 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
           NEXT_PUBLIC_APP_URL: http://localhost:3000
 
+  e2e:
+    name: Web (Playwright e2e + CSP)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run e2e:install
+      # Playwright tự build rồi chạy bản production với Supabase giả (web/e2e/mock-supabase.mjs), không cần database thật
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/playwright-report
+          retention-days: 7
+
   database:
     name: Database (migrations + RLS tests)
     runs-on: ubuntu-latest

@@ -2,9 +2,19 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database'
 
-export async function updateSession(request: NextRequest) {
+/**
+ * Làm mới phiên Supabase. `forwardHeaders` là các header thêm vào yêu cầu gửi cho trang (nonce và CSP do proxy.ts tạo);
+ * được dựng lại mỗi lần tạo response để không làm mất cookie phiên vừa làm mới trên request.
+ */
+export async function updateSession(request: NextRequest, forwardHeaders: Record<string, string> = {}) {
+  const requestHeaders = () => {
+    const headers = new Headers(request.headers)
+    for (const [name, value] of Object.entries(forwardHeaders)) headers.set(name, value)
+    return headers
+  }
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: { headers: requestHeaders() },
   })
 
   const supabase = createServerClient<Database>(
@@ -18,7 +28,7 @@ export async function updateSession(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
-            request,
+            request: { headers: requestHeaders() },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)

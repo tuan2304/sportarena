@@ -61,3 +61,43 @@ describe('parseCreateBookingBody', () => {
     expect(r).toEqual({ ok: true, value: ok })
   })
 })
+
+describe('parseCreateBookingBody: mở kèo ghép', () => {
+  const match = { title: 'Kèo tối thứ 5', requiredPlayers: 4, skillLevel: 'intermediate', costSharingType: 'split' }
+
+  it('nhận cấu hình kèo hợp lệ và gắn isOpenMatch', () => {
+    const res = parseCreateBookingBody({ ...ok, match })
+    expect(res).toEqual({ ok: true, value: { ...ok, match: { ...match, isOpenMatch: true } } })
+  })
+
+  it('điền mặc định trình độ và cách chia chi phí', () => {
+    const res = parseCreateBookingBody({ ...ok, match: { requiredPlayers: 6 } })
+    expect(res.ok && res.value.match).toMatchObject({ skillLevel: 'all', costSharingType: 'split', requiredPlayers: 6 })
+  })
+
+  it('không nhận chi phí mỗi người từ app', () => {
+    const res = parseCreateBookingBody({ ...ok, match: { ...match, costPerPerson: 1 } })
+    expect(res.ok && res.value.match).not.toHaveProperty('costPerPerson')
+  })
+
+  it('từ chối cấu hình sai', () => {
+    for (const bad of [
+      'x',
+      [],
+      { ...match, requiredPlayers: 1 },
+      { ...match, requiredPlayers: 51 },
+      { ...match, requiredPlayers: 4.5 },
+      { ...match, requiredPlayers: '4' },
+      { ...match, skillLevel: 'god' },
+      { ...match, costSharingType: 'free' },
+      { ...match, title: 'x'.repeat(101) },
+      { ...match, description: 'x'.repeat(501) },
+    ]) {
+      expect(parseCreateBookingBody({ ...ok, match: bad }).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+
+  it('bỏ qua match null', () => {
+    expect(parseCreateBookingBody({ ...ok, match: null })).toEqual({ ok: true, value: ok })
+  })
+})

@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavigationContainer } from '@react-navigation/native'
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { colors } from '../theme/colors'
@@ -14,9 +14,13 @@ import BookingPaymentScreen from '../screens/BookingPaymentScreen'
 import MyBookingsScreen from '../screens/MyBookingsScreen'
 import NotificationsScreen from '../screens/NotificationsScreen'
 import ProfileScreen from '../screens/ProfileScreen'
+import PlayerProfileScreen from '../screens/PlayerProfileScreen'
 
 // Icons
 import { Compass, Flame, Calendar, Bell, User } from 'lucide-react-native'
+
+/** Cho phép mở màn hình từ ngoài cây giao diện (chạm vào thông báo đẩy) */
+export const navigationRef = createNavigationContainerRef<any>()
 
 const Tab = createBottomTabNavigator()
 const Stack = createNativeStackNavigator()
@@ -108,7 +112,7 @@ function BottomTabs() {
 
 export default function RootNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -120,6 +124,7 @@ export default function RootNavigator() {
         <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
         <Stack.Screen name="Booking" component={BookingScreen} />
         <Stack.Screen name="BookingPayment" component={BookingPaymentScreen} />
+        <Stack.Screen name="PlayerProfile" component={PlayerProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )

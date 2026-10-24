@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Switch,
+  TextInput,
 } from 'react-native'
 import { ChevronLeft, ShieldCheck } from 'lucide-react-native'
 import { colors } from '../theme/colors'
@@ -28,6 +30,15 @@ import type { Club, Court } from '../types'
 
 const DAYS_AHEAD = 14
 
+const MATCH_SKILLS = [
+  { id: 'all', label: 'Mọi trình độ' },
+  { id: 'beginner', label: 'Mới chơi' },
+  { id: 'intermediate', label: 'Trung bình' },
+  { id: 'advanced', label: 'Khá' },
+] as const
+const MIN_PLAYERS = 2
+const MAX_PLAYERS = 20
+
 export default function BookingScreen({ route, navigation }: any) {
   const { clubId, courtId } = route.params as { clubId: string; courtId: string }
 
@@ -39,6 +50,12 @@ export default function BookingScreen({ route, navigation }: any) {
   const [startHour, setStartHour] = useState<number | null>(null)
   const [busy, setBusy] = useState<BusySlot[]>([])
   const [submitting, setSubmitting] = useState(false)
+  // Mở kèo ghép cùng lúc đặt sân: server tính chi phí mỗi người từ tổng tiền, app chỉ gửi lựa chọn
+  const [openMatch, setOpenMatch] = useState(false)
+  const [matchTitle, setMatchTitle] = useState('')
+  const [requiredPlayers, setRequiredPlayers] = useState(4)
+  const [matchSkill, setMatchSkill] = useState<(typeof MATCH_SKILLS)[number]['id']>('all')
+  const [hostCovers, setHostCovers] = useState(false)
   // Mốc "bây giờ" lấy một lần mỗi lần mở màn hình, đủ để ẩn các giờ đã qua của hôm nay
   const [nowMs] = useState(() => Date.now())
 
@@ -124,6 +141,16 @@ export default function BookingScreen({ route, navigation }: any) {
       courtId: court.id,
       startTime: quote.start.toISOString(),
       endTime: quote.end.toISOString(),
+      ...(openMatch
+        ? {
+            match: {
+              title: matchTitle.trim() || undefined,
+              requiredPlayers,
+              skillLevel: matchSkill,
+              costSharingType: hostCovers ? 'host_covers' : 'split',
+            },
+          }
+        : {}),
     })
     setSubmitting(false)
 
@@ -234,6 +261,70 @@ export default function BookingScreen({ route, navigation }: any) {
         </View>
         {hours.length === 0 && <Text style={styles.muted}>Cụm sân chưa cấu hình giờ mở cửa ({openHour}h - {closeHour}h).</Text>}
 
+        <View style={styles.matchBox}>
+          <View style={styles.matchHead}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.matchTitle}>Mở kèo ghép</Text>
+              <Text style={styles.matchHint}>Đăng kèo để người khác xin tham gia, chia tiền sân.</Text>
+            </View>
+            <Switch
+              value={openMatch}
+              onValueChange={setOpenMatch}
+              trackColor={{ true: colors.primary, false: colors.cardBorder }}
+              accessibilityLabel="Mở kèo ghép cùng lúc đặt sân"
+            />
+          </View>
+
+          {openMatch && (
+            <>
+              <Text style={styles.fieldLabel}>Tên kèo (không bắt buộc)</Text>
+              <TextInput
+                style={styles.input}
+                value={matchTitle}
+                onChangeText={setMatchTitle}
+                maxLength={100}
+                placeholder={`Kèo ${court.name} - Giao lưu thể thao`}
+                placeholderTextColor={colors.textMuted}
+              />
+
+              <Text style={styles.fieldLabel}>Số người cần có (tính cả bạn)</Text>
+              <View style={styles.stepper}>
+                <TouchableOpacity
+                  style={styles.stepBtn}
+                  onPress={() => setRequiredPlayers((n) => Math.max(MIN_PLAYERS, n - 1))}
+                  accessibilityLabel="Giảm số người"
+                >
+                  <Text style={styles.stepText}>−</Text>
+                </TouchableOpacity>
+                <Text style={styles.stepValue}>{requiredPlayers}</Text>
+                <TouchableOpacity
+                  style={styles.stepBtn}
+                  onPress={() => setRequiredPlayers((n) => Math.min(MAX_PLAYERS, n + 1))}
+                  accessibilityLabel="Tăng số người"
+                >
+                  <Text style={styles.stepText}>+</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.fieldLabel}>Trình độ</Text>
+              <View style={styles.chipRowWrap}>
+                {MATCH_SKILLS.map((s) => (
+                  <Chip key={s.id} label={s.label} active={matchSkill === s.id} onPress={() => setMatchSkill(s.id)} />
+                ))}
+              </View>
+
+              <Text style={styles.fieldLabel}>Chi phí</Text>
+              <View style={styles.chipRowWrap}>
+                <Chip label="Chia đều" active={!hostCovers} onPress={() => setHostCovers(false)} />
+                <Chip label="Tôi bao sân" active={hostCovers} onPress={() => setHostCovers(true)} />
+              </View>
+              {quote && !hostCovers && (
+                <Text style={styles.matchHint}>Mỗi người khoảng {formatVnd(Math.round(quote.totalPrice / requiredPlayers))}.</Text>
+              )}
+            </>
+          )}
+        </View>
+
         <View style={styles.policy}>
           <ShieldCheck size={14} color={colors.primary} />
           <Text style={styles.policyText}>{describePolicy(club.free_cancel_hours ?? 24)}</Text>
@@ -326,6 +417,16 @@ const styles = StyleSheet.create({
   muted: { color: colors.textMuted, fontSize: 13, marginTop: 8 },
   linkBtn: { padding: 10 },
   linkText: { color: colors.primary, fontWeight: '700' },
+  matchBox: { marginTop: 20, padding: 14, borderRadius: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.cardBorder, gap: 8 },
+  matchHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  matchTitle: { color: colors.textPrimary, fontWeight: '700', fontSize: 14 },
+  matchHint: { color: colors.textMuted, fontSize: 12, lineHeight: 17 },
+  fieldLabel: { color: colors.textPrimary, fontWeight: '600', fontSize: 13, marginTop: 6 },
+  input: { minHeight: 44, borderRadius: 10, paddingHorizontal: 14, color: colors.textPrimary, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder, fontSize: 14 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  stepBtn: { width: 44, height: 44, borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
+  stepText: { color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
+  stepValue: { color: colors.textPrimary, fontSize: 18, fontWeight: '800', minWidth: 28, textAlign: 'center' },
   policy: { flexDirection: 'row', gap: 8, marginTop: 20, padding: 12, borderRadius: 10, backgroundColor: colors.primaryLight },
   policyText: { flex: 1, color: colors.textSecondary, fontSize: 12, lineHeight: 18 },
   footer: { padding: 16, borderTopWidth: 1, borderTopColor: colors.cardBorder, backgroundColor: colors.surface, gap: 12 },

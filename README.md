@@ -33,7 +33,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - Tự hủy đơn theo chính sách của cụm sân: hủy sớm được hoàn cọc, hủy muộn mất cọc, chủ sân hủy thì luôn hoàn đủ. Theo dõi trạng thái hoàn cọc ngay trong đơn.
 - Hồ sơ người chơi: ảnh đại diện, trình độ, số điện thoại và trang hồ sơ công khai có thống kê.
 - Thông báo realtime, đánh giá sân, gửi yêu cầu hỗ trợ.
-- Đặt sân, thanh toán cọc, hủy đơn và sửa hồ sơ ngay trên ứng dụng mobile.
+- Đặt sân (kèm mở kèo ghép ngay lúc đặt), thanh toán cọc, hủy đơn, đổi ảnh đại diện, xem hồ sơ người chơi và nhận thông báo đẩy ngay trên ứng dụng mobile.
 
 **Chủ sân**
 - Quản lý cụm sân, sân con, giờ mở cửa và vị trí; tải ảnh sân trực tiếp (JPG, PNG, WebP), chọn ảnh bìa.
@@ -58,7 +58,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Bảo mật nhiều lớp.** Mọi bảng bật Row Level Security, người dùng không có quyền ghi trực tiếp vào bảng nghiệp vụ, mọi thao tác ghi đi qua Server Action có kiểm tra quyền. Các quy tắc đó có bộ test SQL riêng chạy trong Docker.
 - **Realtime.** Lịch đặt, kèo, chat, thông báo và ticket cập nhật qua Supabase Realtime.
 - **Múi giờ Việt Nam nhất quán.** Hiển thị và thống kê đều tính theo giờ Việt Nam, kể cả khi máy chủ chạy UTC.
-- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build và kiểm tra mobile ở mỗi lần push.
+- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (kèm kiểm tra CSP có nonce) và kiểm tra mobile ở mỗi lần push.
 
 ## Công nghệ
 
@@ -365,5 +365,5 @@ Sơ đồ chỉ vẽ các bảng lõi. Ngoài ra còn các bảng cho thông bá
 
 - Hoàn cọc tự động qua API của nhà cung cấp thanh toán (hiện chủ sân tự chuyển trả rồi xác nhận).
 - Thêm cổng thanh toán tự động khác (MoMo, VNPay...) bên cạnh PayOS và chuyển khoản thủ công.
-- Mobile: tải ảnh đại diện, mở kèo ngay khi đặt sân, thông báo đẩy.
-- Nội dung bảo mật (CSP) có nonce cho script, kiểm thử đầu-cuối (Playwright) chạy trong CI.
+- Mobile: chủ sân dùng ứng dụng để duyệt đơn và quản lý lịch (hiện app dành cho người chơi), thông báo đẩy có hành động nhanh (duyệt/từ chối người xin vào kèo).
+- Kiểm thử đầu-cuối cho luồng có đăng nhập thật (đặt sân, mở kèo) cần một Supabase thử nghiệm thay cho bản giả hiện tại.

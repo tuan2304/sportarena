@@ -7,22 +7,25 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Image,
 } from 'react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import AuthForm from '../components/AuthForm'
 import ProfileEditForm from '../components/ProfileEditForm'
+import Avatar from '../components/Avatar'
+import { pickAndUploadAvatar, removeAvatar } from '../lib/avatar'
+import { unregisterPush } from '../lib/push'
 import { skillLabel } from '../shared/profile'
 import { Profile } from '../types'
-import { Shield, LogOut, Smartphone } from 'lucide-react-native'
+import { Shield, LogOut, Smartphone, Camera, ExternalLink } from 'lucide-react-native'
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }: any) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [phone, setPhone] = useState('')
   const [editing, setEditing] = useState(false)
+  const [avatarBusy, setAvatarBusy] = useState(false)
 
   async function checkSession() {
     try {
@@ -58,7 +61,36 @@ export default function ProfileScreen() {
     checkSession()
   }, [])
 
+  async function changeAvatar() {
+    if (!profile) return
+    setAvatarBusy(true)
+    const res = await pickAndUploadAvatar(profile.id, profile.avatar_url)
+    setAvatarBusy(false)
+    if (res.ok) setProfile({ ...profile, avatar_url: res.url })
+    else if (!res.cancelled) Alert.alert('Không đổi được ảnh', res.error)
+  }
+
+  function confirmRemoveAvatar() {
+    if (!profile?.avatar_url) return
+    Alert.alert('Gỡ ảnh đại diện?', 'Hồ sơ sẽ hiển thị chữ cái đầu của tên.', [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Gỡ ảnh',
+        style: 'destructive',
+        onPress: async () => {
+          setAvatarBusy(true)
+          const res = await removeAvatar(profile.id, profile.avatar_url)
+          setAvatarBusy(false)
+          if (res.ok) setProfile({ ...profile, avatar_url: null })
+          else Alert.alert('Không gỡ được ảnh', res.error)
+        },
+      },
+    ])
+  }
+
   async function handleLogout() {
+    // Gỡ token trước khi đăng xuất: sau đó không còn phiên để gọi database
+    await unregisterPush()
     await supabase.auth.signOut()
     setProfile(null)
     setCurrentUserEmail(null)
@@ -78,15 +110,20 @@ export default function ProfileScreen() {
       {/* Current User Card */}
       {profile ? (
         <View style={styles.profileCard}>
-          <View style={styles.avatarLarge}>
-            {profile.avatar_url && /^https?:\/\//i.test(profile.avatar_url) ? (
-              <Image source={{ uri: profile.avatar_url }} style={{ width: 72, height: 72, borderRadius: 36 }} />
-            ) : (
-              <Text style={styles.avatarTextLarge}>
-                {profile.full_name?.charAt(0).toUpperCase() || 'U'}
-              </Text>
-            )}
-          </View>
+          <TouchableOpacity
+            onPress={changeAvatar}
+            onLongPress={confirmRemoveAvatar}
+            disabled={avatarBusy}
+            accessibilityRole="button"
+            accessibilityLabel="Đổi ảnh đại diện"
+            accessibilityHint="Nhấn giữ để gỡ ảnh"
+            style={styles.avatarWrap}
+          >
+            <Avatar name={profile.full_name} uri={profile.avatar_url} size={88} />
+            <View style={styles.cameraBadge}>
+              {avatarBusy ? <ActivityIndicator size="small" color={colors.white} /> : <Camera size={14} color={colors.white} />}
+            </View>
+          </TouchableOpacity>
           <Text style={styles.userName}>{profile.full_name}</Text>
           <Text style={styles.userEmail}>{currentUserEmail}</Text>
           <Text style={styles.userEmail}>Trình độ: {skillLabel(profile.skill_level)}</Text>
@@ -100,6 +137,15 @@ export default function ProfileScreen() {
 
           <TouchableOpacity style={styles.editBtn} onPress={() => setEditing((v) => !v)} accessibilityRole="button">
             <Text style={styles.editText}>{editing ? 'Đóng chỉnh sửa' : 'Chỉnh sửa hồ sơ'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.publicBtn}
+            onPress={() => navigation.navigate('PlayerProfile', { userId: profile.id })}
+            accessibilityRole="button"
+          >
+            <ExternalLink size={14} color={colors.textSecondary} />
+            <Text style={styles.publicText}>Xem hồ sơ công khai</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
@@ -139,6 +185,22 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
+  avatarWrap: { marginBottom: 4 },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primary,
+    borderWidth: 2,
+    borderColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  publicBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 40, marginTop: 4 },
+  publicText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
   editBtn: {
     minHeight: 44,
     alignSelf: 'stretch',

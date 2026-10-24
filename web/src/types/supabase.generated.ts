@@ -315,6 +315,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"push_tokens": {
+                  Row: {
+                    "created_at": string,"id": string,"platform": string,"token": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"platform": string,"token": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"platform"?: string,"token"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_tokens_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"subscription_payments": {
                   Row: {
                     "amount": number,"checkout_url": string | null,"club_id": string,"created_at": string,"id": string,"metadata": NonNullable<Json>,"months": number,"order_code": number,"paid_at": string | null,"qr_code_url": string | null,"status": string,"user_id": string
@@ -436,6 +456,12 @@ isOneToOne: false
 { Args: { "p_user": string }; Returns: {
               "bookings_played": number,"matches_created": number,"matches_joined": number
             }[]
+                           },
+"register_push_token":
+{ Args: { "p_platform": string; "p_token": string }; Returns: undefined
+                           },
+"unregister_push_token":
+{ Args: { "p_token": string }; Returns: undefined
                            },
 "get_booking_contacts":
 { Args: { "p_booking_ids": (string)[] }; Returns: {

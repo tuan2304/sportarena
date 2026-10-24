@@ -22,7 +22,19 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#059669"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SportArena cần truy cập thư viện ảnh để bạn chọn ảnh đại diện."
+        }
+      ]
     ]
   }
 }

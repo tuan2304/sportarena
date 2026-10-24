@@ -243,3 +243,24 @@ Khách thấy bản đồ nhúng ở trang cụm sân, nút **Chỉ đường** 
 4. **Hết hạn giữ chỗ:** đặt sân rồi đóng tab, chờ hơn 15 phút → khung giờ tự mở lại (nhờ `pg_cron`).
 5. **Tài khoản mẫu:** các tài khoản seed (`@sportarena.vn`) chỉ dành cho môi trường dev. **Xóa hoặc đổi mật khẩu** trước khi mở cho người dùng thật, và dùng một project Supabase riêng cho production.
 6. **Mobile:** tạo `mobile/.env` từ `mobile/.env.example`. Ứng dụng không có tài khoản mẫu hay nút đăng nhập nhanh; người dùng đăng nhập hoặc đăng ký ở tab Cá Nhân.
+
+## 🔔 Thông báo đẩy, CSP và kiểm thử đầu-cuối
+
+### Thứ tự triển khai
+1. `supabase db push` để áp `20261102000000_push_tokens` (chỉ thêm bảng và hai hàm, không đụng dữ liệu cũ). Web vẫn chạy nếu chưa áp (lúc đó không gửi được đẩy, chỉ ghi log).
+2. Đẩy code lên `master` để Vercel deploy. Từ bản này **mọi trang render lúc có request** (không còn cache tĩnh) vì CSP có nonce; trang chủ và danh sách sân sẽ chậm hơn một chút so với trước.
+3. Biến môi trường tùy chọn: `EXPO_ACCESS_TOKEN` (chỉ cần nếu bật "Enhanced Security" cho thông báo đẩy trong tài khoản Expo).
+
+### Bật thông báo đẩy cho app mobile
+Thông báo đẩy không chạy trên Expo Go (Android) hay máy ảo; cần bản dev build hoặc bản phát hành:
+1. `cd mobile && npx eas-cli login && npx eas-cli init` (tạo dự án EAS, ghi `extra.eas.projectId` vào `app.json`).
+2. Android: thêm khóa FCM vào EAS (`eas credentials`). iOS: cần tài khoản Apple Developer cho khóa APNs.
+3. `npx eas-cli build --profile development --platform android`, cài lên máy thật, đăng nhập: token tự đăng ký.
+Chưa có `projectId` thì app bỏ qua êm việc đăng ký, thông báo trong tab Thông Báo vẫn dùng bình thường.
+
+### CSP
+Header `Content-Security-Policy` do [src/proxy.ts](web/src/proxy.ts) tạo cho từng request. Nếu thêm dịch vụ bên thứ ba (bản đồ, phân tích, chat...) mà bị chặn, console trình duyệt sẽ báo `Content Security Policy`; thêm đúng nguồn vào [src/lib/csp.ts](web/src/lib/csp.ts) (đừng thêm `unsafe-inline` cho script).
+
+### Kiểm thử đầu-cuối
+`cd web && npm run e2e:install` (một lần) rồi `npm run e2e`. Bộ test tự build, chạy bản production với Supabase giả nên không cần `.env.local` và không chạm database thật. CI chạy cùng lệnh này ở job `e2e`.
+

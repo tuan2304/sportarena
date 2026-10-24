@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
   const parsed = parseCreateBookingBody(raw.body)
   if (!parsed.ok) return jsonResponse({ error: parsed.error }, 400)
 
-  const { courtId, startTime, endTime, note } = parsed.value
-  const result = await createBookingForUser(auth.supabase, auth.user, courtId, startTime, endTime, note)
+  const { courtId, startTime, endTime, note, match } = parsed.value
+  const result = await createBookingForUser(auth.supabase, auth.user, courtId, startTime, endTime, note, match)
   if (result.error || !result.bookingId) return jsonResponse({ error: result.error ?? 'Không thể đặt sân' }, 400)
   return jsonResponse({ bookingId: result.bookingId }, 201)
 }
