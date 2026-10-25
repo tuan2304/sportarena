@@ -10,6 +10,8 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 
 `Next.js 16` · `React 19` · `Tailwind v4` · `Supabase` · `PayOS` · `Expo`
 
+**Tiếng Việt** · [English](README.en.md)
+
 </div>
 
 <table>
@@ -34,6 +36,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - Hồ sơ người chơi: ảnh đại diện, trình độ, số điện thoại và trang hồ sơ công khai có thống kê.
 - Thông báo realtime, đánh giá sân, gửi yêu cầu hỗ trợ.
 - Đặt sân (kèm mở kèo ghép ngay lúc đặt), thanh toán cọc, hủy đơn, đổi ảnh đại diện, xem hồ sơ người chơi và nhận thông báo đẩy ngay trên ứng dụng mobile.
+- Giao diện web có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ trên thanh đầu trang, mặc định theo trình duyệt (khu vực chủ sân và quản trị hiện mới có tiếng Việt).
 
 **Chủ sân**
 - Quản lý cụm sân, sân con, giờ mở cửa và vị trí; tải ảnh sân trực tiếp (JPG, PNG, WebP), chọn ảnh bìa.
@@ -366,4 +369,5 @@ Sơ đồ chỉ vẽ các bảng lõi. Ngoài ra còn các bảng cho thông bá
 - Hoàn cọc tự động qua API của nhà cung cấp thanh toán (hiện chủ sân tự chuyển trả rồi xác nhận).
 - Thêm cổng thanh toán tự động khác (MoMo, VNPay...) bên cạnh PayOS và chuyển khoản thủ công.
 - Mobile: chủ sân dùng ứng dụng để duyệt đơn và quản lý lịch (hiện app dành cho người chơi), thông báo đẩy có hành động nhanh (duyệt/từ chối người xin vào kèo).
+- Dịch tiếng Anh cho khu vực chủ sân và quản trị, thông báo trong chuông (hiện lưu sẵn bằng tiếng Việt) và app mobile.
 - Kiểm thử đầu-cuối cho luồng có đăng nhập thật (đặt sân, mở kèo) cần một Supabase thử nghiệm thay cho bản giả hiện tại.

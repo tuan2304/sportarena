@@ -19,6 +19,8 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: appUrl,
+    // Trình duyệt giả lập dùng tiếng Việt (ngôn ngữ mặc định của web); kiểm thử tiếng Anh tự đặt cookie/locale riêng
+    locale: 'vi-VN',
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

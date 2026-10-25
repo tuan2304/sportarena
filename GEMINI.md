@@ -240,4 +240,12 @@
     - Playwright: [web/e2e/](web/e2e) chạy trên bản build production với Supabase giả (`mock-supabase.mjs`, không cần Docker hay database thật; biến môi trường ghi đè `.env.local` nên không chạm dữ liệu thật). 18 ca: nonce khác nhau mỗi request, không vi phạm CSP trên các trang công khai, chặn `onerror` chèn vào trang, đăng nhập sai, chuyển hướng trang cần đăng nhập, API mobile 401, webhook PayOS. Job `e2e` trong CI. Lệnh: `npm run e2e` (lần đầu `npm run e2e:install`).
     - Kiểm thử: 288 test vitest, 192/192 ca DB (thêm 13 ca push token), 18 ca Playwright.
     - Chưa làm (cần tài khoản bên ngoài): hoàn cọc tự động và cổng MoMo/VNPay.
+- **2026-10-25 (Giao diện Việt - Anh):**
+    - Dùng `next-intl`, ngôn ngữ lưu trong cookie `sa-lang` (không đổi URL nên proxy/CSP/liên kết thông báo giữ nguyên). Chưa chọn thì theo `Accept-Language` (en nếu ngôn ngữ ưu tiên là en, còn lại vi). Cấu hình ở [i18n/config.ts](web/src/i18n/config.ts), nút chuyển [language-switcher.tsx](web/src/components/layout/language-switcher.tsx), bản dịch ở [web/messages/vi.json](web/messages/vi.json) và `en.json`.
+    - Khóa dịch có kiểu (`src/types/next-intl.d.ts`): gõ sai khóa trong `t('...')` báo lỗi lúc `tsc`. Test `messages.test.ts` bắt thiếu khóa, bản dịch rỗng, lệch `{biến}` và chữ Việt lọt vào bản Anh.
+    - Đã dịch toàn bộ phần người chơi: trang chủ, đăng nhập/đăng ký, danh sách và chi tiết sân, chọn giờ, thanh toán cọc, lịch đặt, kèo, hồ sơ, thông báo, hỗ trợ, ảnh. Nhãn dạng mã (môn, trình độ, cách chia phí) qua `useLabels()` / `getLabels()` ([i18n/labels.ts](web/src/i18n/labels.ts)).
+    - Lỗi do server trả về vẫn viết tiếng Việt ở nghiệp vụ (có test dựa trên câu chữ đó) và được dịch ở biên: Server Action gọi `tr()` ([lib/localize-error.ts](web/src/lib/localize-error.ts)), bảng dịch ở [i18n/server-messages.ts](web/src/i18n/server-messages.ts). Test quét mã nguồn, thêm câu lỗi mới mà quên dịch sẽ fail.
+    - `lib/cancellation.ts` (dùng chung với mobile) thêm tham số `lang` mặc định `vi`; `formatShortDate`/`formatLongDate` nhận `lang`.
+    - Chưa dịch: khu vực chủ sân và quản trị, nội dung thông báo lưu trong database (chuông), app mobile. README có bản tiếng Anh [README.en.md](README.en.md).
+    - Playwright thêm 7 ca (`e2e/i18n.spec.ts`); trình duyệt giả lập đặt `locale: 'vi-VN'` để các ca cũ vẫn chạy bằng tiếng Việt.
 
