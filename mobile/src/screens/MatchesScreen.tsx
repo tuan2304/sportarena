@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -14,6 +16,7 @@ import { Match } from '../types'
 import { Flame, Users, Calendar, MapPin, ChevronRight, Award } from 'lucide-react-native'
 
 export default function MatchesScreen({ navigation }: any) {
+  const { t } = useI18n()
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -63,7 +66,7 @@ export default function MatchesScreen({ navigation }: any) {
   }, [])
 
   function formatMatchTime(startIso?: string, endIso?: string) {
-    if (!startIso) return 'Chưa cập nhật'
+    if (!startIso) return t('matches.notSet')
     const start = new Date(startIso)
     const end = endIso ? new Date(endIso) : null
 
@@ -86,7 +89,7 @@ export default function MatchesScreen({ navigation }: any) {
   function renderMatchCard({ item }: { item: Match }) {
     const court = item.booking?.court
     const club = court?.club
-    const locationStr = club ? `${court?.name} - ${club.name} (${club.district || club.city})` : 'Sân đang cập nhật'
+    const locationStr = club ? `${court?.name} - ${club.name} (${club.district || club.city})` : t('matches.venueUpdating')
 
     return (
       <TouchableOpacity
@@ -103,7 +106,7 @@ export default function MatchesScreen({ navigation }: any) {
           <View style={styles.skillBadge}>
             <Award size={12} color={colors.primary} />
             <Text style={styles.skillBadgeText}>
-              Trình độ: {item.skill_level === 'all' ? 'Tất cả' : item.skill_level}
+              {t('matches.skillLine', { skill: t(`skills.${item.skill_level}` as MessageKey) })}
             </Text>
           </View>
         </View>
@@ -133,21 +136,21 @@ export default function MatchesScreen({ navigation }: any) {
               <Text style={{ color: colors.accent, fontWeight: 'bold' }}>
                 {item.current_players}
               </Text>
-              /{item.required_players} người
+              {t('matches.players', { required: item.required_players })}
             </Text>
           </View>
 
           <View style={styles.costBox}>
-            <Text style={styles.costLabel}>Chi phí:</Text>
+            <Text style={styles.costLabel}>{t('matches.cost')}</Text>
             <Text style={styles.costValue}>
               {item.cost_sharing_type === 'host_covers' || !item.cost_per_person
-                ? 'Chủ bao trọn'
-                : `${Number(item.cost_per_person).toLocaleString('vi-VN')} đ/người`}
+                ? t('matches.hostCovers')
+                : t('matches.perPerson', { price: Number(item.cost_per_person).toLocaleString('vi-VN') })}
             </Text>
           </View>
 
           <View style={styles.joinBtn}>
-            <Text style={styles.joinBtnText}>Chi tiết</Text>
+            <Text style={styles.joinBtnText}>{t('matches.details')}</Text>
             <ChevronRight size={14} color={colors.white} />
           </View>
         </View>
@@ -158,9 +161,9 @@ export default function MatchesScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
-        <Text style={styles.bannerTitle}>Kèo Giao Lưu Thể Thao 🔥</Text>
+        <Text style={styles.bannerTitle}>{t('matches.banner')}</Text>
         <Text style={styles.bannerSubtitle}>
-          Ghép đội nhanh, giao lưu đúng trình độ & chia sẻ chi phí sân công bằng
+          {t('matches.bannerText')}
         </Text>
       </View>
 
@@ -187,8 +190,8 @@ export default function MatchesScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Flame size={48} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>Hiện chưa có kèo mở nào</Text>
-              <Text style={styles.emptyDesc}>Hãy quay lại sau hoặc là người đầu tiên mở ghép kèo!</Text>
+              <Text style={styles.emptyTitle}>{t('matches.emptyTitle')}</Text>
+              <Text style={styles.emptyDesc}>{t('matches.emptyText')}</Text>
             </View>
           }
         />

@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -15,16 +17,17 @@ import { supabase } from '../lib/supabase'
 import { Club, SportType } from '../types'
 import { MapPin, Clock, Search, Trophy, ChevronRight } from 'lucide-react-native'
 
-const SPORT_FILTERS: { key: string; label: string }[] = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'pickleball', label: '🏓 Pickleball' },
-  { key: 'badminton', label: '🏸 Cầu Lông' },
-  { key: 'football', label: '⚽ Bóng Đá' },
-  { key: 'tennis', label: '🎾 Tennis' },
-  { key: 'basketball', label: '🏀 Bóng Rổ' },
+const SPORT_FILTERS: { key: string; label: MessageKey }[] = [
+  { key: 'all', label: 'clubs.filterAll' },
+  { key: 'pickleball', label: 'clubs.filterPickleball' },
+  { key: 'badminton', label: 'clubs.filterBadminton' },
+  { key: 'football', label: 'clubs.filterFootball' },
+  { key: 'tennis', label: 'clubs.filterTennis' },
+  { key: 'basketball', label: 'clubs.filterBasketball' },
 ]
 
 export default function ClubsScreen({ navigation }: any) {
+  const { t } = useI18n()
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -142,14 +145,14 @@ export default function ClubsScreen({ navigation }: any) {
 
           <View style={styles.cardFooter}>
             <View>
-              <Text style={styles.priceLabel}>Giá từ</Text>
+              <Text style={styles.priceLabel}>{t('clubs.priceFrom')}</Text>
               <Text style={styles.priceValue}>
-                {minPrice > 0 ? `${minPrice.toLocaleString('vi-VN')} đ/h` : 'Liên hệ'}
+                {minPrice > 0 ? t('common.perHour', { price: minPrice.toLocaleString('vi-VN') }) : t('clubs.contact')}
               </Text>
             </View>
 
             <View style={styles.detailBtn}>
-              <Text style={styles.detailBtnText}>Đặt Sân</Text>
+              <Text style={styles.detailBtnText}>{t('clubs.book')}</Text>
               <ChevronRight size={14} color={colors.white} />
             </View>
           </View>
@@ -165,7 +168,7 @@ export default function ClubsScreen({ navigation }: any) {
         <Search size={18} color={colors.textMuted} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Tìm cụm sân, địa chỉ, quận huyện..."
+          placeholder={t('clubs.search')}
           placeholderTextColor={colors.textMuted}
           value={search}
           onChangeText={setSearch}
@@ -188,7 +191,7 @@ export default function ClubsScreen({ navigation }: any) {
                 onPress={() => setSelectedSport(item.key)}
               >
                 <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
-                  {item.label}
+                  {t(item.label)}
                 </Text>
               </TouchableOpacity>
             )
@@ -200,7 +203,7 @@ export default function ClubsScreen({ navigation }: any) {
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Đang tải danh sách sân...</Text>
+          <Text style={styles.loadingText}>{t('clubs.loading')}</Text>
         </View>
       ) : (
         <FlatList
@@ -221,8 +224,8 @@ export default function ClubsScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Trophy size={48} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>Không tìm thấy sân phù hợp</Text>
-              <Text style={styles.emptyDesc}>Hãy thử đổi từ khóa hoặc bộ lọc môn thể thao khác</Text>
+              <Text style={styles.emptyTitle}>{t('clubs.emptyTitle')}</Text>
+              <Text style={styles.emptyDesc}>{t('clubs.emptyText')}</Text>
             </View>
           }
         />

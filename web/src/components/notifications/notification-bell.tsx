@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import {
   getNotifications,
@@ -26,6 +26,8 @@ interface NotificationItem {
   id: string
   title: string
   message: string
+  title_en?: string | null
+  message_en?: string | null
   type: string
   link: string | null
   is_read: boolean
@@ -39,6 +41,7 @@ interface NotificationBellProps {
 export function NotificationBell({ userId }: NotificationBellProps) {
   const router = useRouter()
   const t = useTranslations('notifications')
+  const english = useLocale() === 'en'
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -251,7 +254,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between gap-1">
                       <span className="font-semibold text-xs text-foreground truncate">
-                        {notif.title}
+                        {english && notif.title_en ? notif.title_en : notif.title}
                       </span>
                       {!notif.is_read && (
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
@@ -259,7 +262,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                     </div>
 
                     <p className="text-xs text-muted-foreground line-clamp-2 leading-snug">
-                      {notif.message}
+                      {english && notif.message_en ? notif.message_en : notif.message}
                     </p>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground/80 pt-0.5">

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
@@ -22,46 +23,46 @@ import { Button } from '@/components/ui/button'
 import { LogoMark, Wordmark } from '@/components/brand/logo'
 const NAV_ITEMS = [
   {
-    label: 'Tổng quan',
+    key: 'overview',
     href: '/owner/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'Cụm sân & Sân con',
+    key: 'clubs',
     href: '/owner/clubs',
     icon: Building2,
   },
   {
-    label: 'Lịch đặt sân',
+    key: 'schedule',
     href: '/owner/schedule',
     icon: CalendarDays,
   },
   {
-    label: 'Bảng giá linh hoạt',
+    key: 'pricing',
     href: '/owner/pricing',
     icon: Tags,
   },
   {
-    label: 'Nhận thanh toán',
+    key: 'payments',
     href: '/owner/payments',
     icon: Wallet,
   },
   {
-    label: 'Hoàn cọc',
+    key: 'refunds',
     href: '/owner/refunds',
     icon: RotateCcw,
   },
   {
-    label: 'Gói dịch vụ',
+    key: 'billing',
     href: '/owner/billing',
     icon: Crown,
   },
   {
-    label: 'Hỗ trợ',
+    key: 'support',
     href: '/support',
     icon: LifeBuoy,
   },
-]
+] as const
 
 interface OwnerSidebarProps {
   userEmail?: string
@@ -69,6 +70,7 @@ interface OwnerSidebarProps {
 }
 
 export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
+  const t = useTranslations('owner')
   const pathname = usePathname()
 
   return (
@@ -80,7 +82,7 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
           <div className="flex flex-col gap-1">
             <Wordmark size={22} />
             <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-              Dành cho Chủ Sân
+              {t('sidebar.for')}
             </div>
           </div>
         </div>
@@ -93,7 +95,7 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
             </div>
             <div className="overflow-hidden">
               <div className="font-semibold text-sm truncate text-foreground">
-                {userName || 'Chủ sân'}
+                {userName || t('layout.defaultName')}
               </div>
               <div className="text-xs text-muted-foreground truncate">{userEmail}</div>
             </div>
@@ -101,7 +103,7 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
           <div className="mt-2.5 flex items-center justify-between">
             <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-xs font-semibold">
               <ShieldCheck className="w-3 h-3 mr-1" />
-              Chủ Sân Xác Thực
+              {t('sidebar.verified')}
             </Badge>
           </div>
         </div>
@@ -123,7 +125,7 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
               >
                 <div className="flex items-center gap-3">
                   <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+                  <span>{t(`nav.${item.key}`)}</span>
                 </div>
                 {isActive && <ChevronRight className="w-4 h-4 text-white/70" />}
               </Link>
@@ -141,7 +143,7 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
             className="w-full justify-start text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Đăng xuất
+            {t('sidebar.logout')}
           </Button>
         </form>
       </div>

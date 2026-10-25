@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import React, { useEffect, useMemo, useState } from 'react'
 import {
   View,
@@ -30,16 +32,12 @@ import type { Club, Court } from '../types'
 
 const DAYS_AHEAD = 14
 
-const MATCH_SKILLS = [
-  { id: 'all', label: 'Mọi trình độ' },
-  { id: 'beginner', label: 'Mới chơi' },
-  { id: 'intermediate', label: 'Trung bình' },
-  { id: 'advanced', label: 'Khá' },
-] as const
+const MATCH_SKILLS = ['all', 'beginner', 'intermediate', 'advanced'] as const
 const MIN_PLAYERS = 2
 const MAX_PLAYERS = 20
 
 export default function BookingScreen({ route, navigation }: any) {
+  const { t, lang } = useI18n()
   const { clubId, courtId } = route.params as { clubId: string; courtId: string }
 
   const [club, setClub] = useState<Club | null>(null)
@@ -54,7 +52,7 @@ export default function BookingScreen({ route, navigation }: any) {
   const [openMatch, setOpenMatch] = useState(false)
   const [matchTitle, setMatchTitle] = useState('')
   const [requiredPlayers, setRequiredPlayers] = useState(4)
-  const [matchSkill, setMatchSkill] = useState<(typeof MATCH_SKILLS)[number]['id']>('all')
+  const [matchSkill, setMatchSkill] = useState<(typeof MATCH_SKILLS)[number]>('all')
   const [hostCovers, setHostCovers] = useState(false)
   // Mốc "bây giờ" lấy một lần mỗi lần mở màn hình, đủ để ẩn các giờ đã qua của hôm nay
   const [nowMs] = useState(() => Date.now())
@@ -129,9 +127,9 @@ export default function BookingScreen({ route, navigation }: any) {
     if (!quote || !court) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      Alert.alert('Chưa đăng nhập', 'Vui lòng đăng nhập ở mục Cá Nhân trước khi đặt sân.', [
-        { text: 'Để sau', style: 'cancel' },
-        { text: 'Đăng nhập', onPress: () => navigation.navigate('MainTabs', { screen: 'ProfileTab' }) },
+      Alert.alert(t('booking.loginTitle'), t('booking.loginText'), [
+        { text: t('booking.later'), style: 'cancel' },
+        { text: t('booking.login'), onPress: () => navigation.navigate('MainTabs', { screen: 'ProfileTab' }) },
       ])
       return
     }
@@ -155,7 +153,7 @@ export default function BookingScreen({ route, navigation }: any) {
     setSubmitting(false)
 
     if (!res.ok) {
-      Alert.alert('Không thể đặt sân', res.error)
+      Alert.alert(t('booking.failed'), res.error)
       return
     }
     navigation.replace('BookingPayment', { bookingId: res.data.bookingId })
@@ -171,9 +169,9 @@ export default function BookingScreen({ route, navigation }: any) {
   if (!club || !court) {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Không tìm thấy sân này.</Text>
+        <Text style={styles.muted}>{t('booking.notFound')}</Text>
         <TouchableOpacity style={styles.linkBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.linkText}>Quay lại</Text>
+          <Text style={styles.linkText}>{t('common.back')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -182,11 +180,11 @@ export default function BookingScreen({ route, navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Quay lại">
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel={t('common.back')}>
           <ChevronLeft size={22} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Đặt sân · {club.name}
+          {t('booking.headerTitle', { club: club.name })}
         </Text>
         <View style={{ width: 40 }} />
       </View>
@@ -195,14 +193,14 @@ export default function BookingScreen({ route, navigation }: any) {
         {!acceptsBookings && (
           <View style={styles.notice}>
             <Text style={styles.noticeText}>
-              Cụm sân này chưa nhận đặt sân online. Vui lòng liên hệ trực tiếp với chủ sân.
+              {t('booking.notAccepting')}
             </Text>
           </View>
         )}
 
         {courts.length > 1 && (
           <>
-            <Text style={styles.section}>Chọn sân</Text>
+            <Text style={styles.section}>{t('booking.chooseCourt')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
               {courts.map((c) => (
                 <Chip
@@ -219,12 +217,12 @@ export default function BookingScreen({ route, navigation }: any) {
           </>
         )}
 
-        <Text style={styles.section}>Chọn ngày</Text>
+        <Text style={styles.section}>{t('booking.chooseDay')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
           {days.map((d) => (
             <Chip
               key={d}
-              label={dayChipLabel(d)}
+              label={dayChipLabel(d, lang)}
               active={d === dateKey}
               onPress={() => {
                 setDateKey(d)
@@ -234,14 +232,14 @@ export default function BookingScreen({ route, navigation }: any) {
           ))}
         </ScrollView>
 
-        <Text style={styles.section}>Thời lượng</Text>
+        <Text style={styles.section}>{t('booking.duration')}</Text>
         <View style={styles.chipRowWrap}>
           {DURATION_OPTIONS.map((d) => (
-            <Chip key={d} label={`${d} giờ`} active={d === duration} onPress={() => setDuration(d)} />
+            <Chip key={d} label={t('booking.hours', { count: d })} active={d === duration} onPress={() => setDuration(d)} />
           ))}
         </View>
 
-        <Text style={styles.section}>Giờ bắt đầu</Text>
+        <Text style={styles.section}>{t('booking.startHour')}</Text>
         <View style={styles.chipRowWrap}>
           {hours.map((h) => {
             const booked = isHourBooked(busy, court.id, dateKey, h)
@@ -259,40 +257,40 @@ export default function BookingScreen({ route, navigation }: any) {
             )
           })}
         </View>
-        {hours.length === 0 && <Text style={styles.muted}>Cụm sân chưa cấu hình giờ mở cửa ({openHour}h - {closeHour}h).</Text>}
+        {hours.length === 0 && <Text style={styles.muted}>{t('booking.noHours', { open: openHour, close: closeHour })}</Text>}
 
         <View style={styles.matchBox}>
           <View style={styles.matchHead}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.matchTitle}>Mở kèo ghép</Text>
-              <Text style={styles.matchHint}>Đăng kèo để người khác xin tham gia, chia tiền sân.</Text>
+              <Text style={styles.matchTitle}>{t('booking.openMatch')}</Text>
+              <Text style={styles.matchHint}>{t('booking.openMatchHint')}</Text>
             </View>
             <Switch
               value={openMatch}
               onValueChange={setOpenMatch}
               trackColor={{ true: colors.primary, false: colors.cardBorder }}
-              accessibilityLabel="Mở kèo ghép cùng lúc đặt sân"
+              accessibilityLabel={t('booking.openMatchA11y')}
             />
           </View>
 
           {openMatch && (
             <>
-              <Text style={styles.fieldLabel}>Tên kèo (không bắt buộc)</Text>
+              <Text style={styles.fieldLabel}>{t('booking.matchTitle')}</Text>
               <TextInput
                 style={styles.input}
                 value={matchTitle}
                 onChangeText={setMatchTitle}
                 maxLength={100}
-                placeholder={`Kèo ${court.name} - Giao lưu thể thao`}
+                placeholder={t('booking.matchTitlePlaceholder', { court: court.name })}
                 placeholderTextColor={colors.textMuted}
               />
 
-              <Text style={styles.fieldLabel}>Số người cần có (tính cả bạn)</Text>
+              <Text style={styles.fieldLabel}>{t('booking.players')}</Text>
               <View style={styles.stepper}>
                 <TouchableOpacity
                   style={styles.stepBtn}
                   onPress={() => setRequiredPlayers((n) => Math.max(MIN_PLAYERS, n - 1))}
-                  accessibilityLabel="Giảm số người"
+                  accessibilityLabel={t('booking.fewer')}
                 >
                   <Text style={styles.stepText}>−</Text>
                 </TouchableOpacity>
@@ -300,26 +298,26 @@ export default function BookingScreen({ route, navigation }: any) {
                 <TouchableOpacity
                   style={styles.stepBtn}
                   onPress={() => setRequiredPlayers((n) => Math.min(MAX_PLAYERS, n + 1))}
-                  accessibilityLabel="Tăng số người"
+                  accessibilityLabel={t('booking.more')}
                 >
                   <Text style={styles.stepText}>+</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.fieldLabel}>Trình độ</Text>
+              <Text style={styles.fieldLabel}>{t('booking.skill')}</Text>
               <View style={styles.chipRowWrap}>
                 {MATCH_SKILLS.map((s) => (
-                  <Chip key={s.id} label={s.label} active={matchSkill === s.id} onPress={() => setMatchSkill(s.id)} />
+                  <Chip key={s} label={t(`skills.${s}`)} active={matchSkill === s} onPress={() => setMatchSkill(s)} />
                 ))}
               </View>
 
-              <Text style={styles.fieldLabel}>Chi phí</Text>
+              <Text style={styles.fieldLabel}>{t('booking.cost')}</Text>
               <View style={styles.chipRowWrap}>
-                <Chip label="Chia đều" active={!hostCovers} onPress={() => setHostCovers(false)} />
-                <Chip label="Tôi bao sân" active={hostCovers} onPress={() => setHostCovers(true)} />
+                <Chip label={t('booking.split')} active={!hostCovers} onPress={() => setHostCovers(false)} />
+                <Chip label={t('booking.hostCovers')} active={hostCovers} onPress={() => setHostCovers(true)} />
               </View>
               {quote && !hostCovers && (
-                <Text style={styles.matchHint}>Mỗi người khoảng {formatVnd(Math.round(quote.totalPrice / requiredPlayers))}.</Text>
+                <Text style={styles.matchHint}>{t('booking.perPerson', { price: formatVnd(Math.round(quote.totalPrice / requiredPlayers)) })}</Text>
               )}
             </>
           )}
@@ -327,7 +325,7 @@ export default function BookingScreen({ route, navigation }: any) {
 
         <View style={styles.policy}>
           <ShieldCheck size={14} color={colors.primary} />
-          <Text style={styles.policyText}>{describePolicy(club.free_cancel_hours ?? 24)}</Text>
+          <Text style={styles.policyText}>{describePolicy(club.free_cancel_hours ?? 24, lang)}</Text>
         </View>
       </ScrollView>
 
@@ -338,16 +336,16 @@ export default function BookingScreen({ route, navigation }: any) {
               {court.name} · {formatTime(quote.start.toISOString())} - {formatTime(quote.end.toISOString())}
             </Text>
             <View style={styles.priceRow}>
-              <Text style={styles.priceLabel}>Tổng tiền sân</Text>
+              <Text style={styles.priceLabel}>{t('booking.total')}</Text>
               <Text style={styles.priceValue}>{formatVnd(quote.totalPrice)}</Text>
             </View>
             <View style={styles.priceRow}>
-              <Text style={styles.depositLabel}>Tiền cọc giữ chỗ</Text>
+              <Text style={styles.depositLabel}>{t('booking.deposit')}</Text>
               <Text style={styles.depositValue}>{formatVnd(quote.depositAmount)}</Text>
             </View>
           </View>
         ) : (
-          <Text style={styles.hint}>Chọn ngày, thời lượng và giờ bắt đầu để xem giá.</Text>
+          <Text style={styles.hint}>{t('booking.pickHint')}</Text>
         )}
 
         <TouchableOpacity
@@ -357,7 +355,7 @@ export default function BookingScreen({ route, navigation }: any) {
           onPress={handleBook}
           accessibilityRole="button"
         >
-          {submitting ? <ActivityIndicator color={colors.white} /> : <Text style={styles.bookBtnText}>Giữ chỗ & đặt cọc</Text>}
+          {submitting ? <ActivityIndicator color={colors.white} /> : <Text style={styles.bookBtnText}>{t('booking.submit')}</Text>}
         </TouchableOpacity>
       </View>
     </View>

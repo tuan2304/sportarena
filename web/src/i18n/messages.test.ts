@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createTranslator } from 'next-intl'
 import vi from '../../messages/vi.json'
 import en from '../../messages/en.json'
 
@@ -41,6 +42,19 @@ describe('messages vi/en', () => {
   it('bản tiếng Anh không còn chữ tiếng Việt', () => {
     for (const [key, text] of Object.entries(enFlat)) {
       expect(VIETNAMESE_LETTERS.test(text), `${key}: ${text}`).toBe(false)
+    }
+  })
+
+  it('mọi câu định dạng được với giá trị mẫu (không lỗi ICU, thẻ <b>/<strong>... đều được xử lý)', () => {
+    for (const [locale, messages] of [['vi', vi], ['en', en]] as const) {
+      const t = createTranslator({ locale, messages: messages as never, onError: (e) => { throw e } })
+      const flat = locale === 'vi' ? viFlat : enFlat
+      for (const [key, text] of Object.entries(flat)) {
+        const values: Record<string, unknown> = {}
+        for (const name of placeholders(text)) values[name] = '1'
+        for (const tag of text.matchAll(/<(\w+)>/g)) values[tag[1]] = (chunks: unknown) => String(chunks)
+        expect(() => (t as unknown as { rich: (k: string, v: Record<string, unknown>) => unknown }).rich(key, values), `${locale}: ${key}`).not.toThrow()
+      }
     }
   })
 })

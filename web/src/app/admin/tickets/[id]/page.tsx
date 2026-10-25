@@ -1,15 +1,22 @@
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TicketThread } from '@/components/support/ticket-thread'
-import { categoryLabel } from '@/lib/support'
+import { isTicketCategory } from '@/lib/support'
 import { formatDate } from '@/lib/format'
 
-export const metadata = { title: 'Chi tiết yêu cầu hỗ trợ' }
+export async function generateMetadata() {
+  const t = await getTranslations('admin.tickets')
+  return { title: t('detailMetaTitle') }
+}
 
 export default async function AdminTicketPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getTranslations('admin.tickets')
+  const th = await getTranslations('header')
+  const ts = await getTranslations('support')
   const { id } = await params
   const admin = createAdminClient()
 
@@ -29,17 +36,17 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6 max-w-3xl">
       <Link href="/admin/tickets" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="w-4 h-4" aria-hidden /> Danh sách yêu cầu
+        <ArrowLeft className="w-4 h-4" aria-hidden /> {t('back')}
       </Link>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{ticket.subject}</CardTitle>
           <div className="text-xs text-muted-foreground flex flex-wrap gap-x-2">
-            <span>{ticket.user?.full_name || 'Người dùng'} ({ticket.user?.role === 'owner' ? 'Chủ sân' : ticket.user?.role === 'admin' ? 'Quản trị' : 'Người chơi'})</span>
-            <span>· {categoryLabel(ticket.category)}</span>
-            {ticket.club?.name && <span>· Cụm sân: {ticket.club.name}</span>}
-            <span>· Tạo ngày {formatDate(ticket.created_at)}</span>
+            <span>{ticket.user?.full_name || t('userFallback')} ({ticket.user?.role === 'owner' ? th('roleOwner') : ticket.user?.role === 'admin' ? th('roleAdmin') : th('rolePlayer')})</span>
+            <span>· {ts(`categories.${isTicketCategory(ticket.category) ? ticket.category : 'other'}`)}</span>
+            {ticket.club?.name && <span>· {t('club', { name: ticket.club.name })}</span>}
+            <span>· {t('created', { date: formatDate(ticket.created_at) })}</span>
           </div>
         </CardHeader>
         <CardContent>

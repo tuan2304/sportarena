@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -14,6 +15,7 @@ import { ANNOUNCEMENT_AUDIENCES, ANNOUNCEMENT_KINDS } from '@/lib/support'
 const EMPTY = { title: '', body: '', kind: 'update', audience: 'all', link: '' }
 
 export function AnnouncementForm() {
+  const t = useTranslations('admin.announce')
   const router = useRouter()
   const confirm = useConfirm()
   const [pending, startTransition] = useTransition()
@@ -24,12 +26,12 @@ export function AnnouncementForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    const audience = ANNOUNCEMENT_AUDIENCES.find((a) => a.id === form.audience)?.label ?? ''
+    const audience = ANNOUNCEMENT_AUDIENCES.some((a) => a.id === form.audience) ? t(`audiences.${form.audience as 'all' | 'owners' | 'players'}`) : ''
     // Thông báo đã gửi không thu hồi được nên luôn hỏi lại
     const ok = await confirm({
-      title: 'Gửi thông báo này?',
-      description: `Đối tượng: ${audience}. Mỗi người sẽ nhận một thông báo trong chuông và không thể thu hồi.`,
-      confirmText: 'Gửi ngay',
+      title: t('form.confirmTitle'),
+      description: t('form.confirmText', { audience }),
+      confirmText: t('form.confirmButton'),
     })
     if (!ok) return
     startTransition(async () => {
@@ -38,7 +40,7 @@ export function AnnouncementForm() {
         toast.error(res.error)
         return
       }
-      toast.success(`Đã gửi tới ${res.sent ?? 0} người dùng`)
+      toast.success(t('form.sent', { count: res.sent ?? 0 }))
       setForm(EMPTY)
       router.refresh()
     })
@@ -48,30 +50,30 @@ export function AnnouncementForm() {
     <form onSubmit={submit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="a-kind" className="text-xs font-semibold">Loại thông báo</Label>
+          <Label htmlFor="a-kind" className="text-xs font-semibold">{t('form.kind')}</Label>
           <select id="a-kind" value={form.kind} onChange={set('kind')} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
             {ANNOUNCEMENT_KINDS.map((k) => (
-              <option key={k.id} value={k.id}>{k.label}</option>
+              <option key={k.id} value={k.id}>{t(`kinds.${k.id}`)}</option>
             ))}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="a-audience" className="text-xs font-semibold">Gửi tới</Label>
+          <Label htmlFor="a-audience" className="text-xs font-semibold">{t('form.to')}</Label>
           <select id="a-audience" value={form.audience} onChange={set('audience')} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
             {ANNOUNCEMENT_AUDIENCES.map((a) => (
-              <option key={a.id} value={a.id}>{a.label}</option>
+              <option key={a.id} value={a.id}>{t(`audiences.${a.id}`)}</option>
             ))}
           </select>
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="a-title" className="text-xs font-semibold">Tiêu đề</Label>
-        <Input id="a-title" value={form.title} onChange={set('title')} maxLength={120} required placeholder="Ví dụ: Ra mắt tính năng đặt sân theo tuần" className="h-10" />
+        <Label htmlFor="a-title" className="text-xs font-semibold">{t('form.subject')}</Label>
+        <Input id="a-title" value={form.title} onChange={set('title')} maxLength={120} required placeholder={t('form.subjectPlaceholder')} className="h-10" />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="a-body" className="text-xs font-semibold">Nội dung</Label>
+        <Label htmlFor="a-body" className="text-xs font-semibold">{t('form.body')}</Label>
         <textarea
           id="a-body"
           value={form.body}
@@ -85,14 +87,14 @@ export function AnnouncementForm() {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="a-link" className="text-xs font-semibold">Đường dẫn khi bấm vào thông báo (không bắt buộc)</Label>
+        <Label htmlFor="a-link" className="text-xs font-semibold">{t('form.link')}</Label>
         <Input id="a-link" value={form.link} onChange={set('link')} maxLength={200} placeholder="/clubs" className="h-10" />
-        <p className="text-xs text-muted-foreground">Chỉ nhận địa chỉ trong web, bắt đầu bằng dấu /.</p>
+        <p className="text-xs text-muted-foreground">{t('form.linkHint')}</p>
       </div>
 
       <Button type="submit" disabled={pending} className="cursor-pointer bg-emerald-700 text-white hover:bg-emerald-800">
         {pending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Megaphone className="mr-1.5 h-4 w-4" aria-hidden />}
-        Gửi thông báo
+        {t('form.submit')}
       </Button>
     </form>
   )

@@ -1,3 +1,5 @@
+import { getTranslations } from 'next-intl/server'
+import { getLabels } from '@/i18n/labels-server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +14,8 @@ import { Building2, MapPin, Clock, CircleDot, ShieldCheck } from 'lucide-react'
 
 import { formatNumber } from '@/lib/format'
 export default async function OwnerClubsPage() {
+  const t = await getTranslations('owner.clubs')
+  const labels = await getLabels()
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -32,10 +36,10 @@ export default async function OwnerClubsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Quản Lý Cụm Sân & Sân Con
+            {t('title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Thiết lập thông tin cụm sân thể thao và cấu hình từng sân con riêng lẻ.
+            {t('subtitle')}
           </p>
         </div>
         <ClubFormModal />
@@ -46,9 +50,9 @@ export default async function OwnerClubsPage() {
         <Card className="border-dashed border-2 border-border/80">
           <CardContent className="py-16 text-center space-y-3">
             <Building2 className="w-12 h-12 mx-auto text-muted-foreground/40" />
-            <h3 className="text-lg font-bold text-foreground">Chưa có Cụm Sân nào</h3>
+            <h3 className="text-lg font-bold text-foreground">{t('emptyTitle')}</h3>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Bạn chưa tạo cụm sân nào. Hãy tạo cụm sân đầu tiên để bắt đầu thêm các sân con và nhận lịch đặt sân từ khách hàng.
+              {t('emptyText')}
             </p>
             <div className="pt-2">
               <ClubFormModal />
@@ -71,7 +75,7 @@ export default async function OwnerClubsPage() {
                         </CardTitle>
                         <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-xs">
                           <ShieldCheck className="w-3 h-3 mr-1" />
-                          Đang hoạt động
+                          {t('active')}
                         </Badge>
                       </div>
                       <CardDescription className="flex items-center gap-1.5 mt-1 text-xs">
@@ -115,13 +119,13 @@ export default async function OwnerClubsPage() {
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      <span>Danh sách sân con ({courtList.length} sân)</span>
+                      <span>{t('courtList', { count: courtList.length })}</span>
                     </div>
 
                     {courtList.length === 0 ? (
                       <div className="py-6 text-center border border-dashed border-border rounded-lg bg-muted/10">
                         <p className="text-xs text-muted-foreground mb-2">
-                          Cụm sân này chưa có sân con nào. Hãy thêm ít nhất một sân con!
+                          {t('noCourts')}
                         </p>
                         <CourtFormModal clubId={club.id} clubName={club.name} />
                       </div>
@@ -150,22 +154,22 @@ export default async function OwnerClubsPage() {
                                   <h4 className="font-bold text-sm text-foreground">{court.name}</h4>
                                   {!court.is_active && (
                                     <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 py-0">
-                                      Tạm ngưng
+                                      {t('suspended')}
                                     </Badge>
                                   )}
                                 </div>
                                 <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 capitalize">
                                   <CircleDot className="w-2.5 h-2.5 text-emerald-700 dark:text-emerald-400" />
-                                  <span>{court.sport_type} • {court.surface_type || 'Tiêu chuẩn'}</span>
+                                  <span>{labels.sport(court.sport_type)} • {court.surface_type || t('standardSurface')}</span>
                                 </div>
                               </div>
                               <Badge variant="secondary" className="text-xs font-semibold">
-                                Cọc {court.deposit_percentage}%
+                                {t('depositPct', { percent: court.deposit_percentage })}
                               </Badge>
                             </div>
 
                             <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">Giá cơ bản:</span>
+                              <span className="text-muted-foreground">{t('basePrice')}</span>
                               <span className="font-bold text-emerald-700 dark:text-emerald-400">
                                 {formatNumber(court.base_price_per_hour)} đ/h
                               </span>

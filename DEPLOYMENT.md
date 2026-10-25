@@ -264,3 +264,9 @@ Header `Content-Security-Policy` do [src/proxy.ts](web/src/proxy.ts) tạo cho t
 ### Kiểm thử đầu-cuối
 `cd web && npm run e2e:install` (một lần) rồi `npm run e2e`. Bộ test tự build, chạy bản production với Supabase giả nên không cần `.env.local` và không chạm database thật. CI chạy cùng lệnh này ở job `e2e`.
 
+## 🌐 Việt - Anh
+
+1. `supabase db push` để áp `20261103000000_notification_locales` (thêm cột bản dịch của thông báo, cột `profiles.locale` và hàm `set_my_locale`). Web vẫn chạy nếu chưa áp, nhưng khi đó không tạo được thông báo mới vì câu lệnh ghi thêm cột chưa có: **hãy áp migration trước khi deploy bản này**.
+2. App mobile cần cài lại phụ thuộc (`npm install` trong `mobile/`, có thêm `expo-localization`); bản dev build/APK cũ phải build lại.
+3. Thêm câu thông báo hoặc lỗi mới: viết tiếng Việt như cũ, rồi thêm bản tiếng Anh vào [web/src/i18n/server-messages.ts](web/src/i18n/server-messages.ts); test sẽ báo nếu quên.
+

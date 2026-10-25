@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +25,7 @@ interface ClubLocationButtonProps {
 
 /** Nút + hộp thoại để chủ sân ghim (hoặc sửa) vị trí cụm sân trên Google Maps. */
 export function ClubLocationButton({ clubId, clubName, address, initial }: ClubLocationButtonProps) {
+  const t = useTranslations('owner.location')
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState<LatLng | null>(initial)
   const [saved, setSaved] = useState<LatLng | null>(initial)
@@ -53,15 +55,15 @@ export function ClubLocationButton({ clubId, clubName, address, initial }: ClubL
         className={`cursor-pointer ${saved ? '' : 'border-amber-500/50 text-amber-800 dark:text-amber-300'}`}
       >
         <MapPin className="w-3.5 h-3.5 mr-1" aria-hidden />
-        {saved ? 'Vị trí bản đồ' : 'Ghim vị trí'}
+        {saved ? t('saved') : t('pin')}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Vị trí bản đồ của {clubName}</DialogTitle>
+            <DialogTitle className="text-lg font-bold">{t('title', { name: clubName })}</DialogTitle>
             <DialogDescription className="text-xs">
-              Khách sẽ thấy bản đồ này ở trang cụm sân và dùng nút &quot;Chỉ đường&quot; để tới sân.
+              {t('hint')}
             </DialogDescription>
           </DialogHeader>
 
@@ -75,11 +77,11 @@ export function ClubLocationButton({ clubId, clubName, address, initial }: ClubL
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="cursor-pointer">
-              Hủy
+              {t('cancel')}
             </Button>
             <Button type="button" onClick={save} disabled={pending} className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
               {pending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Lưu vị trí
+              {t('save')}
             </Button>
           </DialogFooter>
         </DialogContent>

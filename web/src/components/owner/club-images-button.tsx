@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -18,6 +19,7 @@ interface ClubImagesButtonProps {
 
 /** Nút + hộp thoại để chủ sân tải, gỡ và sắp xếp ảnh của cụm sân. Ảnh đầu tiên là ảnh bìa ở danh sách sân. */
 export function ClubImagesButton({ clubId, clubName, initial }: ClubImagesButtonProps) {
+  const t = useTranslations('owner.images')
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(initial)
@@ -44,7 +46,7 @@ export function ClubImagesButton({ clubId, clubName, initial }: ClubImagesButton
         return
       }
       setSaved(res.images ?? images)
-      toast.success('Đã lưu ảnh cụm sân')
+      toast.success(t('saved'))
       setOpen(false)
       router.refresh()
     })
@@ -57,18 +59,18 @@ export function ClubImagesButton({ clubId, clubName, initial }: ClubImagesButton
         variant="outline"
         onClick={() => setOpen(true)}
         className="h-8 text-xs cursor-pointer"
-        title="Quản lý ảnh cụm sân"
+        title={t('manage')}
       >
         <ImageIcon className="w-3.5 h-3.5 mr-1" aria-hidden />
-        Ảnh sân ({saved.length})
+        {t('button', { count: saved.length })}
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Ảnh của {clubName}</DialogTitle>
+            <DialogTitle>{t('title', { name: clubName })}</DialogTitle>
             <DialogDescription>
-              Ảnh đầu tiên là ảnh bìa hiển thị ở danh sách sân. Ảnh chỉ được lưu khi bạn bấm Lưu.
+              {t('hint')}
             </DialogDescription>
           </DialogHeader>
 
@@ -91,11 +93,11 @@ export function ClubImagesButton({ clubId, clubName, initial }: ClubImagesButton
 
           <DialogFooter>
             <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={pending} className="cursor-pointer">
-              Đóng
+              {t('close')}
             </Button>
             <Button onClick={save} disabled={pending || !dirty} className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
               {pending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
-              Lưu ảnh
+              {t('save')}
             </Button>
           </DialogFooter>
         </DialogContent>

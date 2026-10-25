@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toggleCourtStatus, deleteCourt } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ interface CourtItemActionsProps {
 }
 
 export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
+  const t = useTranslations('owner.courtActions')
   const [loading, setLoading] = useState(false)
   const askConfirm = useConfirm()
 
@@ -21,14 +23,14 @@ export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
     const res = await toggleCourtStatus(courtId, !isActive)
     setLoading(false)
     if (res?.error) toast.error(res.error)
-    else toast.success(isActive ? 'Đã tạm ngưng sân' : 'Đã kích hoạt sân')
+    else toast.success(isActive ? t('suspended') : t('activated'))
   }
 
   async function handleDelete() {
     const ok = await askConfirm({
-      title: 'Xóa sân con này?',
-      description: 'Chỉ xóa được sân chưa có đơn đặt nào. Nếu đã có, hãy chọn Tạm ngưng.',
-      confirmText: 'Xóa sân',
+      title: t('deleteTitle'),
+      description: t('deleteText'),
+      confirmText: t('deleteConfirm'),
       destructive: true,
     })
     if (!ok) return
@@ -36,7 +38,7 @@ export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
     const res = await deleteCourt(courtId)
     setLoading(false)
     if (res?.error) toast.error(res.error)
-    else toast.success('Đã xóa sân con')
+    else toast.success(t('deleted'))
   }
 
   return (
@@ -56,7 +58,7 @@ export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
             }`}
           >
             <Power className="w-3 h-3 mr-1" />
-            {isActive ? 'Tạm ngưng' : 'Kích hoạt'}
+            {isActive ? t('suspend') : t('activate')}
           </Button>
 
           <Button

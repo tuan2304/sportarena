@@ -248,4 +248,22 @@
     - `lib/cancellation.ts` (dùng chung với mobile) thêm tham số `lang` mặc định `vi`; `formatShortDate`/`formatLongDate` nhận `lang`.
     - Chưa dịch: khu vực chủ sân và quản trị, nội dung thông báo lưu trong database (chuông), app mobile. README có bản tiếng Anh [README.en.md](README.en.md).
     - Playwright thêm 7 ca (`e2e/i18n.spec.ts`); trình duyệt giả lập đặt `locale: 'vi-VN'` để các ca cũ vẫn chạy bằng tiếng Việt.
+- **2026-10-25 (Dịch khu chủ sân và quản trị):**
+    - Dịch toàn bộ `/owner` (tổng quan, cụm sân và sân con, lịch đặt, bảng giá, nhận thanh toán, hoàn cọc, gói dịch vụ, chính sách hủy, chọn vị trí) và `/admin` (thống kê, hỗ trợ, thông báo, gói dịch vụ). Khóa dịch ở các nhóm `owner*`, `admin`, `locationPicker`; văn bản có thẻ in đậm/liên kết dùng `t.rich`.
+    - Lỗi trả về từ action của chủ sân/quản trị cũng đi qua `tr()` và bảng [i18n/server-messages.ts](web/src/i18n/server-messages.ts); test quét mã nguồn mở rộng sang các file này (và cả khóa `message:`).
+    - Còn tiếng Việt: nội dung thông báo lưu trong database và app mobile.
+- **2026-10-25 (Thông báo và app mobile song ngữ):**
+    - Migration `20261103000000_notification_locales.sql`: `notifications.title_en/message_en`, `profiles.locale` (không cấp quyền đọc/ghi trực tiếp), hàm `set_my_locale`. 201/201 ca DB.
+    - `notifyUser`/`notifyAdmins` tự điền bản tiếng Anh từ bảng dịch ở `server-messages.ts` (không phải sửa từng nơi gọi); chuông web và mobile hiện theo ngôn ngữ đang chọn, thông báo đẩy gửi theo `profiles.locale` của người nhận. Test quét mọi lời gọi thông báo để bắt câu chưa dịch.
+    - Mobile: [src/i18n](mobile/src/i18n) (vi.json/en.json, `useI18n()`, `translate()` cho code ngoài component), chọn ngôn ngữ ở tab Cá Nhân, mặc định theo điện thoại (`expo-localization`). Kiểu `MessageKey` làm gõ sai khóa hoặc thiếu khóa tiếng Anh báo lỗi lúc typecheck. App gửi `Accept-Language`, API `/api/mobile/*` dịch lỗi theo header đó.
+- **2026-10-25 (Playwright có đăng nhập):** Supabase giả ([e2e/mock-supabase.mjs](web/e2e/mock-supabase.mjs)) nay cấp phiên cho 3 tài khoản mẫu (người chơi, chủ sân, quản trị; JWT giả, `/auth/v1/user` xác thực) và trả dữ liệu mẫu theo vai trò. [e2e/auth.spec.ts](web/e2e/auth.spec.ts): đăng nhập, lịch đặt, chuông thông báo, hồ sơ (cả hai ngôn ngữ), phân quyền, và mở từng trang `/owner/*`, `/admin/*` bằng tiếng Anh (bắt lỗi trang, kiểm tra tiêu đề và thanh bên đã dịch). Đã chụp màn hình kiểm tra bố cục tiếng Anh của cổng chủ sân và trang quản trị: không vỡ khung.
+- **2026-10-25 (App mobile cho chủ sân):**
+    - Tách logic đổi trạng thái đơn của chủ sân thành [lib/owner-booking.ts](web/src/lib/owner-booking.ts) (dùng chung Server Action `updateBookingStatus` và API mới), có test bảng chuyển trạng thái. API: `POST /api/mobile/owner/bookings/[id]/status` (`confirmed`/`cancelled`/`completed`) và `.../refunded`; xác thực Bearer, kiểm tra đúng chủ cụm sân, hoàn cọc theo quy tắc cũ, lỗi dịch theo `Accept-Language`.
+    - Mobile: tab **Chủ Sân** (chỉ hiện với vai trò owner/admin, hook `useRole`) gồm 3 mục: chờ xác nhận cọc (thấy khách đã báo chuyển khoản), cần hoàn cọc, lịch sắp tới; nút xác nhận, từ chối/hủy (cảnh báo số tiền phải hoàn), đã chơi xong, đã hoàn cọc, gọi khách. Đọc trực tiếp từ Supabase (RLS cho chủ sân xem đơn của mình), ghi qua API. Thông báo đẩy `/owner/schedule`, `/owner/refunds` mở tab này.
+    - Playwright: 4 ca API chủ sân (Bearer lấy từ Supabase giả).
+    - Chưa kiểm tra trên thiết bị: chỉ typecheck mobile.
+- **2026-10-25 (Nút Duyệt / Từ chối trên thông báo đẩy):**
+    - Tách logic duyệt người xin vào kèo thành [lib/match-members.ts](web/src/lib/match-members.ts) (dùng chung Server Action và API mới `POST /api/mobile/matches/participants/[id]/respond`, chỉ chủ kèo gọi được). `joinMatch` gắn `categoryId: 'join_request'` và `participantId` vào thông báo đẩy; `PushPayload` có thêm `categoryId`/`data` (lọc: categoryId chỉ chữ thường và `_`, data là chuỗi ngắn, không ghi đè `link`).
+    - Mobile: `registerNotificationCategories()` đăng ký nhóm nút theo ngôn ngữ hiện tại, `handleNotificationResponse()` gọi API khi bấm nút rồi mở chi tiết kèo, mỗi phản hồi chỉ xử lý một lần. Nút mở app (không chạy nền) để chắc chắn chạy được cả khi app đã bị tắt; chạy nền thật cần `expo-task-manager`.
+    - Chưa thử trên thiết bị thật: cần dev build có EAS (xem DEPLOYMENT.md).
 

@@ -5,6 +5,8 @@ import { EN_EXACT, EN_PATTERNS, translateServerMessage } from './server-messages
 
 const SRC = join(process.cwd(), 'src')
 const VIETNAMESE = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i
+// "đ" là ký hiệu đồng, được phép xuất hiện trong bản tiếng Anh
+const VIETNAMESE_IN_ENGLISH = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹ]/i
 
 /** Các file có câu lỗi trả về cho người chơi (khu vực chủ sân/quản trị vẫn dùng tiếng Việt nên không nằm ở đây) */
 const FILES = [
@@ -18,6 +20,26 @@ const FILES = [
   'app/actions/profile.ts',
   'app/actions/reviews.ts',
   'app/actions/support.ts',
+  'app/actions/owner.ts',
+  'app/actions/payment-settings.ts',
+  'app/actions/billing.ts',
+  'app/actions/admin.ts',
+  'app/actions/bank-account.ts',
+  'app/actions/announcements.ts',
+  'lib/pricing-rule.ts',
+  'lib/club-limits.ts',
+  'lib/deletion-guards.ts',
+  'lib/vietqr.ts',
+  'lib/mobile-api.ts',
+  'lib/owner-booking.ts',
+  'lib/match-members.ts',
+  'app/api/mobile/matches/participants/[id]/respond/route.ts',
+  'app/api/mobile/owner/bookings/[id]/status/route.ts',
+  'app/api/mobile/owner/bookings/[id]/refunded/route.ts',
+  'lib/mobile-auth.ts',
+  'app/api/mobile/bookings/route.ts',
+  'app/api/mobile/bookings/[id]/cancel/route.ts',
+  'app/api/mobile/bookings/[id]/claim/route.ts',
   'lib/auth-guards.ts',
   'lib/booking-service.ts',
   'lib/booking-cancel.ts',
@@ -67,7 +89,56 @@ describe('bản dịch tiếng Anh cho lỗi do server trả về', () => {
   })
 
   it('bản dịch không bỏ sót ký tự tiếng Việt', () => {
-    for (const [vi, en] of Object.entries(EN_EXACT)) expect(VIETNAMESE.test(en), `${vi} -> ${en}`).toBe(false)
-    for (const [, en] of EN_PATTERNS) expect(VIETNAMESE.test(en), en).toBe(false)
+    for (const [vi, en] of Object.entries(EN_EXACT)) expect(VIETNAMESE_IN_ENGLISH.test(en), `${vi} -> ${en}`).toBe(false)
+    for (const [, en] of EN_PATTERNS) expect(VIETNAMESE_IN_ENGLISH.test(en), en).toBe(false)
   })
 })
+
+/** Mọi lời gọi notifyUser/notifyAdmins({...}) trong code phải có bản dịch tiếng Anh cho tiêu đề và nội dung. */
+describe('bản dịch thông báo trong chuông', () => {
+  const NOTIFY_FILES = [
+    'app/actions/admin.ts',
+    'app/actions/matches.ts',
+    'app/actions/owner.ts',
+    'app/actions/support.ts',
+    'lib/booking-cancel.ts',
+    'lib/manual-payment.ts',
+    'lib/payments.ts',
+    'lib/subscriptions.ts',
+  ]
+
+  function callBlocks(source: string): string[] {
+    const blocks: string[] = []
+    for (const m of source.matchAll(/notify(?:User|Admins)\(\{/g)) {
+      let depth = 1
+      let i = (m.index ?? 0) + m[0].length
+      const start = i
+      while (depth > 0 && i < source.length) {
+        if (source[i] === '{') depth++
+        else if (source[i] === '}') depth--
+        i++
+      }
+      blocks.push(source.slice(start, i - 1))
+    }
+    return blocks
+  }
+
+  it('mọi câu thông báo tiếng Việt đều có bản dịch', () => {
+    const missing: string[] = []
+    let seen = 0
+    for (const file of NOTIFY_FILES) {
+      const source = readFileSync(join(SRC, file), 'utf-8')
+      for (const block of callBlocks(source)) {
+        const flat = block.replace(/\$\{[^}]*\}/g, '7')
+        for (const m of flat.matchAll(/(['"`])((?:\\.|(?!\1).)*)\1/g)) {
+          if (!VIETNAMESE.test(m[2])) continue
+          seen++
+          if (translateServerMessage(m[2], 'en') === m[2]) missing.push(`${file}: ${m[2]}`)
+        }
+      }
+    }
+    expect(seen).toBeGreaterThan(20)
+    expect(missing, 'Thêm bản dịch thông báo vào src/i18n/server-messages.ts').toEqual([])
+  })
+})
+

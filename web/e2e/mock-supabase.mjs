@@ -1,12 +1,11 @@
-// Supabase giả cho kiểm thử đầu-cuối: trả dữ liệu mẫu cho các bảng công khai và từ chối mọi đăng nhập.
+// Supabase giả cho kiểm thử đầu-cuối: trả dữ liệu mẫu cho các bảng và cho phép đăng nhập bằng 3 tài khoản giả
+// (người chơi, chủ sân, quản trị). Không kiểm tra mật khẩu và không áp RLS: chỉ đủ để kiểm tra giao diện và luồng đăng nhập.
 // Chạy bằng Node thuần, không cần Docker hay tài khoản Supabase thật nên chạy được trên máy dev lẫn CI.
 // Server của Next gọi vào đây (SSR), vì vậy Playwright không chặn được các lời gọi này; phải là một server thật.
 import { createServer } from 'node:http'
-import { CLUB_ID } from './fixtures.mjs'
+import { CLUB_ID, COURT_ID, USERS } from './fixtures.mjs'
 
 const PORT = Number(process.env.MOCK_SUPABASE_PORT ?? 54399)
-
-const COURT_ID = '22222222-2222-4222-8222-222222222222'
 
 const court = {
   id: COURT_ID,
@@ -22,7 +21,7 @@ const court = {
 
 const club = {
   id: CLUB_ID,
-  owner_id: '33333333-3333-4333-8333-333333333333',
+  owner_id: USERS.owner.id,
   name: 'Cụm sân Kiểm Thử',
   description: 'Cụm sân dùng cho kiểm thử đầu-cuối.',
   address: '1 Đường Thử Nghiệm',
@@ -45,30 +44,180 @@ const club = {
   courts: [court],
 }
 
-const tables = { clubs: [club], courts: [court] }
+const inDays = (d, hour) => {
+  const t = new Date(Date.now() + d * 86_400_000)
+  t.setUTCHours(hour, 0, 0, 0)
+  return t.toISOString()
+}
+
+// Đơn đặt sân mẫu của người chơi, kèm các quan hệ mà các trang đọc (mock không áp select nên trả sẵn bản đầy đủ)
+const booking = {
+  id: '55555555-5555-4555-8555-555555555551',
+  court_id: COURT_ID,
+  user_id: USERS.player.id,
+  start_time: inDays(2, 11),
+  end_time: inDays(2, 12),
+  total_price: 120000,
+  deposit_amount: 36000,
+  status: 'confirmed',
+  is_open_match: false,
+  refund_status: 'none',
+  refund_amount: 0,
+  expires_at: inDays(2, 10),
+  created_at: inDays(-1, 3),
+  court: { ...court, club: { id: CLUB_ID, name: club.name, address: club.address, free_cancel_hours: 24, owner_id: USERS.owner.id } },
+  profile: { full_name: USERS.player.name },
+  matches: null,
+  payments: [],
+}
+
+const notifications = [
+  {
+    id: '66666666-6666-4666-8666-666666666661',
+    user_id: USERS.player.id,
+    title: 'Thanh toán cọc thành công! 🎉',
+    message: 'Bạn đã cọc 36.000 đ cho sân Sân số 1 (Cụm sân Kiểm Thử). Sân đã được khóa lịch cho bạn!',
+    title_en: 'Deposit paid! 🎉',
+    message_en: 'You paid a deposit of 36.000 đ for Sân số 1 (Cụm sân Kiểm Thử). The court is now reserved for you!',
+    type: 'payment',
+    link: '/my-bookings',
+    is_read: false,
+    created_at: inDays(0, 1),
+  },
+]
+
+const platformStats = {
+  users: { total: 120, new: 12, owners: 15, players: 105 },
+  clubs: { total: 14, new: 2, pro: 3, own_payos: 9 },
+  courts_active: 40,
+  bookings: { created: 80, confirmed: 60, cancelled: 10, pending: 10, gmv: 9600000 },
+  deposits: { collected: 2880000 },
+  subscriptions: { revenue: 597000, count: 3 },
+  matches: { created: 25, open: 7 },
+  open_tickets: 2,
+  daily: [{ day: '2026-10-24', bookings: 5, deposits: 180000 }],
+  top_clubs: [{ id: CLUB_ID, name: club.name, bookings: 12, gmv: 1440000 }],
+}
+
+const tables = {
+  clubs: [club],
+  courts: [court],
+  bookings: [booking],
+  notifications,
+  profiles: Object.values(USERS).map((u) => ({
+    id: u.id,
+    full_name: u.name,
+    role: u.role,
+    avatar_url: null,
+    skill_level: 'intermediate',
+    rating: 4.5,
+    phone_number: null,
+  })),
+}
+
+const rpcs = {
+  get_my_profile: (user) => (user ? [{ ...tables.profiles.find((p) => p.id === user.id), phone_number: '0912345678' }] : []),
+  player_public_stats: () => [{ matches_created: 2, matches_joined: 3, bookings_played: 5 }],
+  platform_stats: () => platformStats,
+  get_busy_slots: () => [],
+  get_booking_contacts: () => [],
+}
 
 function send(res, status, body, extra = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json', ...extra })
   res.end(JSON.stringify(body))
 }
 
-const server = createServer((req, res) => {
+const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url')
+
+/** JWT HS256 giả (chữ ký không kiểm tra): supabase-js với khóa đối xứng sẽ hỏi lại /auth/v1/user để xác thực. */
+function makeToken(user) {
+  const now = Math.floor(Date.now() / 1000)
+  const payload = { sub: user.id, email: user.email, role: 'authenticated', aud: 'authenticated', session_id: user.id, iat: now, exp: now + 3600 }
+  return `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64(payload)}.mock-signature`
+}
+
+function authUser(user) {
+  return {
+    id: user.id,
+    aud: 'authenticated',
+    role: 'authenticated',
+    email: user.email,
+    email_confirmed_at: '2026-01-01T00:00:00Z',
+    app_metadata: { provider: 'email' },
+    user_metadata: { full_name: user.name, role: user.role },
+    created_at: '2026-01-01T00:00:00Z',
+  }
+}
+
+function userFromToken(req) {
+  const header = String(req.headers.authorization ?? '')
+  const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+  const part = token.split('.')[1]
+  if (!part) return null
+  try {
+    const { sub } = JSON.parse(Buffer.from(part, 'base64url').toString())
+    return Object.values(USERS).find((u) => u.id === sub) ?? null
+  } catch {
+    return null
+  }
+}
+
+async function readBody(req) {
+  const chunks = []
+  for await (const c of req) chunks.push(c)
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString() || '{}')
+  } catch {
+    return {}
+  }
+}
+
+const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
   const path = url.pathname
 
   if (path === '/__health') return send(res, 200, { ok: true })
 
-  // Đăng nhập: luôn từ chối, đủ để kiểm tra luồng lỗi mà không cần tài khoản thật
-  if (path.startsWith('/auth/v1/token')) return send(res, 400, { error: 'invalid_grant', error_description: 'Invalid login credentials' })
+  // Đăng nhập: nhận email của 3 tài khoản giả, từ chối còn lại
+  if (path.startsWith('/auth/v1/token')) {
+    const { email } = await readBody(req)
+    const user = Object.values(USERS).find((u) => u.email === email)
+    if (!user) return send(res, 400, { error: 'invalid_grant', error_description: 'Invalid login credentials' })
+    const access = makeToken(user)
+    return send(res, 200, {
+      access_token: access,
+      token_type: 'bearer',
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      refresh_token: `refresh-${user.id}`,
+      user: authUser(user),
+    })
+  }
+  if (path === '/auth/v1/user') {
+    const user = userFromToken(req)
+    return user ? send(res, 200, authUser(user)) : send(res, 401, { msg: 'Auth session missing', code: 401 })
+  }
+  if (path.startsWith('/auth/v1/logout')) return send(res, 204, {})
   if (path.startsWith('/auth/v1/')) return send(res, 401, { msg: 'Auth session missing', code: 401 })
 
-  if (path.startsWith('/rest/v1/rpc/')) return send(res, 200, [])
+  if (path.startsWith('/rest/v1/rpc/')) {
+    const handler = rpcs[path.slice('/rest/v1/rpc/'.length)]
+    return send(res, 200, handler ? handler(userFromToken(req)) : [])
+  }
 
   if (path.startsWith('/rest/v1/')) {
     const table = path.slice('/rest/v1/'.length)
     let rows = [...(tables[table] ?? [])]
     const id = url.searchParams.get('id')
     if (id?.startsWith('eq.')) rows = rows.filter((r) => r.id === id.slice(3))
+    // Mock không giả lập RLS: chỉ lọc theo người sở hữu để mỗi tài khoản thấy dữ liệu của mình
+    const userId = url.searchParams.get('user_id')
+    if (userId?.startsWith('eq.')) rows = rows.filter((r) => r.user_id === userId.slice(3))
+    const ownerId = url.searchParams.get('owner_id')
+    if (ownerId?.startsWith('eq.')) rows = rows.filter((r) => r.owner_id === ownerId.slice(3))
+
+    if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 201, rows[0] ?? {})
 
     const wantsObject = String(req.headers.accept ?? '').includes('application/vnd.pgrst.object+json')
     if (wantsObject) {

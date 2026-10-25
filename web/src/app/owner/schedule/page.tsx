@@ -1,8 +1,10 @@
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { ScheduleView } from '@/components/owner/schedule-view'
 import type { BookingStatus } from '@/types/database'
 
 export default async function OwnerSchedulePage() {
+  const t = await getTranslations('ownerSchedule')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -76,9 +78,9 @@ export default async function OwnerSchedulePage() {
       total_price: Number(item.total_price),
       deposit_amount: Number(item.deposit_amount),
       status: item.status as BookingStatus,
-      user_name: item.profile?.full_name || 'Khách vãng lai',
-      user_phone: phoneByBooking.get(item.id) || 'Chưa cung cấp',
-      court_name: item.court?.name || 'Sân tiêu chuẩn',
+      user_name: item.profile?.full_name || t('guest'),
+      user_phone: phoneByBooking.get(item.id) || t('noPhone'),
+      court_name: item.court?.name || t('standardCourt'),
     }))
   }
 
@@ -86,10 +88,10 @@ export default async function OwnerSchedulePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-          Quản Lý Lịch Đặt Sân
+          {t('title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Xem lịch đặt sân theo thời gian thực với chế độ Lưới trực quan hoặc Bảng dữ liệu chi tiết.
+          {t('subtitle')}
         </p>
       </div>
 

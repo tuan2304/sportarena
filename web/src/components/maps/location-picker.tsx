@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,7 @@ interface LocationPickerProps {
  * Luôn render 2 input ẩn `latitude` và `longitude` nên dùng được bên trong <form> thường.
  */
 export function LocationPicker({ initial = null, address, name, onChange }: LocationPickerProps) {
+  const t = useTranslations('locationPicker')
   const [coords, setCoords] = useState<LatLng | null>(initial)
   const [text, setText] = useState('')
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
@@ -38,18 +40,18 @@ export function LocationPicker({ initial = null, address, name, onChange }: Loca
     startTransition(async () => {
       const res = await resolveMapsInput(text)
       if (res.error || res.lat === undefined || res.lng === undefined) {
-        setMessage({ type: 'error', text: res.error ?? 'Không đọc được toạ độ' })
+        setMessage({ type: 'error', text: res.error ?? t('unreadable') })
         return
       }
       update({ lat: res.lat, lng: res.lng })
-      setMessage({ type: 'success', text: 'Đã ghim vị trí. Kiểm tra bản đồ bên dưới đã đúng chỗ chưa.' })
+      setMessage({ type: 'success', text: t('pinned') })
     })
   }
 
   function useMyLocation() {
     setMessage(null)
     if (!navigator.geolocation) {
-      setMessage({ type: 'error', text: 'Trình duyệt không hỗ trợ định vị.' })
+      setMessage({ type: 'error', text: t('noGeo') })
       return
     }
     setLocating(true)
@@ -58,15 +60,15 @@ export function LocationPicker({ initial = null, address, name, onChange }: Loca
         setLocating(false)
         const next = { lat: Number(pos.coords.latitude.toFixed(7)), lng: Number(pos.coords.longitude.toFixed(7)) }
         if (!isValidLatLng(next.lat, next.lng)) {
-          setMessage({ type: 'error', text: 'Không lấy được vị trí hợp lệ.' })
+          setMessage({ type: 'error', text: t('invalid') })
           return
         }
         update(next)
-        setMessage({ type: 'success', text: 'Đã lấy vị trí hiện tại. Hãy chắc chắn bạn đang đứng tại sân.' })
+        setMessage({ type: 'success', text: t('gotCurrent') })
       },
       () => {
         setLocating(false)
-        setMessage({ type: 'error', text: 'Không lấy được vị trí. Hãy cho phép truy cập vị trí trên trình duyệt, hoặc dán link Google Maps.' })
+        setMessage({ type: 'error', text: t('denied') })
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
@@ -81,7 +83,7 @@ export function LocationPicker({ initial = null, address, name, onChange }: Loca
 
       <div className="space-y-1.5">
         <Label htmlFor="mapsLink" className="text-xs font-semibold">
-          Dán link Google Maps hoặc toạ độ của sân
+          {t('label')}
         </Label>
         <div className="flex gap-2">
           <Input
@@ -94,32 +96,32 @@ export function LocationPicker({ initial = null, address, name, onChange }: Loca
                 if (text.trim()) resolveFromText()
               }
             }}
-            placeholder="https://maps.app.goo.gl/... hoặc 10.7769, 106.7009"
+            placeholder={t('placeholder')}
             className="h-9 text-xs"
           />
           <Button type="button" onClick={resolveFromText} disabled={pending || !text.trim()} className="h-9 shrink-0 cursor-pointer">
             {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4 mr-1" aria-hidden />}
-            Ghim
+            {t('pin')}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Mở{' '}
+          {t('open')}{' '}
           <a href={openUrl} target="_blank" rel="noopener noreferrer" className="underline text-emerald-700 dark:text-emerald-400 inline-flex items-center gap-0.5">
             Google Maps <ExternalLink className="w-3 h-3" aria-hidden />
           </a>
-          , tìm sân của bạn, bấm <b>Chia sẻ → Sao chép liên kết</b> rồi dán vào đây.
+          {t('tail')} <b>{t('share')}</b> {t('tail2')}
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" size="sm" onClick={useMyLocation} disabled={locating} className="cursor-pointer">
           {locating ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5 mr-1" aria-hidden />}
-          Dùng vị trí hiện tại của tôi
+          {t('useMine')}
         </Button>
         {coords && (
           <Button type="button" variant="ghost" size="sm" onClick={() => { update(null); setMessage(null) }} className="cursor-pointer">
             <X className="w-3.5 h-3.5 mr-1" aria-hidden />
-            Xóa vị trí
+            {t('clear')}
           </Button>
         )}
       </div>
@@ -139,14 +141,14 @@ export function LocationPicker({ initial = null, address, name, onChange }: Loca
       )}
 
       <div className="rounded-xl overflow-hidden border border-border">
-        <MapEmbed place={{ lat: coords?.lat, lng: coords?.lng, address, name }} title="Xem trước vị trí sân" className="h-52" />
+        <MapEmbed place={{ lat: coords?.lat, lng: coords?.lng, address, name }} title={t('previewTitle')} className="h-52" />
       </div>
       <p className="text-xs text-muted-foreground">
         {coords
-          ? `Đã ghim: ${coords.lat}, ${coords.lng}`
+          ? t('pinnedAt', { lat: coords.lat, lng: coords.lng })
           : address
-          ? 'Chưa ghim vị trí chính xác: khách sẽ thấy bản đồ tìm theo địa chỉ, có thể lệch. Hãy ghim để chỉ đường chính xác.'
-          : 'Chưa có vị trí.'}
+          ? t('notPinned')
+          : t('none')}
       </p>
     </div>
   )

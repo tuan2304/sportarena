@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { deleteClub } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
@@ -13,14 +14,15 @@ interface ClubItemActionsProps {
 }
 
 export function ClubItemActions({ clubId, clubName }: ClubItemActionsProps) {
+  const t = useTranslations('owner.clubActions')
   const [loading, setLoading] = useState(false)
   const askConfirm = useConfirm()
 
   async function handleDelete() {
     const ok = await askConfirm({
-      title: `Xóa cụm sân "${clubName}"?`,
-      description: 'Chỉ xóa được cụm sân chưa có đơn đặt hay giao dịch nào. Nếu đã có, hãy tạm ngưng hoạt động thay vì xóa.',
-      confirmText: 'Xóa cụm sân',
+      title: t('deleteTitle', { name: clubName }),
+      description: t('deleteText'),
+      confirmText: t('deleteConfirm'),
       destructive: true,
     })
     if (!ok) return
@@ -28,7 +30,7 @@ export function ClubItemActions({ clubId, clubName }: ClubItemActionsProps) {
     const res = await deleteClub(clubId)
     setLoading(false)
     if (res?.error) toast.error(res.error)
-    else toast.success('Đã xóa cụm sân')
+    else toast.success(t('deleted'))
   }
 
   return (
@@ -41,7 +43,7 @@ export function ClubItemActions({ clubId, clubName }: ClubItemActionsProps) {
           variant="ghost"
           onClick={handleDelete}
           className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
-          title="Xóa cụm sân"
+          title={t('deleteConfirm')}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

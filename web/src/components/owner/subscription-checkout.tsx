@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function SubscriptionCheckoutPanel({ clubId, options }: Props) {
+  const t = useTranslations('ownerBilling')
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [checkout, setCheckout] = useState<SubscriptionCheckout | null>(null)
@@ -65,7 +67,7 @@ export function SubscriptionCheckoutPanel({ clubId, options }: Props) {
   if (paid) {
     return (
       <div role="status" className="flex items-center gap-2 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-sm font-semibold">
-        <CheckCircle2 className="w-5 h-5" aria-hidden /> Đã nhận thanh toán, gói Pro đã được gia hạn.
+        <CheckCircle2 className="w-5 h-5" aria-hidden /> {t('paid')}
       </div>
     )
   }
@@ -75,26 +77,26 @@ export function SubscriptionCheckoutPanel({ clubId, options }: Props) {
       <div className="grid sm:grid-cols-[auto_1fr] gap-5 items-start">
         <div className="p-3 bg-white rounded-2xl border-2 border-emerald-500/30 w-fit">
           {/* eslint-disable-next-line @next/next/no-img-element -- ảnh QR động từ img.vietqr.io */}
-          <img src={checkout.qrImageUrl} alt="Mã VietQR thanh toán gói Pro" className="w-48 h-48 object-contain" />
+          <img src={checkout.qrImageUrl} alt={t('qrAlt')} className="w-48 h-48 object-contain" />
         </div>
         <div className="space-y-2 text-sm">
           <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{formatVnd(checkout.amount)}</div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
-            <dt className="text-muted-foreground">Ngân hàng</dt>
+            <dt className="text-muted-foreground">{t('bank')}</dt>
             <dd className="font-semibold">{bankNameFromBin(checkout.bankName) ?? checkout.bankName}</dd>
-            <dt className="text-muted-foreground">Số tài khoản</dt>
+            <dt className="text-muted-foreground">{t('accountNumber')}</dt>
             <dd className="font-mono font-semibold">{checkout.accountNumber}</dd>
-            <dt className="text-muted-foreground">Chủ tài khoản</dt>
+            <dt className="text-muted-foreground">{t('accountName')}</dt>
             <dd className="font-semibold">{checkout.accountName}</dd>
-            <dt className="text-muted-foreground">Nội dung</dt>
+            <dt className="text-muted-foreground">{t('content')}</dt>
             <dd className="font-mono font-semibold">{checkout.transferContent}</dd>
           </dl>
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden /> Đang chờ thanh toán, trang tự cập nhật khi nhận được tiền.
+            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden /> {t('waiting')}
           </p>
           {checkout.simulated && (
             <Button type="button" onClick={simulate} disabled={pending} className="bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer">
-              [DEV] Giả lập đã chuyển khoản
+              {t('simulate')}
             </Button>
           )}
           {error && <p role="alert" className="text-xs text-red-700 dark:text-red-400">{error}</p>}
@@ -116,7 +118,7 @@ export function SubscriptionCheckoutPanel({ clubId, options }: Props) {
             className="cursor-pointer"
           >
             {pending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <QrCode className="w-4 h-4 mr-1.5" aria-hidden />}
-            {o.months} tháng · {formatVnd(o.price)}
+            {t('option', { months: o.months, price: formatVnd(o.price) })}
           </Button>
         ))}
       </div>

@@ -257,14 +257,14 @@ isOneToOne: false
                   ]
                 },"notifications": {
                   Row: {
-                    "created_at": string,"id": string,"is_read": boolean,"link": string | null,"message": string,"title": string,"type": string,"user_id": string
+                    "created_at": string,"id": string,"is_read": boolean,"link": string | null,"message": string,"message_en": string | null,"title": string,"title_en": string | null,"type": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"is_read"?: boolean,"link"?: string | null,"message": string,"title": string,"type"?: string,"user_id": string
+                    "created_at"?: string,"id"?: string,"is_read"?: boolean,"link"?: string | null,"message": string,"message_en"?: string | null,"title": string,"title_en"?: string | null,"type"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"is_read"?: boolean,"link"?: string | null,"message"?: string,"title"?: string,"type"?: string,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"is_read"?: boolean,"link"?: string | null,"message"?: string,"message_en"?: string | null,"title"?: string,"title_en"?: string | null,"type"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -303,14 +303,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_url": string | null,"created_at": string,"full_name": string,"id": string,"phone_number": string | null,"rating": number | null,"role": string,"skill_level": string | null,"updated_at": string
+                    "avatar_url": string | null,"created_at": string,"full_name": string,"id": string,"locale": string | null,"phone_number": string | null,"rating": number | null,"role": string,"skill_level": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"created_at"?: string,"full_name"?: string,"id": string,"phone_number"?: string | null,"rating"?: number | null,"role"?: string,"skill_level"?: string | null,"updated_at"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"full_name"?: string,"id": string,"locale"?: string | null,"phone_number"?: string | null,"rating"?: number | null,"role"?: string,"skill_level"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "avatar_url"?: string | null,"created_at"?: string,"full_name"?: string,"id"?: string,"phone_number"?: string | null,"rating"?: number | null,"role"?: string,"skill_level"?: string | null,"updated_at"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"full_name"?: string,"id"?: string,"locale"?: string | null,"phone_number"?: string | null,"rating"?: number | null,"role"?: string,"skill_level"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -462,6 +462,9 @@ isOneToOne: false
                            },
 "unregister_push_token":
 { Args: { "p_token": string }; Returns: undefined
+                           },
+"set_my_locale":
+{ Args: { "p_locale": string }; Returns: undefined
                            },
 "get_booking_contacts":
 { Args: { "p_booking_ids": (string)[] }; Returns: {

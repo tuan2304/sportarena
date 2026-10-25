@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { createPricingRule } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,8 @@ interface PricingRuleModalProps {
 }
 
 export function PricingRuleModal({ courts }: PricingRuleModalProps) {
+  const t = useTranslations('ownerPricing.modal')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,15 +51,15 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
         className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer shadow-sm"
       >
         <Plus className="w-4 h-4 mr-1.5" />
-        Thêm Khung Giờ Giá Mới
+        {t('open')}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Thêm Bảng Giá Linh Hoạt</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{t('title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Thiết lập đơn giá riêng cho các khung giờ vàng (cao điểm) hoặc cuối tuần
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -68,7 +71,7 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="courtId">Áp dụng cho sân *</Label>
+            <Label htmlFor="courtId">{t('court')}</Label>
             <select
               id="courtId"
               name="courtId"
@@ -84,11 +87,11 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="ruleName">Tên khung giờ *</Label>
+            <Label htmlFor="ruleName">{t('name')}</Label>
             <Input
               id="ruleName"
               name="name"
-              placeholder="Giờ vàng chiều tối (17h - 21h)"
+              placeholder={t('namePlaceholder')}
               required
               className="h-9"
             />
@@ -96,7 +99,7 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="startTime">Giờ bắt đầu *</Label>
+              <Label htmlFor="startTime">{t('start')}</Label>
               <Input
                 id="startTime"
                 name="startTime"
@@ -107,7 +110,7 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="endTime">Giờ kết thúc *</Label>
+              <Label htmlFor="endTime">{t('end')}</Label>
               <Input
                 id="endTime"
                 name="endTime"
@@ -120,7 +123,7 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="pricePerHour">Đơn giá khung giờ này (đ/giờ) *</Label>
+            <Label htmlFor="pricePerHour">{t('price')}</Label>
             <Input
               id="pricePerHour"
               name="pricePerHour"
@@ -140,7 +143,7 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
               onClick={() => setOpen(false)}
               className="cursor-pointer"
             >
-              Hủy
+              {tc('cancel')}
             </Button>
             <Button
               type="submit"
@@ -150,10 +153,10 @@ export function PricingRuleModal({ courts }: PricingRuleModalProps) {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang lưu...
+                  {t('saving')}
                 </>
               ) : (
-                'Lưu Bảng Giá'
+                t('submit')
               )}
             </Button>
           </DialogFooter>

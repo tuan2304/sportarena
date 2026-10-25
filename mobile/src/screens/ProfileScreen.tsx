@@ -1,3 +1,4 @@
+import { useI18n, LANGS } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -15,11 +16,14 @@ import ProfileEditForm from '../components/ProfileEditForm'
 import Avatar from '../components/Avatar'
 import { pickAndUploadAvatar, removeAvatar } from '../lib/avatar'
 import { unregisterPush } from '../lib/push'
-import { skillLabel } from '../shared/profile'
+import type { MessageKey } from '../i18n'
+
+const SKILL_IDS: Record<string, true> = { beginner: true, intermediate: true, advanced: true, pro: true }
 import { Profile } from '../types'
 import { Shield, LogOut, Smartphone, Camera, ExternalLink } from 'lucide-react-native'
 
 export default function ProfileScreen({ navigation }: any) {
+  const { t, lang, setLang } = useI18n()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -67,22 +71,22 @@ export default function ProfileScreen({ navigation }: any) {
     const res = await pickAndUploadAvatar(profile.id, profile.avatar_url)
     setAvatarBusy(false)
     if (res.ok) setProfile({ ...profile, avatar_url: res.url })
-    else if (!res.cancelled) Alert.alert('Không đổi được ảnh', res.error)
+    else if (!res.cancelled) Alert.alert(t('profile.avatarFailed'), res.error)
   }
 
   function confirmRemoveAvatar() {
     if (!profile?.avatar_url) return
-    Alert.alert('Gỡ ảnh đại diện?', 'Hồ sơ sẽ hiển thị chữ cái đầu của tên.', [
-      { text: 'Hủy', style: 'cancel' },
+    Alert.alert(t('profile.removeTitle'), t('profile.removeText'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Gỡ ảnh',
+        text: t('profile.removeConfirm'),
         style: 'destructive',
         onPress: async () => {
           setAvatarBusy(true)
           const res = await removeAvatar(profile.id, profile.avatar_url)
           setAvatarBusy(false)
           if (res.ok) setProfile({ ...profile, avatar_url: null })
-          else Alert.alert('Không gỡ được ảnh', res.error)
+          else Alert.alert(t('profile.removeFailed'), res.error)
         },
       },
     ])
@@ -94,7 +98,7 @@ export default function ProfileScreen({ navigation }: any) {
     await supabase.auth.signOut()
     setProfile(null)
     setCurrentUserEmail(null)
-    Alert.alert('Thông báo', 'Bạn đã đăng xuất')
+    Alert.alert(t('common.notice'), t('profile.loggedOut'))
   }
 
   if (loading) {
@@ -115,8 +119,8 @@ export default function ProfileScreen({ navigation }: any) {
             onLongPress={confirmRemoveAvatar}
             disabled={avatarBusy}
             accessibilityRole="button"
-            accessibilityLabel="Đổi ảnh đại diện"
-            accessibilityHint="Nhấn giữ để gỡ ảnh"
+            accessibilityLabel={t('profile.changePhoto')}
+            accessibilityHint={t('profile.changePhotoHint')}
             style={styles.avatarWrap}
           >
             <Avatar name={profile.full_name} uri={profile.avatar_url} size={88} />
@@ -126,17 +130,17 @@ export default function ProfileScreen({ navigation }: any) {
           </TouchableOpacity>
           <Text style={styles.userName}>{profile.full_name}</Text>
           <Text style={styles.userEmail}>{currentUserEmail}</Text>
-          <Text style={styles.userEmail}>Trình độ: {skillLabel(profile.skill_level)}</Text>
+          <Text style={styles.userEmail}>{t('profile.skillLine', { skill: t(`skills.${profile.skill_level && profile.skill_level in SKILL_IDS ? profile.skill_level : 'unknown'}` as MessageKey) })}</Text>
 
           <View style={styles.roleBadge}>
             <Shield size={12} color={colors.primary} />
             <Text style={styles.roleText}>
-              {profile.role === 'owner' ? 'CHỦ SÂN BÃI' : 'NGƯỜI CHƠI THỂ THAO'}
+              {profile.role === 'owner' ? t('profile.roleOwner') : t('profile.rolePlayer')}
             </Text>
           </View>
 
           <TouchableOpacity style={styles.editBtn} onPress={() => setEditing((v) => !v)} accessibilityRole="button">
-            <Text style={styles.editText}>{editing ? 'Đóng chỉnh sửa' : 'Chỉnh sửa hồ sơ'}</Text>
+            <Text style={styles.editText}>{editing ? t('profile.closeEdit') : t('profile.edit')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -145,12 +149,26 @@ export default function ProfileScreen({ navigation }: any) {
             accessibilityRole="button"
           >
             <ExternalLink size={14} color={colors.textSecondary} />
-            <Text style={styles.publicText}>Xem hồ sơ công khai</Text>
+            <Text style={styles.publicText}>{t('profile.viewPublic')}</Text>
           </TouchableOpacity>
+
+          <View style={styles.langRow} accessibilityRole="radiogroup" accessibilityLabel={t('common.language')}>
+            {LANGS.map((l) => (
+              <TouchableOpacity
+                key={l}
+                onPress={() => setLang(l)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: lang === l }}
+                style={[styles.langChip, lang === l && styles.langChipActive]}
+              >
+                <Text style={[styles.langText, lang === l && styles.langTextActive]}>{t(`common.${l}`)}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
             <LogOut size={16} color={colors.danger} />
-            <Text style={styles.logoutText}>Đăng Xuất</Text>
+            <Text style={styles.logoutText}>{t('profile.logout')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -185,6 +203,11 @@ export default function ProfileScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  langRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  langChip: { minHeight: 38, paddingHorizontal: 14, borderRadius: 10, justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.cardBorder },
+  langChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  langText: { color: colors.textSecondary, fontWeight: '600', fontSize: 12 },
+  langTextActive: { color: colors.white },
   avatarWrap: { marginBottom: 4 },
   cameraBadge: {
     position: 'absolute',

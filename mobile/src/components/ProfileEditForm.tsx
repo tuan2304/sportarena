@@ -1,3 +1,5 @@
+import type { MessageKey } from '../i18n'
+import { useI18n } from '../i18n'
 import React, { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { colors } from '../theme/colors'
@@ -13,6 +15,7 @@ interface ProfileEditFormProps {
 
 /** Sửa tên, số điện thoại và trình độ của chính mình. Ảnh đại diện đổi bằng cách chạm vào ảnh ở thẻ hồ sơ. */
 export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: ProfileEditFormProps) {
+  const { t } = useI18n()
   const [fullName, setFullName] = useState(initial.fullName)
   const [phone, setPhone] = useState(initial.phone)
   const [skillLevel, setSkillLevel] = useState(initial.skillLevel)
@@ -37,7 +40,7 @@ export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: 
     setBusy(false)
 
     if (err) {
-      Alert.alert('Không thể lưu', 'Vui lòng thử lại sau.')
+      Alert.alert(t('profile.saveFailed'), t('profile.tryLater'))
       return
     }
     onSaved()
@@ -45,10 +48,10 @@ export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: 
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>Họ và tên</Text>
+      <Text style={styles.label}>{t('profile.fullName')}</Text>
       <TextInput style={styles.input} value={fullName} onChangeText={setFullName} maxLength={60} autoComplete="name" />
 
-      <Text style={styles.label}>Số điện thoại</Text>
+      <Text style={styles.label}>{t('profile.phone')}</Text>
       <TextInput
         style={styles.input}
         value={phone}
@@ -58,9 +61,9 @@ export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: 
         placeholderTextColor={colors.textMuted}
         autoComplete="tel"
       />
-      <Text style={styles.hint}>Chỉ chủ sân nơi bạn đặt sân thấy số này để liên hệ khi cần.</Text>
+      <Text style={styles.hint}>{t('profile.phoneHint')}</Text>
 
-      <Text style={styles.label}>Trình độ</Text>
+      <Text style={styles.label}>{t('profile.skill')}</Text>
       <View style={styles.row}>
         {SKILL_LEVELS.map((s) => (
           <TouchableOpacity
@@ -70,7 +73,7 @@ export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: 
             accessibilityRole="button"
             accessibilityState={{ selected: skillLevel === s.id }}
           >
-            <Text style={[styles.chipText, skillLevel === s.id && styles.chipTextActive]}>{s.label}</Text>
+            <Text style={[styles.chipText, skillLevel === s.id && styles.chipTextActive]}>{t(`skills.${s.id}` as MessageKey)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -83,10 +86,10 @@ export default function ProfileEditForm({ userId, initial, onSaved, onCancel }: 
 
       <View style={styles.row}>
         <TouchableOpacity style={[styles.btn, styles.btnPrimary, busy && styles.disabled]} onPress={save} disabled={busy}>
-          {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Lưu hồ sơ</Text>}
+          {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{t('profile.save')}</Text>}
         </TouchableOpacity>
         <TouchableOpacity style={[styles.btn, styles.btnGhost]} onPress={onCancel} disabled={busy}>
-          <Text style={styles.ghostText}>Hủy</Text>
+          <Text style={styles.ghostText}>{t('common.cancel')}</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React from 'react'
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -15,9 +16,11 @@ import MyBookingsScreen from '../screens/MyBookingsScreen'
 import NotificationsScreen from '../screens/NotificationsScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 import PlayerProfileScreen from '../screens/PlayerProfileScreen'
+import OwnerScreen from '../screens/OwnerScreen'
+import { useRole } from '../lib/role'
 
 // Icons
-import { Compass, Flame, Calendar, Bell, User } from 'lucide-react-native'
+import { Compass, Flame, Calendar, Bell, User, Building2 } from 'lucide-react-native'
 
 /** Cho phép mở màn hình từ ngoài cây giao diện (chạm vào thông báo đẩy) */
 export const navigationRef = createNavigationContainerRef<any>()
@@ -26,6 +29,9 @@ const Tab = createBottomTabNavigator()
 const Stack = createNativeStackNavigator()
 
 function BottomTabs() {
+  const { t } = useI18n()
+  const role = useRole()
+  const isOwner = role === 'owner' || role === 'admin'
   return (
     <Tab.Navigator
       screenOptions={{
@@ -61,8 +67,8 @@ function BottomTabs() {
         name="ClubsTab"
         component={ClubsScreen}
         options={{
-          title: 'Khám Phá Sân',
-          tabBarLabel: 'Khám Phá',
+          title: t('nav.clubsTitle'),
+          tabBarLabel: t('nav.clubsTab'),
           tabBarIcon: ({ color, size }) => <Compass color={color} size={size - 2} />,
         }}
       />
@@ -71,8 +77,8 @@ function BottomTabs() {
         name="MatchesTab"
         component={MatchesScreen}
         options={{
-          title: 'Kèo Giao Lưu',
-          tabBarLabel: 'Kèo Ghép',
+          title: t('nav.matchesTitle'),
+          tabBarLabel: t('nav.matchesTab'),
           tabBarIcon: ({ color, size }) => <Flame color={color} size={size - 2} />,
         }}
       />
@@ -81,18 +87,30 @@ function BottomTabs() {
         name="BookingsTab"
         component={MyBookingsScreen}
         options={{
-          title: 'Lịch Đặt Của Tôi',
-          tabBarLabel: 'Lịch Đặt',
+          title: t('nav.bookingsTitle'),
+          tabBarLabel: t('nav.bookingsTab'),
           tabBarIcon: ({ color, size }) => <Calendar color={color} size={size - 2} />,
         }}
       />
+
+      {isOwner && (
+        <Tab.Screen
+          name="OwnerTab"
+          component={OwnerScreen}
+          options={{
+            title: t('owner.tabTitle'),
+            tabBarLabel: t('owner.tab'),
+            tabBarIcon: ({ color, size }) => <Building2 color={color} size={size - 2} />,
+          }}
+        />
+      )}
 
       <Tab.Screen
         name="NotificationsTab"
         component={NotificationsScreen}
         options={{
-          title: 'Thông Báo',
-          tabBarLabel: 'Thông Báo',
+          title: t('nav.notificationsTitle'),
+          tabBarLabel: t('nav.notificationsTab'),
           tabBarIcon: ({ color, size }) => <Bell color={color} size={size - 2} />,
         }}
       />
@@ -101,8 +119,8 @@ function BottomTabs() {
         name="ProfileTab"
         component={ProfileScreen}
         options={{
-          title: 'Tài Khoản',
-          tabBarLabel: 'Cá Nhân',
+          title: t('nav.profileTitle'),
+          tabBarLabel: t('nav.profileTab'),
           tabBarIcon: ({ color, size }) => <User color={color} size={size - 2} />,
         }}
       />

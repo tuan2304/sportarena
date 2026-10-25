@@ -1,10 +1,15 @@
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { RefundList, type RefundRow } from '@/components/owner/refund-list'
 import { RotateCcw } from 'lucide-react'
 
-export const metadata = { title: 'Hoàn cọc' }
+export async function generateMetadata() {
+  const t = await getTranslations('ownerRefunds')
+  return { title: t('metaTitle') }
+}
 
 export default async function OwnerRefundsPage() {
+  const t = await getTranslations('ownerRefunds')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -33,15 +38,15 @@ export default async function OwnerRefundsPage() {
     const contact = contactByBooking.get(b.id)
     return {
       id: b.id,
-      clubName: court?.club?.name ?? 'Cụm sân',
-      courtName: court?.name ?? 'Sân',
+      clubName: court?.club?.name ?? t('clubFallback'),
+      courtName: court?.name ?? t('courtFallback'),
       start_time: b.start_time,
       end_time: b.end_time,
       refund_amount: Number(b.refund_amount),
       refund_status: b.refund_status as 'pending' | 'refunded',
       cancelled_by: b.cancelled_by,
       refunded_at: b.refunded_at,
-      customerName: contact?.full_name || 'Khách',
+      customerName: contact?.full_name || t('customerFallback'),
       customerPhone: contact?.phone_number ?? null,
     }
   })
@@ -53,12 +58,12 @@ export default async function OwnerRefundsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
           <RotateCcw className="w-7 h-7 text-emerald-700 dark:text-emerald-400" aria-hidden />
-          Hoàn cọc
+          {t('title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Các đơn đã hủy mà khách được hoàn cọc. Tiền cọc nằm ở tài khoản của bạn nên bạn chuyển lại cho khách rồi bấm &quot;Đã hoàn cọc&quot;.
+          {t('subtitle')}
           {pendingCount > 0 && (
-            <strong className="text-amber-700 dark:text-amber-400"> Đang chờ hoàn: {pendingCount} đơn.</strong>
+            <strong className="text-amber-700 dark:text-amber-400"> {t('pending', { count: pendingCount })}</strong>
           )}
         </p>
       </div>

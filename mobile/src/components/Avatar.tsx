@@ -1,6 +1,7 @@
 import React from 'react'
 import { Image, StyleSheet, Text, View } from 'react-native'
 import { colors } from '../theme/colors'
+import { translate } from '../i18n'
 
 interface AvatarProps {
   name?: string | null
@@ -12,7 +13,7 @@ interface AvatarProps {
 export default function Avatar({ name, uri, size = 40 }: AvatarProps) {
   const box = { width: size, height: size, borderRadius: size / 2 }
   if (uri && /^https?:\/\//i.test(uri)) {
-    return <Image source={{ uri }} style={box} accessibilityLabel={name ? `Ảnh đại diện của ${name}` : 'Ảnh đại diện'} />
+    return <Image source={{ uri }} style={box} accessibilityLabel={name ? translate('avatar.a11yOf', { name }) : translate('avatar.a11y')} />
   }
   return (
     <View style={[styles.fallback, box]}>

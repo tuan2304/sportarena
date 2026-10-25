@@ -1,10 +1,11 @@
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { ChevronLeft, Calendar, Flame, Star, Trophy, Users } from 'lucide-react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import Avatar from '../components/Avatar'
-import { skillLabel } from '../shared/profile'
 
 interface PublicProfile {
   id: string
@@ -26,6 +27,7 @@ const EMPTY_STATS = { matches_created: 0, matches_joined: 0, bookings_played: 0 
 
 /** Hồ sơ công khai của một người chơi: chỉ các cột công khai và số liệu tổng hợp, không có số điện thoại hay vai trò. */
 export default function PlayerProfileScreen({ route, navigation }: any) {
+  const { t } = useI18n()
   const { userId } = route.params
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [stats, setStats] = useState(EMPTY_STATS)
@@ -59,18 +61,18 @@ export default function PlayerProfileScreen({ route, navigation }: any) {
   }, [userId])
 
   const tiles = [
-    { Icon: Calendar, label: 'Lần đã chơi', value: stats.bookings_played },
-    { Icon: Flame, label: 'Kèo đã tạo', value: stats.matches_created },
-    { Icon: Users, label: 'Kèo đã tham gia', value: stats.matches_joined },
+    { Icon: Calendar, label: t('player.played'), value: stats.bookings_played },
+    { Icon: Flame, label: t('player.created'), value: stats.matches_created },
+    { Icon: Users, label: t('player.joined'), value: stats.matches_joined },
   ]
 
   return (
     <View style={styles.container}>
       <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel="Quay lại">
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} accessibilityLabel={t('common.back')}>
           <ChevronLeft size={22} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Hồ sơ người chơi</Text>
+        <Text style={styles.headerTitle}>{t('player.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -80,17 +82,17 @@ export default function PlayerProfileScreen({ route, navigation }: any) {
         </View>
       ) : !profile ? (
         <View style={styles.center}>
-          <Text style={styles.muted}>Không tìm thấy người chơi này.</Text>
+          <Text style={styles.muted}>{t('player.notFound')}</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.card}>
             <Avatar name={profile.full_name} uri={profile.avatar_url} size={88} />
-            <Text style={styles.name}>{profile.full_name || 'Người chơi'}</Text>
+            <Text style={styles.name}>{profile.full_name || t('player.fallback')}</Text>
             <View style={styles.badges}>
               <View style={styles.badge}>
                 <Trophy size={13} color={colors.primary} />
-                <Text style={styles.badgeText}>{skillLabel(profile.skill_level)}</Text>
+                <Text style={styles.badgeText}>{t(`skills.${profile.skill_level && ['beginner', 'intermediate', 'advanced', 'pro'].includes(profile.skill_level) ? profile.skill_level : 'unknown'}` as MessageKey)}</Text>
               </View>
               {profile.rating !== null && (
                 <View style={[styles.badge, styles.badgeAmber]}>
@@ -111,9 +113,9 @@ export default function PlayerProfileScreen({ route, navigation }: any) {
             ))}
           </View>
 
-          <Text style={styles.section}>Kèo đang mở</Text>
+          <Text style={styles.section}>{t('player.openMatches')}</Text>
           {matches.length === 0 ? (
-            <Text style={styles.muted}>Hiện chưa có kèo nào đang mở.</Text>
+            <Text style={styles.muted}>{t('player.noOpen')}</Text>
           ) : (
             matches.map((m) => (
               <TouchableOpacity

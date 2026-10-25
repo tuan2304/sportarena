@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from './supabase'
+import { translate } from '../i18n'
 import { MAX_AVATAR_BYTES, imagePath, ownImagePath, publicImageUrl, validateImageFile } from '../shared/image-upload'
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? ''
@@ -13,7 +14,7 @@ export type AvatarResult = { ok: true; url: string | null } | { ok: false; error
 export async function pickAndUploadAvatar(userId: string, previousUrl: string | null): Promise<AvatarResult> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
   if (!permission.granted) {
-    return { ok: false, error: 'Cần cho phép truy cập thư viện ảnh để chọn ảnh đại diện.' }
+    return { ok: false, error: translate('avatar.permission') }
   }
 
   const picked = await ImagePicker.launchImageLibraryAsync({
@@ -31,21 +32,21 @@ export async function pickAndUploadAvatar(userId: string, previousUrl: string | 
   try {
     body = await (await fetch(asset.uri)).arrayBuffer()
   } catch {
-    return { ok: false, error: 'Không đọc được ảnh đã chọn. Vui lòng thử ảnh khác.' }
+    return { ok: false, error: translate('avatar.unreadable') }
   }
 
   const problem = validateImageFile({ type, size: body.byteLength }, MAX_AVATAR_BYTES)
   if (problem) return { ok: false, error: problem }
 
   const path = imagePath(userId, globalThis.crypto?.randomUUID?.() ?? fallbackUuid(), type)
-  if (!path) return { ok: false, error: 'Chỉ nhận ảnh JPG, PNG hoặc WebP' }
+  if (!path) return { ok: false, error: translate('avatar.format') }
 
   const { error: uploadError } = await supabase.storage.from('avatars').upload(path, body, {
     contentType: type,
     cacheControl: '31536000',
     upsert: false,
   })
-  if (uploadError) return { ok: false, error: 'Không tải được ảnh lên. Vui lòng thử lại.' }
+  if (uploadError) return { ok: false, error: translate('avatar.uploadFailed') }
 
   const url = publicImageUrl('avatars', path, SUPABASE_URL)
   const saved = await saveAvatarUrl(userId, url, previousUrl)
@@ -59,7 +60,7 @@ export async function removeAvatar(userId: string, previousUrl: string | null): 
 
 async function saveAvatarUrl(userId: string, url: string | null, previousUrl: string | null): Promise<{ ok: true } | { ok: false; error: string }> {
   const { error } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
-  if (error) return { ok: false, error: 'Không thể lưu ảnh đại diện. Vui lòng thử lại.' }
+  if (error) return { ok: false, error: translate('avatar.saveFailed') }
 
   // Xóa file cũ trong kho của chính mình để không tích tụ; lỗi dọn dẹp không làm hỏng việc đổi ảnh
   const oldPath = previousUrl && previousUrl !== url ? ownImagePath('avatars', userId, previousUrl, SUPABASE_URL) : null

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ export interface RefundRow {
 }
 
 export function RefundList({ rows }: { rows: RefundRow[] }) {
+  const t = useTranslations('ownerRefunds')
   const router = useRouter()
   const askConfirm = useConfirm()
   const [pending, startTransition] = useTransition()
@@ -33,10 +35,10 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
 
   async function handleRefunded(row: RefundRow) {
     const ok = await askConfirm({
-      title: 'Xác nhận đã hoàn cọc?',
-      description: `Bạn đã chuyển ${formatVnd(row.refund_amount)} cho ${row.customerName}? Khách sẽ nhận thông báo và không thể hoàn tác.`,
-      confirmText: 'Đã hoàn cọc',
-      cancelText: 'Chưa',
+      title: t('confirmTitle'),
+      description: t('confirmText', { amount: formatVnd(row.refund_amount), name: row.customerName }),
+      confirmText: t('confirmButton'),
+      cancelText: t('confirmCancel'),
     })
     if (!ok) return
     setBusyId(row.id)
@@ -47,7 +49,7 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
         toast.error(res.error)
         return
       }
-      toast.success('Đã ghi nhận hoàn cọc')
+      toast.success(t('recorded'))
       router.refresh()
     })
   }
@@ -55,7 +57,7 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
   if (rows.length === 0) {
     return (
       <Card className="border-dashed">
-        <CardContent className="py-12 text-center text-sm text-muted-foreground">Chưa có khoản hoàn cọc nào.</CardContent>
+        <CardContent className="py-12 text-center text-sm text-muted-foreground">{t('empty')}</CardContent>
       </Card>
     )
   }
@@ -69,11 +71,11 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm text-foreground">{row.customerName}</span>
                 {row.refund_status === 'pending' ? (
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Chờ hoàn cọc</Badge>
+                  <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">{t('badgePending')}</Badge>
                 ) : (
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">Đã hoàn</Badge>
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">{t('badgeDone')}</Badge>
                 )}
-                <span className="text-muted-foreground">{row.cancelled_by === 'owner' ? 'Bạn hủy đơn' : 'Khách hủy trong hạn miễn phí'}</span>
+                <span className="text-muted-foreground">{row.cancelled_by === 'owner' ? t('byOwner') : t('byPlayer')}</span>
               </div>
               <div className="text-muted-foreground">
                 {row.clubName} • {row.courtName} • {formatTime(row.start_time)} - {formatTime(row.end_time)} ({formatDate(row.start_time)})
@@ -83,13 +85,13 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
                   <Phone className="w-3 h-3" aria-hidden /> {row.customerPhone}
                 </a>
               ) : (
-                <span className="text-muted-foreground">Khách chưa cung cấp số điện thoại</span>
+                <span className="text-muted-foreground">{t('noPhone')}</span>
               )}
             </div>
 
             <div className="flex items-center justify-between md:justify-end gap-4">
               <div className="text-right">
-                <div className="text-xs text-muted-foreground">Số tiền hoàn</div>
+                <div className="text-xs text-muted-foreground">{t('amount')}</div>
                 <div className="text-base font-extrabold text-emerald-700 dark:text-emerald-400">{formatVnd(row.refund_amount)}</div>
               </div>
               {row.refund_status === 'pending' && (
@@ -100,7 +102,7 @@ export function RefundList({ rows }: { rows: RefundRow[] }) {
                   className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer"
                 >
                   {pending && busyId === row.id ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Check className="w-3.5 h-3.5 mr-1" aria-hidden />}
-                  Đã hoàn cọc
+                  {t('markRefunded')}
                 </Button>
               )}
             </div>

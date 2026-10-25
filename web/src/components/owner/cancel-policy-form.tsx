@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations, useLocale } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +16,8 @@ interface CancelPolicyFormProps {
 }
 
 export function CancelPolicyForm({ clubId, hours }: CancelPolicyFormProps) {
+  const t = useTranslations('ownerPolicy')
+  const lang = useLocale() === 'en' ? 'en' : 'vi'
   const [pending, startTransition] = useTransition()
   const [value, setValue] = useState(String(hours))
   const [saved, setSaved] = useState(hours)
@@ -36,7 +39,7 @@ export function CancelPolicyForm({ clubId, hours }: CancelPolicyFormProps) {
         return
       }
       setSaved(parsed.hours)
-      toast.success('Đã lưu chính sách hủy sân')
+      toast.success(t('saved'))
     })
   }
 
@@ -44,11 +47,10 @@ export function CancelPolicyForm({ clubId, hours }: CancelPolicyFormProps) {
     <div className="space-y-3">
       <h3 className="text-sm font-bold flex items-center gap-1.5">
         <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden />
-        Chính sách hủy sân
+        {t('title')}
       </h3>
       <p className="text-xs text-muted-foreground leading-relaxed">
-        Khách hủy trước giờ chơi ít nhất số giờ dưới đây thì được hoàn cọc, muộn hơn thì bạn giữ lại cọc. Nếu bạn hủy thì luôn phải hoàn đủ.
-        Tiền hoàn do bạn chuyển lại cho khách rồi bấm &quot;Đã hoàn cọc&quot; ở mục Hoàn cọc.
+        {t('text')}
       </p>
 
       {error && (
@@ -60,7 +62,7 @@ export function CancelPolicyForm({ clubId, hours }: CancelPolicyFormProps) {
 
       <form onSubmit={handleSave} className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label htmlFor={`cancel-${clubId}`} className="text-xs font-semibold">Hủy miễn phí trước (giờ)</Label>
+          <Label htmlFor={`cancel-${clubId}`} className="text-xs font-semibold">{t('hours')}</Label>
           <Input
             id={`cancel-${clubId}`}
             type="number"
@@ -76,10 +78,10 @@ export function CancelPolicyForm({ clubId, hours }: CancelPolicyFormProps) {
         </div>
         <Button type="submit" disabled={pending || !parsed.ok || (parsed.ok && parsed.hours === saved)} className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
           {pending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
-          Lưu chính sách
+          {t('submit')}
         </Button>
       </form>
-      <p className="text-xs text-muted-foreground">Khách sẽ thấy: {describePolicy(parsed.ok ? parsed.hours : saved)}</p>
+      <p className="text-xs text-muted-foreground">{t('preview', { text: describePolicy(parsed.ok ? parsed.hours : saved, lang) })}</p>
     </div>
   )
 }

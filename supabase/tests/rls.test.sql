@@ -320,6 +320,17 @@ SELECT t(NULL,'anon',$$SELECT register_push_token('ExponentPushToken[ccccccccccc
 SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM push_tokens$$,'ERR','người dùng không đọc trực tiếp được bảng push_tokens');
 SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$INSERT INTO push_tokens(user_id,token,platform) VALUES ('d0000000-0000-0000-0000-00000000000d','ExponentPushToken[dddddddddddddddddddddd]','ios') RETURNING 'x'$$,'ERR','không chèn trực tiếp token cho người khác');
 
+-- ---------------------------------------------------------------- 18. Ngôn ngữ của thông báo
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT 'ok' FROM (SELECT set_my_locale('en')) x$$,'ok','người dùng đặt được ngôn ngữ của mình');
+SELECT t(NULL,'postgres',$$SELECT locale FROM profiles WHERE id='c0000000-0000-0000-0000-00000000000c'$$,'en','ngôn ngữ được lưu vào đúng hồ sơ');
+SELECT t(NULL,'postgres',$$SELECT coalesce(locale,'(trống)') FROM profiles WHERE id='d0000000-0000-0000-0000-00000000000d'$$,'(trống)','hồ sơ người khác không bị đổi');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT set_my_locale('fr')::text$$,'ERR','ngôn ngữ lạ bị từ chối');
+SELECT t(NULL,'anon',$$SELECT set_my_locale('en')::text$$,'ERR','khách không đặt được ngôn ngữ');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT locale FROM profiles WHERE id=auth.uid()$$,'ERR','app không đọc trực tiếp cột locale');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE profiles SET locale='vi' WHERE id=auth.uid() RETURNING 'x'$$,'ERR','app không ghi trực tiếp cột locale');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE notifications SET title_en='hack' WHERE id='77777777-7777-7777-7777-777777777777' RETURNING 'x'$$,'ERR','người dùng không sửa được bản dịch của thông báo');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT title_en IS NULL FROM notifications WHERE id='77777777-7777-7777-7777-777777777777'$$,'true','đọc được cột bản dịch của thông báo của mình');
+
 -- ---------------------------------------------------------------- Tổng kết
 SELECT CASE WHEN ok THEN 'PASS' ELSE 'FAIL' END AS ket_qua, label AS ca_kiem_thu, CASE WHEN ok THEN '' ELSE detail END AS chi_tiet FROM test_results ORDER BY ok, label;
 DO $$

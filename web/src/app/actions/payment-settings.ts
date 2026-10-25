@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { encryptSecret, EncryptionConfigError } from '@/lib/crypto'
 import { PaymentGatewayError, registerWebhook } from '@/lib/payos'
 import { resolveAppUrl } from '@/lib/app-url'
+import { tr } from '@/lib/localize-error'
 
 export interface SavePaymentSettingsInput {
   clientId: string
@@ -48,21 +49,21 @@ function maskAccount(n: string) {
 
 export async function savePaymentSettings(clubId: string, input: SavePaymentSettingsInput): Promise<SavePaymentSettingsResult> {
   const auth = await requireClubOwner(clubId)
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
   const clientId = input.clientId?.trim()
   const apiKey = input.apiKey?.trim()
   const checksumKey = input.checksumKey?.trim()
   if (!clientId || !apiKey || !checksumKey) {
-    return { error: 'Vui lòng nhập đủ Client ID, API Key và Checksum Key' }
+    return { error: await tr('Vui lòng nhập đủ Client ID, API Key và Checksum Key') }
   }
   if ([clientId, apiKey, checksumKey].some((v) => v.length > 200)) {
-    return { error: 'Khóa nhập vào không hợp lệ' }
+    return { error: await tr('Khóa nhập vào không hợp lệ') }
   }
 
   const appUrl = resolveAppUrl()
   if (process.env.NODE_ENV === 'production' && /localhost|127\.0\.0\.1/.test(appUrl)) {
-    return { error: 'Máy chủ chưa đặt NEXT_PUBLIC_APP_URL là tên miền thật nên chưa thể đăng ký webhook với PayOS.' }
+    return { error: await tr('Máy chủ chưa đặt NEXT_PUBLIC_APP_URL là tên miền thật nên chưa thể đăng ký webhook với PayOS.') }
   }
 
   let encrypted
@@ -71,7 +72,7 @@ export async function savePaymentSettings(clubId: string, input: SavePaymentSett
   } catch (err) {
     if (err instanceof EncryptionConfigError) {
       console.error('savePaymentSettings:', err.message)
-      return { error: 'Máy chủ chưa cấu hình mã hóa khóa thanh toán. Vui lòng liên hệ quản trị nền tảng.' }
+      return { error: await tr('Máy chủ chưa cấu hình mã hóa khóa thanh toán. Vui lòng liên hệ quản trị nền tảng.') }
     }
     throw err
   }
@@ -89,7 +90,7 @@ export async function savePaymentSettings(clubId: string, input: SavePaymentSett
   // Đổi sang bộ khóa khác (khác Client ID) khi còn đơn đang chờ thì chặn
   const { data: existing } = await admin.from('club_payment_settings').select('payos_client_id').eq('club_id', clubId).maybeSingle()
   if (existing && existing.payos_client_id !== clientId && (await hasPendingClubPayments(clubId))) {
-    return { error: PENDING_MESSAGE }
+    return { error: await tr(PENDING_MESSAGE) }
   }
 
   const { error: saveErr } = await admin.from('club_payment_settings').upsert({
@@ -101,7 +102,7 @@ export async function savePaymentSettings(clubId: string, input: SavePaymentSett
   })
   if (saveErr) {
     console.error('savePaymentSettings: lưu lỗi', saveErr)
-    return { error: 'Không lưu được cấu hình. Vui lòng thử lại.' }
+    return { error: await tr('Không lưu được cấu hình. Vui lòng thử lại.') }
   }
   await admin.from('clubs').update({ accepts_online_payment: true }).eq('id', clubId)
 
@@ -116,15 +117,15 @@ export async function savePaymentSettings(clubId: string, input: SavePaymentSett
 
 export async function removePaymentSettings(clubId: string): Promise<{ error?: string; success?: boolean }> {
   const auth = await requireClubOwner(clubId)
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
-  if (await hasPendingClubPayments(clubId)) return { error: PENDING_MESSAGE }
+  if (await hasPendingClubPayments(clubId)) return { error: await tr(PENDING_MESSAGE) }
 
   const admin = createAdminClient()
   const { error } = await admin.from('club_payment_settings').delete().eq('club_id', clubId)
   if (error) {
     console.error('removePaymentSettings lỗi', error)
-    return { error: 'Không ngắt kết nối được. Vui lòng thử lại.' }
+    return { error: await tr('Không ngắt kết nối được. Vui lòng thử lại.') }
   }
   await admin.from('clubs').update({ accepts_online_payment: false }).eq('id', clubId)
 

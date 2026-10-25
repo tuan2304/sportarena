@@ -35,8 +35,10 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - Cancel a booking yourself under the venue's policy: early cancellations are refunded, late ones forfeit the deposit, and an owner cancellation always refunds in full. Track the refund status right in the booking.
 - Player profile: avatar, skill level, phone number and a public profile page with statistics.
 - Real-time notifications, venue reviews and support requests.
+- Match hosts approve or decline join requests right from the push notification (Approve / Decline buttons).
+- Owners can use the mobile app (Owner tab) to confirm bank-transfer deposits, cancel bookings, mark them as played, refund deposits and call customers.
 - On the mobile app: book (and open a match at the same time), pay the deposit, cancel, change your avatar, view player profiles and receive push notifications.
-- The web interface is available in **Vietnamese and English** (switch with the language button; the default follows your browser).
+- The web interface and the mobile app are available in **Vietnamese and English** (web: language button in the header; mobile: Profile tab; the default follows your browser or phone). This covers the owner and admin areas and notifications too (new notifications are stored with an English copy; older ones stay Vietnamese).
 
 **Venue owners**
 - Manage venues, courts, opening hours and location; upload venue photos directly (JPG, PNG, WebP) and choose a cover.
@@ -51,7 +53,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - A support inbox (tickets) between administrators, owners and players.
 - Announcements for updates or maintenance, sent to any group of users.
 
-**Interface**: light and dark themes, readable contrast, works on phones, with an Expo mobile app. Owner and admin areas are currently Vietnamese only.
+**Interface**: light and dark themes, readable contrast, works on phones, with an Expo mobile app. The owner and admin areas are bilingual too.
 
 ## Technical highlights
 
@@ -61,7 +63,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - **Defence in depth.** Row Level Security is on for every table, users cannot write to business tables directly, and every write goes through a Server Action that checks permissions. Those rules have their own SQL test suite running in Docker. Scripts are protected by a per-request nonce Content-Security-Policy with no `unsafe-inline`.
 - **Realtime.** Bookings, matches, chat, notifications and tickets update through Supabase Realtime.
 - **Consistent Vietnam time zone.** Display and statistics use Vietnam time even when the server runs in UTC.
-- **Testing and CI.** Hundreds of Vitest tests for business logic, an SQL RLS test suite, and GitHub Actions running typecheck, lint, tests, build, Playwright end-to-end tests (including the nonce CSP check) and the mobile typecheck on every push.
+- **Testing and CI.** Hundreds of Vitest tests for business logic, an SQL RLS test suite, and GitHub Actions running typecheck, lint, tests, build, Playwright end-to-end tests (logins for the three roles, role guards, both languages, the nonce CSP check) and the mobile typecheck on every push.
 - **Bilingual UI.** Cookie-based language selection with `next-intl` (no URL changes); a test fails if an English string is missing or a placeholder differs, and server error messages are translated at the boundary.
 
 ## Technology
@@ -370,6 +372,5 @@ The diagram only shows the core tables. There are more for notifications, chat, 
 
 - Automatic deposit refunds through the payment provider's API (today the owner transfers the money back and confirms).
 - More automatic payment gateways (MoMo, VNPay...) alongside PayOS and manual transfer.
-- Mobile: let owners approve bookings and manage the schedule in the app (the app is for players today), and push notifications with quick actions (approve/decline a join request).
-- Translate the owner and admin areas into English.
-- End-to-end tests for flows that need a real login (booking, opening a match), which needs a test Supabase instead of the current mock.
+- Mobile: creating venues and editing prices in the app (today the owner tab only handles deposits, cancellations, refunds and the schedule).
+- End-to-end tests for flows that write data (booking, opening a match, payments): the Playwright suite already logs in as the three roles and checks the UI, but the mock Supabase does not simulate RLS or write logic, so these need a real test Supabase instance.

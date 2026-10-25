@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React, { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { colors } from '../theme/colors'
@@ -12,6 +13,7 @@ interface AuthFormProps {
 
 /** Đăng nhập / đăng ký bằng email và mật khẩu. Tài khoản đăng ký ở app luôn là người chơi; chủ sân đăng ký trên web. */
 export default function AuthForm({ onSignedIn }: AuthFormProps) {
+  const { t } = useI18n()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -24,11 +26,11 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
   async function submit() {
     setError(null)
     const mail = email.trim().toLowerCase()
-    if (!EMAIL.test(mail)) return setError('Email không hợp lệ')
-    if (!password) return setError('Vui lòng nhập mật khẩu')
+    if (!EMAIL.test(mail)) return setError(t('auth.invalidEmail'))
+    if (!password) return setError(t('auth.needPassword'))
     if (isRegister) {
-      if (fullName.trim().length < 2) return setError('Họ tên cần ít nhất 2 ký tự')
-      if (password.length < MIN_PASSWORD) return setError(`Mật khẩu cần ít nhất ${MIN_PASSWORD} ký tự`)
+      if (fullName.trim().length < 2) return setError(t('auth.nameShort'))
+      if (password.length < MIN_PASSWORD) return setError(t('auth.passwordShort', { min: MIN_PASSWORD }))
     }
 
     setBusy(true)
@@ -39,16 +41,16 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
           password,
           options: { data: { full_name: fullName.trim(), role: 'player' } },
         })
-        if (err) return setError(err.message || 'Không thể tạo tài khoản. Vui lòng thử lại.')
+        if (err) return setError(err.message || t('auth.createFailed'))
         if (!data.session) {
           // Dự án bật xác nhận email: chưa có phiên cho tới khi bấm link trong thư
-          Alert.alert('Kiểm tra email', 'Chúng tôi đã gửi thư xác nhận. Hãy bấm vào liên kết trong thư rồi đăng nhập.')
+          Alert.alert(t('auth.checkEmailTitle'), t('auth.checkEmailText'))
           setMode('login')
           return
         }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({ email: mail, password })
-        if (err) return setError('Email hoặc mật khẩu không chính xác')
+        if (err) return setError(t('auth.wrong'))
       }
       setPassword('')
       onSignedIn()
@@ -59,13 +61,13 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</Text>
-      <Text style={styles.sub}>Đăng nhập để đặt sân, tham gia kèo và nhận thông báo.</Text>
+      <Text style={styles.title}>{isRegister ? t('auth.createTitle') : t('auth.loginTitle')}</Text>
+      <Text style={styles.sub}>{t('auth.subtitle')}</Text>
 
       {isRegister && (
         <TextInput
           style={styles.input}
-          placeholder="Họ và tên"
+          placeholder={t('auth.fullName')}
           placeholderTextColor={colors.textMuted}
           value={fullName}
           onChangeText={setFullName}
@@ -88,7 +90,7 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
       />
       <TextInput
         style={styles.input}
-        placeholder={isRegister ? `Mật khẩu (tối thiểu ${MIN_PASSWORD} ký tự)` : 'Mật khẩu'}
+        placeholder={isRegister ? t('auth.passwordPlaceholderNew', { min: MIN_PASSWORD }) : t('auth.passwordPlaceholder')}
         placeholderTextColor={colors.textMuted}
         value={password}
         onChangeText={setPassword}
@@ -106,7 +108,7 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
       )}
 
       <TouchableOpacity style={[styles.btn, busy && styles.btnDisabled]} onPress={submit} disabled={busy} accessibilityRole="button">
-        {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{isRegister ? 'Đăng ký' : 'Đăng nhập'}</Text>}
+        {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{isRegister ? t('auth.register') : t('auth.loginTitle')}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -116,7 +118,7 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
         }}
         style={styles.switch}
       >
-        <Text style={styles.switchText}>{isRegister ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}</Text>
+        <Text style={styles.switchText}>{isRegister ? t('auth.switchToLogin') : t('auth.switchToRegister')}</Text>
       </TouchableOpacity>
     </View>
   )

@@ -3,27 +3,25 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { notifyUser } from '@/lib/notify'
 import { checkCourtAllowance } from '@/lib/club-limits'
 import { getClubDeletionBlocker, getCourtDeletionBlocker } from '@/lib/deletion-guards'
 import { requireClubOwner } from '@/lib/auth-guards'
 import { isValidLatLng } from '@/lib/maps'
 import { validatePricingRule } from '@/lib/pricing-rule'
-import { cancelBookingAsOwner } from '@/lib/booking-cancel'
-import { isManualPayment, latestPayment } from '@/lib/manual-payment'
-import { settlePayment } from '@/lib/payments'
+import { isOwnerBookingStatus, updateBookingStatusForOwner } from '@/lib/owner-booking'
+import { tr } from '@/lib/localize-error'
 
 export async function createClub(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Bạn cần đăng nhập để thực hiện tác vụ này' }
+    return { error: await tr('Bạn cần đăng nhập để thực hiện tác vụ này') }
   }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
   if (profile?.role !== 'owner' && profile?.role !== 'admin') {
-    return { error: 'Chỉ tài khoản chủ sân mới tạo được cụm sân' }
+    return { error: await tr('Chỉ tài khoản chủ sân mới tạo được cụm sân') }
   }
 
   const name = formData.get('name') as string
@@ -44,7 +42,7 @@ export async function createClub(formData: FormData) {
     latitude = Number(latRaw)
     longitude = Number(lngRaw)
     if (!isValidLatLng(latitude, longitude)) {
-      return { error: 'Toạ độ vị trí không hợp lệ' }
+      return { error: await tr('Toạ độ vị trí không hợp lệ') }
     }
   }
 
@@ -53,7 +51,7 @@ export async function createClub(formData: FormData) {
     : ['wifi', 'parking', 'shower']
 
   if (!name || !address) {
-    return { error: 'Vui lòng nhập tên cụm sân và địa chỉ' }
+    return { error: await tr('Vui lòng nhập tên cụm sân và địa chỉ') }
   }
 
   const { data, error } = await supabase.from('clubs').insert({
@@ -72,7 +70,7 @@ export async function createClub(formData: FormData) {
   }).select().single()
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/clubs')
@@ -85,7 +83,7 @@ export async function createCourt(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Bạn cần đăng nhập' }
+    return { error: await tr('Bạn cần đăng nhập') }
   }
 
   const clubId = formData.get('clubId') as string
@@ -96,12 +94,12 @@ export async function createCourt(formData: FormData) {
   const depositPercentage = Number(formData.get('depositPercentage')) || 30
 
   if (!clubId || !name || !sportType) {
-    return { error: 'Vui lòng điền đủ thông tin sân con' }
+    return { error: await tr('Vui lòng điền đủ thông tin sân con') }
   }
 
   const allowance = await checkCourtAllowance(supabase, clubId)
   if (!allowance.allowed) {
-    return { error: allowance.message }
+    return { error: await tr(allowance.message) }
   }
 
   const { data, error } = await supabase.from('courts').insert({
@@ -114,7 +112,7 @@ export async function createCourt(formData: FormData) {
   }).select().single()
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/clubs')
@@ -132,7 +130,7 @@ export async function createPricingRule(formData: FormData) {
     endTime: formData.get('endTime') as string | null,
     pricePerHour: Number(formData.get('pricePerHour')),
   })
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return { error: await tr(parsed.error) }
   const { courtId, name, startTime, endTime, pricePerHour } = parsed.value
 
   // Quyền ghi được RLS kiểm tra: chỉ chủ của cụm sân chứa sân này mới chèn được
@@ -146,89 +144,28 @@ export async function createPricingRule(formData: FormData) {
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/pricing')
   return { success: true }
 }
 
-export async function updateBookingStatus(bookingId: string, status: 'confirmed' | 'cancelled' | 'completed') {
-  if (!['confirmed', 'cancelled', 'completed'].includes(status)) {
-    return { error: 'Trạng thái không hợp lệ' }
+export async function updateBookingStatus(
+  bookingId: string,
+  status: 'confirmed' | 'cancelled' | 'completed'
+): Promise<{ error?: string; success?: boolean; refundAmount?: number }> {
+  if (!isOwnerBookingStatus(status)) {
+    return { error: await tr('Trạng thái không hợp lệ') }
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vui lòng đăng nhập' }
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
-  // RLS cho cả người đặt lẫn chủ sân xem được đơn, nên phải kiểm tra rõ ràng đây là chủ cụm sân
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('id, user_id, status, start_time, court:courts ( name, club:clubs ( name, owner_id ) )')
-    .eq('id', bookingId)
-    .maybeSingle()
-
-  const court = booking?.court as unknown as { name: string; club: { name: string; owner_id: string } | null } | null
-  if (!booking || court?.club?.owner_id !== user.id) {
-    return { error: 'Bạn không có quyền thao tác đơn đặt sân này' }
-  }
-
-  const allowed: Record<string, string[]> = {
-    pending: ['confirmed', 'cancelled'], // chủ sân nhận cọc tiền mặt / từ chối
-    confirmed: ['completed', 'cancelled'],
-  }
-  if (!allowed[booking.status]?.includes(status)) {
-    return { error: 'Không thể chuyển đơn từ trạng thái hiện tại sang trạng thái này' }
-  }
-  if (status === 'completed' && new Date(booking.start_time).getTime() > Date.now()) {
-    return { error: 'Chưa đến giờ chơi nên chưa thể đánh dấu hoàn thành' }
-  }
-
-  // Hủy: đi qua quy tắc hoàn cọc (chủ sân hủy thì luôn hoàn đủ) và tự báo cho người đặt
-  if (status === 'cancelled') {
-    const outcome = await cancelBookingAsOwner(bookingId)
-    if (!outcome.ok) return { error: outcome.error }
-    revalidatePath('/owner/schedule')
-    revalidatePath('/owner/dashboard')
-    revalidatePath('/owner/refunds')
-    revalidatePath('/my-bookings')
-    return { success: true, refundAmount: outcome.decision.refundAmount }
-  }
-
-  // Xác nhận đơn thanh toán bằng chuyển khoản thủ công: ghi nhận khoản cọc như một khoản đã thanh toán thật
-  if (status === 'confirmed' && booking.status === 'pending') {
-    const payment = await latestPayment(bookingId)
-    if (payment && isManualPayment(payment) && payment.status !== 'paid') {
-      const settled = await settlePayment({ orderCode: payment.order_code, reference: `MANUAL_${Date.now()}` })
-      if (!settled.ok) return { error: settled.error }
-      revalidatePath('/owner/schedule')
-      revalidatePath('/owner/dashboard')
-      revalidatePath('/my-bookings')
-      return { success: true }
-    }
-  }
-
-  const admin = createAdminClient()
-  const { error } = await admin.from('bookings').update({ status }).eq('id', bookingId)
-  if (error) {
-    console.error('updateBookingStatus lỗi', error)
-    return { error: 'Không thể cập nhật đơn đặt sân' }
-  }
-
-  const labels = { confirmed: 'đã được xác nhận', completed: 'đã hoàn thành' }
-  await notifyUser({
-    userId: booking.user_id,
-    title: `Đơn đặt sân ${labels[status]}`,
-    message: `Đơn đặt ${court.name} (${court.club?.name}) ${labels[status]}.`,
-    type: 'booking',
-    link: `/bookings/${bookingId}`,
-  })
-
-  revalidatePath('/owner/schedule')
-  revalidatePath('/owner/dashboard')
-  revalidatePath('/my-bookings')
-  return { success: true }
+  const result = await updateBookingStatusForOwner(supabase, user, bookingId, status)
+  if ('error' in result) return { error: await tr(result.error) }
+  return result
 }
 
 export async function toggleCourtStatus(courtId: string, isActive: boolean) {
@@ -236,9 +173,9 @@ export async function toggleCourtStatus(courtId: string, isActive: boolean) {
 
   if (isActive) {
     const { data: court } = await supabase.from('courts').select('club_id').eq('id', courtId).maybeSingle()
-    if (!court) return { error: 'Không tìm thấy sân con' }
+    if (!court) return { error: await tr('Không tìm thấy sân con') }
     const allowance = await checkCourtAllowance(supabase, court.club_id, { excludeCourtId: courtId })
-    if (!allowance.allowed) return { error: allowance.message }
+    if (!allowance.allowed) return { error: await tr(allowance.message) }
   }
   const { error } = await supabase
     .from('courts')
@@ -246,7 +183,7 @@ export async function toggleCourtStatus(courtId: string, isActive: boolean) {
     .eq('id', courtId)
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/clubs')
@@ -257,15 +194,15 @@ export async function toggleCourtStatus(courtId: string, isActive: boolean) {
 export async function deleteCourt(courtId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Bạn cần đăng nhập' }
+  if (!user) return { error: await tr('Bạn cần đăng nhập') }
 
   // Sân con công khai ai cũng đọc được nên phải kiểm tra rõ ràng đây là chủ cụm sân
   const { data: court } = await supabase.from('courts').select('id, club:clubs ( owner_id )').eq('id', courtId).maybeSingle()
   const ownerId = (court?.club as unknown as { owner_id: string } | null)?.owner_id
-  if (!court || ownerId !== user.id) return { error: 'Bạn không có quyền xóa sân con này' }
+  if (!court || ownerId !== user.id) return { error: await tr('Bạn không có quyền xóa sân con này') }
 
   const blocker = await getCourtDeletionBlocker(createAdminClient(), courtId)
-  if (blocker) return { error: blocker }
+  if (blocker) return { error: await tr(blocker) }
 
   const { error } = await supabase
     .from('courts')
@@ -273,7 +210,7 @@ export async function deleteCourt(courtId: string) {
     .eq('id', courtId)
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/clubs')
@@ -284,10 +221,10 @@ export async function deleteCourt(courtId: string) {
 
 export async function deleteClub(clubId: string) {
   const auth = await requireClubOwner(clubId)
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
   const blocker = await getClubDeletionBlocker(createAdminClient(), clubId)
-  if (blocker) return { error: blocker }
+  if (blocker) return { error: await tr(blocker) }
 
   const supabase = await createClient()
   const { error } = await supabase
@@ -296,7 +233,7 @@ export async function deleteClub(clubId: string) {
     .eq('id', clubId)
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/clubs')
@@ -313,7 +250,7 @@ export async function deletePricingRule(ruleId: string) {
     .eq('id', ruleId)
 
   if (error) {
-    return { error: error.message }
+    return { error: await tr(error.message) }
   }
 
   revalidatePath('/owner/pricing')
@@ -324,18 +261,18 @@ export async function deletePricingRule(ruleId: string) {
 /** Ghim hoặc xóa vị trí bản đồ của cụm sân (lat/lng = null để xóa). */
 export async function updateClubLocation(clubId: string, lat: number | null, lng: number | null) {
   const auth = await requireClubOwner(clubId)
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
   const clearing = lat === null && lng === null
   if (!clearing && (lat === null || lng === null || !isValidLatLng(lat, lng))) {
-    return { error: 'Toạ độ vị trí không hợp lệ' }
+    return { error: await tr('Toạ độ vị trí không hợp lệ') }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.from('clubs').update({ latitude: lat, longitude: lng }).eq('id', clubId)
   if (error) {
     console.error('updateClubLocation lỗi', error)
-    return { error: 'Không lưu được vị trí. Vui lòng thử lại.' }
+    return { error: await tr('Không lưu được vị trí. Vui lòng thử lại.') }
   }
 
   revalidatePath('/owner/clubs')

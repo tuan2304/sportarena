@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   View,
@@ -49,6 +50,7 @@ const SELECT = `
 `
 
 export default function BookingPaymentScreen({ route, navigation }: any) {
+  const { t, lang } = useI18n()
   const { bookingId } = route.params as { bookingId: string }
   const [booking, setBooking] = useState<BookingRow | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,7 +96,7 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
     const res = await apiPost(`/api/mobile/bookings/${bookingId}/claim`)
     setBusy(false)
     if (!res.ok) {
-      Alert.alert('Không thể gửi', res.error)
+      Alert.alert(t('payment.claimFailed'), res.error)
       return
     }
     setClaimed(true)
@@ -111,17 +113,17 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
       freeCancelHours: booking.court?.club?.free_cancel_hours ?? 24,
       by: 'player',
     })
-    Alert.alert('Hủy đơn đặt sân?', describeOutcome(decision, formatVnd), [
-      { text: 'Giữ lại', style: 'cancel' },
+    Alert.alert(t('payment.cancelTitle'), describeOutcome(decision, formatVnd, lang), [
+      { text: t('payment.keep'), style: 'cancel' },
       {
-        text: 'Hủy đơn',
+        text: t('payment.cancelConfirm'),
         style: 'destructive',
         onPress: async () => {
           setBusy(true)
           const res = await apiPost(`/api/mobile/bookings/${bookingId}/cancel`)
           setBusy(false)
           if (!res.ok) {
-            Alert.alert('Không thể hủy', res.error)
+            Alert.alert(t('payment.cancelFailed'), res.error)
             return
           }
           load()
@@ -140,16 +142,16 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
   if (!booking) {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Không tìm thấy đơn đặt sân.</Text>
+        <Text style={styles.muted}>{t('payment.notFound')}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'BookingsTab' })}>
-          <Text style={styles.link}>Về lịch đặt</Text>
+          <Text style={styles.link}>{t('payment.toBookings')}</Text>
         </TouchableOpacity>
       </View>
     )
   }
 
   const expired = booking.status === 'pending' && secondsLeft <= 0
-  const where = `${booking.court?.name ?? 'Sân'} · ${booking.court?.club?.name ?? ''}`
+  const where = `${booking.court?.name ?? t('payment.courtFallback')} · ${booking.court?.club?.name ?? ''}`
   const when = `${formatTime(booking.start_time)} - ${formatTime(booking.end_time)} · ${formatDate(booking.start_time)}`
 
   const goBookings = () => navigation.navigate('MainTabs', { screen: 'BookingsTab' })
@@ -157,10 +159,10 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={goBookings} accessibilityLabel="Về lịch đặt">
+        <TouchableOpacity style={styles.backBtn} onPress={goBookings} accessibilityLabel={t('payment.toBookings')}>
           <ChevronLeft size={22} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thanh toán cọc</Text>
+        <Text style={styles.headerTitle}>{t('payment.headerTitle')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -173,13 +175,13 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
         {booking.status === 'confirmed' && (
           <View style={[styles.result, { borderColor: colors.success }]}>
             <CheckCircle2 size={36} color={colors.success} />
-            <Text style={styles.resultTitle}>Đặt sân thành công!</Text>
-            <Text style={styles.resultText}>Tiền cọc {formatVnd(booking.deposit_amount)} đã được ghi nhận. Lịch sân đã được khóa cho bạn.</Text>
+            <Text style={styles.resultTitle}>{t('payment.successTitle')}</Text>
+            <Text style={styles.resultText}>{t('payment.successText', { amount: formatVnd(booking.deposit_amount) })}</Text>
             <TouchableOpacity style={styles.primaryBtn} onPress={goBookings}>
-              <Text style={styles.primaryText}>Xem lịch đặt của tôi</Text>
+              <Text style={styles.primaryText}>{t('payment.viewMine')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.ghostBtn} onPress={handleCancel} disabled={busy}>
-              <Text style={styles.ghostText}>Hủy đơn</Text>
+              <Text style={styles.ghostText}>{t('payment.cancelConfirm')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -187,20 +189,20 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
         {(booking.status === 'cancelled' || expired) && booking.status !== 'confirmed' && (
           <View style={[styles.result, { borderColor: colors.danger }]}>
             <XCircle size={36} color={colors.danger} />
-            <Text style={styles.resultTitle}>{booking.status === 'cancelled' ? 'Đơn đã được hủy' : 'Hết thời gian giữ chỗ'}</Text>
+            <Text style={styles.resultTitle}>{booking.status === 'cancelled' ? t('payment.cancelled') : t('payment.expired')}</Text>
             <Text style={styles.resultText}>
               {booking.status === 'cancelled'
-                ? 'Khung giờ đã được nhả ra cho người khác.'
-                : 'Đơn quá hạn chưa cọc và sẽ được hủy tự động.'}
+                ? t('payment.releasedText')
+                : t('payment.expiredText')}
             </Text>
             {booking.refund_status === 'pending' && (
-              <Text style={styles.refund}>Chờ chủ sân hoàn cọc {formatVnd(booking.refund_amount)}</Text>
+              <Text style={styles.refund}>{t('payment.refundPending', { amount: formatVnd(booking.refund_amount) })}</Text>
             )}
             {booking.refund_status === 'refunded' && (
-              <Text style={[styles.refund, { color: colors.success }]}>Đã hoàn cọc {formatVnd(booking.refund_amount)}</Text>
+              <Text style={[styles.refund, { color: colors.success }]}>{t('payment.refundDone', { amount: formatVnd(booking.refund_amount) })}</Text>
             )}
             <TouchableOpacity style={styles.primaryBtn} onPress={goBookings}>
-              <Text style={styles.primaryText}>Về lịch đặt</Text>
+              <Text style={styles.primaryText}>{t('payment.toBookings')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -209,40 +211,40 @@ export default function BookingPaymentScreen({ route, navigation }: any) {
           <>
             <View style={styles.countdown}>
               <Clock size={16} color={colors.accent} />
-              <Text style={styles.countdownText}>Giữ chỗ còn {formatCountdown(secondsLeft)}</Text>
+              <Text style={styles.countdownText}>{t('payment.holdLeft', { time: formatCountdown(secondsLeft) })}</Text>
             </View>
 
             <View style={styles.qrBox}>
               {payment?.qr_code_url?.startsWith(QR_HOST) ? (
-                <Image source={{ uri: payment.qr_code_url }} style={styles.qr} resizeMode="contain" accessibilityLabel="Mã VietQR đặt cọc" />
+                <Image source={{ uri: payment.qr_code_url }} style={styles.qr} resizeMode="contain" accessibilityLabel={t('payment.qrAlt')} />
               ) : (
-                <Text style={styles.muted}>Không tải được mã QR. Vui lòng mở lại đơn này.</Text>
+                <Text style={styles.muted}>{t('payment.qrFailed')}</Text>
               )}
             </View>
 
-            <Text style={styles.amountLabel}>Số tiền cọc cần chuyển</Text>
+            <Text style={styles.amountLabel}>{t('payment.amountLabel')}</Text>
             <Text style={styles.amount}>{formatVnd(booking.deposit_amount)}</Text>
 
             <View style={styles.info}>
-              {payment?.metadata?.account_number && <InfoRow label="Số tài khoản" value={payment.metadata.account_number} />}
-              {payment?.metadata?.account_name && <InfoRow label="Chủ tài khoản" value={payment.metadata.account_name} />}
-              <InfoRow label="Nội dung chuyển khoản" value={payment?.metadata?.description ?? `SPORT ${payment?.order_code ?? ''}`} highlight />
+              {payment?.metadata?.account_number && <InfoRow label={t('payment.accountNumber')} value={payment.metadata.account_number} />}
+              {payment?.metadata?.account_name && <InfoRow label={t('payment.accountName')} value={payment.metadata.account_name} />}
+              <InfoRow label={t('payment.transferNote')} value={payment?.metadata?.description ?? `SPORT ${payment?.order_code ?? ''}`} highlight />
             </View>
 
             {isManual ? (
               claimed ? (
-                <Text style={styles.waiting}>Đã báo chủ sân. Chủ sân sẽ đối chiếu và xác nhận đơn; màn hình này tự cập nhật.</Text>
+                <Text style={styles.waiting}>{t('payment.claimed')}</Text>
               ) : (
                 <TouchableOpacity style={[styles.primaryBtn, busy && styles.disabled]} onPress={handleClaim} disabled={busy}>
-                  {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.primaryText}>Tôi đã chuyển khoản</Text>}
+                  {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.primaryText}>{t('payment.claim')}</Text>}
                 </TouchableOpacity>
               )
             ) : (
-              <Text style={styles.waiting}>Quét mã bằng app ngân hàng. Đơn tự xác nhận ngay khi nhận được tiền.</Text>
+              <Text style={styles.waiting}>{t('payment.autoNote')}</Text>
             )}
 
             <TouchableOpacity style={styles.ghostBtn} onPress={handleCancel} disabled={busy}>
-              <Text style={styles.ghostText}>Hủy đơn giữ chỗ này</Text>
+              <Text style={styles.ghostText}>{t('payment.cancelHold')}</Text>
             </TouchableOpacity>
           </>
         )}

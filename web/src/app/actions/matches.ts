@@ -8,6 +8,7 @@ import { notifyUser } from '@/lib/notify'
 import { isMatchSkill } from '@/lib/constants'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { tr } from '@/lib/localize-error'
+import { respondToParticipant } from '@/lib/match-members'
 export interface CreateMatchInput {
   bookingId: string
   title: string
@@ -143,6 +144,7 @@ export async function joinMatch(matchId: string, message?: string) {
   }
 
   const note = message?.trim().slice(0, 300) || null
+  let participantId: string | null = null
 
   const { data: existing } = await admin
     .from('match_participants')
@@ -167,10 +169,14 @@ export async function joinMatch(matchId: string, message?: string) {
       .update({ status: 'pending', message: note, joined_at: new Date().toISOString() })
       .eq('id', existing.id)
     if (reapplyErr) return { error: await tr('Không thể gửi lại yêu cầu tham gia') }
+    participantId = existing.id
   } else {
-    const { error: insertErr } = await admin
+    const { data: inserted, error: insertErr } = await admin
       .from('match_participants')
       .insert({ match_id: matchId, user_id: user.id, status: 'pending', message: note })
+      .select('id')
+      .single()
+    if (inserted) participantId = inserted.id
     if (insertErr) {
       console.error('joinMatch lỗi', insertErr)
       return { error: await tr('Không thể gửi yêu cầu tham gia') }
@@ -182,6 +188,8 @@ export async function joinMatch(matchId: string, message?: string) {
     title: 'Có người xin tham gia kèo! 🏓',
     message: `Một người chơi vừa gửi yêu cầu tham gia kèo "${match.title}". Bấm để xem và duyệt thành viên.`,
     type: 'match',
+    // Thông báo đẩy có nút Duyệt / Từ chối ngay trên thông báo (app mobile gọi API respond với participantId này)
+    push: participantId ? { categoryId: 'join_request', data: { participantId } } : undefined,
     link: `/matches/${matchId}`,
   })
 
@@ -189,7 +197,7 @@ export async function joinMatch(matchId: string, message?: string) {
   return { success: true }
 }
 
-export async function respondParticipant(participantId: string, newStatus: 'accepted' | 'rejected') {
+export async function respondParticipant(participantId: string, newStatus: 'accepted' | 'rejected'): Promise<{ error?: string; success?: boolean }> {
   const { user } = await requireUser()
   if (!user) {
     return { error: await tr('Vui lòng đăng nhập') }
@@ -198,66 +206,9 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
     return { error: await tr('Trạng thái không hợp lệ') }
   }
 
-  const admin = createAdminClient()
-
-  const { data: participant, error: pErr } = await admin
-    .from('match_participants')
-    .select('id, status, user_id, match:matches ( id, title, creator_id, status )')
-    .eq('id', participantId)
-    .single()
-
-  if (pErr || !participant) {
-    return { error: await tr('Không tìm thấy thông tin người tham gia') }
-  }
-
-  const match = participant.match as unknown as {
-    id: string
-    title: string
-    creator_id: string
-    status: string
-  } | null
-
-  if (!match || match.creator_id !== user.id) {
-    return { error: await tr('Chỉ chủ phòng mới có quyền duyệt thành viên') }
-  }
-  if (participant.status !== 'pending') {
-    return { error: await tr('Yêu cầu này đã được xử lý trước đó') }
-  }
-  if (newStatus === 'accepted' && !['open', 'full'].includes(match.status)) {
-    return { error: await tr('Kèo này đã đóng, không thể duyệt thêm thành viên') }
-  }
-
-  // current_players và status của kèo do trigger trong database tự cập nhật; trigger cũng chặn duyệt quá số người
-  const { error: updateErr } = await admin
-    .from('match_participants')
-    .update({ status: newStatus })
-    .eq('id', participantId)
-    .eq('status', 'pending')
-
-  if (updateErr) {
-    if (updateErr.message.includes('MATCH_FULL')) {
-      return { error: await tr('Kèo đã đủ người, không thể duyệt thêm') }
-    }
-    if (updateErr.message.includes('MATCH_CLOSED')) {
-      return { error: await tr('Kèo này đã đóng, không thể duyệt thêm thành viên') }
-    }
-    console.error('respondParticipant lỗi', updateErr)
-    return { error: await tr('Không thể cập nhật yêu cầu') }
-  }
-
-  const isAccepted = newStatus === 'accepted'
-  await notifyUser({
-    userId: participant.user_id,
-    title: isAccepted ? 'Yêu cầu tham gia đã được duyệt! 🎉' : 'Yêu cầu tham gia bị từ chối',
-    message: isAccepted
-      ? `Chủ kèo đã duyệt bạn vào kèo "${match.title || 'giao lưu'}". Hãy chuẩn bị đồ và ra sân đúng giờ nhé!`
-      : `Rất tiếc, yêu cầu tham gia kèo "${match.title || 'giao lưu'}" của bạn đã bị từ chối bởi chủ kèo.`,
-    type: 'match',
-    link: `/matches/${match.id}`,
-  })
-
-  revalidatePath(`/matches/${match.id}`)
-  return { success: true }
+  const result = await respondToParticipant(user.id, participantId, newStatus)
+  if ('error' in result) return { error: await tr(result.error) }
+  return result
 }
 
 export async function leaveMatch(matchId: string) {

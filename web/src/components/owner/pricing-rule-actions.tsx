@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { deletePricingRule } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
@@ -13,14 +14,15 @@ interface PricingRuleActionsProps {
 }
 
 export function PricingRuleActions({ ruleId, ruleName }: PricingRuleActionsProps) {
+  const t = useTranslations('ownerPricing.actions')
   const [loading, setLoading] = useState(false)
   const askConfirm = useConfirm()
 
   async function handleDelete() {
     const ok = await askConfirm({
-      title: `Xóa khung giá "${ruleName}"?`,
-      description: 'Các đơn đặt mới sẽ dùng giá cơ bản của sân thay cho khung giá này.',
-      confirmText: 'Xóa khung giá',
+      title: t('deleteTitle', { name: ruleName }),
+      description: t('deleteText'),
+      confirmText: t('deleteConfirm'),
       destructive: true,
     })
     if (!ok) return
@@ -28,7 +30,7 @@ export function PricingRuleActions({ ruleId, ruleName }: PricingRuleActionsProps
     const res = await deletePricingRule(ruleId)
     setLoading(false)
     if (res?.error) toast.error(res.error)
-    else toast.success('Đã xóa khung giá')
+    else toast.success(t('deleted'))
   }
 
   return (
@@ -41,7 +43,7 @@ export function PricingRuleActions({ ruleId, ruleName }: PricingRuleActionsProps
           variant="ghost"
           onClick={handleDelete}
           className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
-          title="Xóa khung giá này"
+          title={t('deleteTooltip')}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

@@ -73,4 +73,15 @@ test.describe('Đa ngôn ngữ Việt - Anh', () => {
     expect(problems).toEqual([])
     await context.close()
   })
+
+  test.describe('API cho app mobile', () => {
+    test('lỗi được dịch theo Accept-Language của app', async ({ request }) => {
+      const en = await request.post('/api/mobile/bookings', { data: {}, headers: { 'Accept-Language': 'en' } })
+      expect(en.status()).toBe(401)
+      expect((await en.json()).error).toBe('Your session is invalid or has expired')
+
+      const vi = await request.post('/api/mobile/bookings', { data: {}, headers: { 'Accept-Language': 'vi' } })
+      expect((await vi.json()).error).toBe('Phiên đăng nhập không hợp lệ hoặc đã hết hạn')
+    })
+  })
 })

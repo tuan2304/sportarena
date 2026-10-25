@@ -98,3 +98,34 @@ export function parseCreateBookingBody(body: unknown): ParsedBody<CreateBookingB
 
   return { ok: true, value: { courtId, startTime, endTime, ...(note ? { note } : {}), ...(matchConfig ? { match: matchConfig } : {}) } }
 }
+
+export interface RespondBody {
+  status: 'accepted' | 'rejected'
+}
+
+/** Thân yêu cầu duyệt/từ chối người xin vào kèo. */
+export function parseRespondBody(body: unknown): ParsedBody<RespondBody> {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return { ok: false, error: 'Dữ liệu gửi lên không hợp lệ' }
+  }
+  const { status } = body as Record<string, unknown>
+  if (status !== 'accepted' && status !== 'rejected') return { ok: false, error: 'Trạng thái không hợp lệ' }
+  return { ok: true, value: { status } }
+}
+
+export interface OwnerStatusBody {
+  status: 'confirmed' | 'cancelled' | 'completed'
+}
+
+/** Thân yêu cầu đổi trạng thái đơn của chủ sân. */
+export function parseOwnerStatusBody(body: unknown): ParsedBody<OwnerStatusBody> {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return { ok: false, error: 'Dữ liệu gửi lên không hợp lệ' }
+  }
+  const { status } = body as Record<string, unknown>
+  if (status !== 'confirmed' && status !== 'cancelled' && status !== 'completed') {
+    return { ok: false, error: 'Trạng thái không hợp lệ' }
+  }
+  return { ok: true, value: { status } }
+}
+

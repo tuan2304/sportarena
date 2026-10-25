@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -18,6 +19,7 @@ import { formatDate, formatTime as formatVnTime, formatVnd } from '../lib/format
 import { decideCancellation, describeOutcome } from '../shared/cancellation'
 
 export default function MyBookingsScreen({ navigation }: any) {
+  const { t, lang } = useI18n()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -77,15 +79,15 @@ export default function MyBookingsScreen({ navigation }: any) {
       freeCancelHours: item.court?.club?.free_cancel_hours ?? 24,
       by: 'player',
     })
-    Alert.alert('Hủy đơn đặt sân?', describeOutcome(decision, formatVnd), [
-      { text: 'Giữ lại', style: 'cancel' },
+    Alert.alert(t('payment.cancelTitle'), describeOutcome(decision, formatVnd, lang), [
+      { text: t('payment.keep'), style: 'cancel' },
       {
-        text: 'Hủy đơn',
+        text: t('payment.cancelConfirm'),
         style: 'destructive',
         onPress: async () => {
           const res = await apiPost(`/api/mobile/bookings/${item.id}/cancel`)
           if (!res.ok) {
-            Alert.alert('Không thể hủy', res.error)
+            Alert.alert(t('payment.cancelFailed'), res.error)
             return
           }
           loadBookings()
@@ -103,17 +105,17 @@ export default function MyBookingsScreen({ navigation }: any) {
     const canCancel = (isConfirmed || isPending) && new Date(item.start_time).getTime() > Date.now()
     const refundLabel =
       item.refund_status === 'pending'
-        ? `Chờ chủ sân hoàn cọc ${formatVnd(item.refund_amount)}`
+        ? t('payment.refundPending', { amount: formatVnd(item.refund_amount) })
         : item.refund_status === 'refunded'
-          ? `Đã hoàn cọc ${formatVnd(item.refund_amount)}`
+          ? t('payment.refundDone', { amount: formatVnd(item.refund_amount) })
           : null
 
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.courtName}>{court?.name || 'Sân tiêu chuẩn'}</Text>
-            <Text style={styles.clubName}>{club?.name || 'Cụm sân'}</Text>
+            <Text style={styles.courtName}>{court?.name || t('myBookings.courtFallback')}</Text>
+            <Text style={styles.clubName}>{club?.name || t('myBookings.clubFallback')}</Text>
           </View>
           <View
             style={[
@@ -134,7 +136,7 @@ export default function MyBookingsScreen({ navigation }: any) {
                 { color: isConfirmed ? colors.success : isCancelled ? colors.danger : colors.warning },
               ]}
             >
-              {isConfirmed ? 'Đã cọc' : isCancelled ? 'Đã hủy' : 'Chờ cọc'}
+              {isConfirmed ? t('myBookings.paid') : isCancelled ? t('myBookings.cancelled') : t('myBookings.pending')}
             </Text>
           </View>
         </View>
@@ -142,14 +144,14 @@ export default function MyBookingsScreen({ navigation }: any) {
         <View style={styles.infoRow}>
           <Clock size={14} color={colors.textSecondary} />
           <Text style={styles.infoText}>
-            Từ: {formatTime(item.start_time)}
+            {t('myBookings.from', { time: formatTime(item.start_time) })}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Clock size={14} color={colors.textSecondary} />
           <Text style={styles.infoText}>
-            Đến: {formatTime(item.end_time)}
+            {t('myBookings.to', { time: formatTime(item.end_time) })}
           </Text>
         </View>
 
@@ -162,14 +164,14 @@ export default function MyBookingsScreen({ navigation }: any) {
 
         <View style={styles.cardFooter}>
           <View>
-            <Text style={styles.label}>Tổng tiền</Text>
+            <Text style={styles.label}>{t('myBookings.total')}</Text>
             <Text style={styles.price}>
               {Number(item.total_price).toLocaleString('vi-VN')} đ
             </Text>
           </View>
 
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={styles.label}>Tiền cọc</Text>
+            <Text style={styles.label}>{t('myBookings.deposit')}</Text>
             <Text style={[styles.price, { color: colors.primary }]}>
               {Number(item.deposit_amount).toLocaleString('vi-VN')} đ
             </Text>
@@ -185,12 +187,12 @@ export default function MyBookingsScreen({ navigation }: any) {
                 style={styles.payBtn}
                 onPress={() => navigation.navigate('BookingPayment', { bookingId: item.id })}
               >
-                <Text style={styles.payBtnText}>Thanh toán cọc</Text>
+                <Text style={styles.payBtnText}>{t('myBookings.payDeposit')}</Text>
               </TouchableOpacity>
             )}
             {canCancel && (
               <TouchableOpacity style={styles.cancelBtn} onPress={() => handleCancel(item)}>
-                <Text style={styles.cancelBtnText}>Hủy đơn</Text>
+                <Text style={styles.cancelBtnText}>{t('myBookings.cancelBooking')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -202,8 +204,8 @@ export default function MyBookingsScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Lịch Đặt Sân Của Tôi</Text>
-        <Text style={styles.subtitle}>Danh sách các khung giờ bạn đã đặt và giữ chỗ</Text>
+        <Text style={styles.title}>{t('myBookings.title')}</Text>
+        <Text style={styles.subtitle}>{t('myBookings.subtitle')}</Text>
       </View>
 
       {loading ? (
@@ -229,9 +231,9 @@ export default function MyBookingsScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Calendar size={48} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>Bạn chưa có đơn đặt sân nào</Text>
+              <Text style={styles.emptyTitle}>{t('myBookings.emptyTitle')}</Text>
               <Text style={styles.emptyDesc}>
-                Khám phá các cụm sân và đặt chỗ ngay để sẵn sàng tập luyện!
+                {t('myBookings.emptyText')}
               </Text>
             </View>
           }

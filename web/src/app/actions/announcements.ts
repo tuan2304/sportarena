@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth-guards'
 import { validateAnnouncement } from '@/lib/support'
 import { pushAnnouncement } from '@/lib/notify'
+import { tr } from '@/lib/localize-error'
 
 /** Gửi thông báo cập nhật tới người dùng: mỗi người nhận một thông báo trong chuông. Chỉ quản trị mới gọi được. */
 export async function sendAnnouncement(input: {
@@ -15,10 +16,10 @@ export async function sendAnnouncement(input: {
   link?: string
 }): Promise<{ error?: string; sent?: number }> {
   const auth = await requireAdmin()
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
   const parsed = validateAnnouncement(input)
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return { error: await tr(parsed.error) }
 
   const admin = createAdminClient()
   const { data: row, error: insertError } = await admin
@@ -28,7 +29,7 @@ export async function sendAnnouncement(input: {
     .single()
   if (insertError || !row) {
     console.error('sendAnnouncement: lỗi lưu', insertError)
-    return { error: 'Không lưu được thông báo. Vui lòng thử lại.' }
+    return { error: await tr('Không lưu được thông báo. Vui lòng thử lại.') }
   }
 
   const { data: sent, error: sendError } = await admin.rpc('broadcast_announcement', { p_id: row.id })
@@ -36,7 +37,7 @@ export async function sendAnnouncement(input: {
     console.error('sendAnnouncement: lỗi gửi', sendError)
     // Không để lại bản ghi chưa gửi
     await admin.from('announcements').delete().eq('id', row.id)
-    return { error: 'Không gửi được thông báo. Vui lòng thử lại.' }
+    return { error: await tr('Không gửi được thông báo. Vui lòng thử lại.') }
   }
 
   await pushAnnouncement(parsed.value.audience, {

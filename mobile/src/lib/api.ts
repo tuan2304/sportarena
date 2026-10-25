@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { currentLang, translate } from '../i18n'
 
 /**
  * Gọi API của máy chủ web (Next.js). Ghi vào bảng đặt sân bị khóa với người dùng nên mọi thao tác ghi
@@ -12,11 +13,11 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; s
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
   if (!API_URL) {
-    return { ok: false, status: 0, error: 'Ứng dụng chưa cấu hình địa chỉ máy chủ (EXPO_PUBLIC_API_URL).' }
+    return { ok: false, status: 0, error: translate('api.noServer') }
   }
 
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return { ok: false, status: 401, error: 'Vui lòng đăng nhập để tiếp tục.' }
+  if (!session) return { ok: false, status: 401, error: translate('api.loginRequired') }
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -25,6 +26,8 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResul
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // Máy chủ dịch thông báo lỗi theo ngôn ngữ này
+        'Accept-Language': currentLang(),
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body ?? {}),
@@ -39,7 +42,7 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResul
     }
 
     if (!res.ok) {
-      return { ok: false, status: res.status, error: json?.error ?? 'Máy chủ gặp sự cố. Vui lòng thử lại sau.' }
+      return { ok: false, status: res.status, error: json?.error ?? translate('api.serverError') }
     }
     return { ok: true, data: json as T }
   } catch (err: any) {
@@ -47,7 +50,7 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResul
     return {
       ok: false,
       status: 0,
-      error: timedOut ? 'Máy chủ phản hồi quá lâu. Vui lòng thử lại.' : 'Không kết nối được máy chủ. Kiểm tra mạng và thử lại.',
+      error: timedOut ? translate('api.timeout') : translate('api.network'),
     }
   } finally {
     clearTimeout(timer)

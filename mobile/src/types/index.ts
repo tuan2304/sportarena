@@ -119,6 +119,9 @@ export interface NotificationItem {
   user_id: string
   title: string
   message: string
+  /** Bản tiếng Anh do máy chủ điền; null thì hiện bản gốc */
+  title_en?: string | null
+  message_en?: string | null
   type: 'booking' | 'payment' | 'match' | 'system'
   link: string | null
   is_read: boolean

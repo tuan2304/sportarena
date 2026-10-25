@@ -35,8 +35,10 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - Tự hủy đơn theo chính sách của cụm sân: hủy sớm được hoàn cọc, hủy muộn mất cọc, chủ sân hủy thì luôn hoàn đủ. Theo dõi trạng thái hoàn cọc ngay trong đơn.
 - Hồ sơ người chơi: ảnh đại diện, trình độ, số điện thoại và trang hồ sơ công khai có thống kê.
 - Thông báo realtime, đánh giá sân, gửi yêu cầu hỗ trợ.
+- Chủ kèo duyệt hoặc từ chối người xin vào kèo ngay trên thông báo đẩy (nút Duyệt / Từ chối).
+- Chủ sân dùng app mobile để duyệt cọc chuyển khoản, hủy đơn, đánh dấu đã chơi, hoàn cọc và gọi khách (tab Chủ Sân).
 - Đặt sân (kèm mở kèo ghép ngay lúc đặt), thanh toán cọc, hủy đơn, đổi ảnh đại diện, xem hồ sơ người chơi và nhận thông báo đẩy ngay trên ứng dụng mobile.
-- Giao diện web có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ trên thanh đầu trang, mặc định theo trình duyệt (khu vực chủ sân và quản trị hiện mới có tiếng Việt).
+- Giao diện web và app mobile có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ (web: thanh đầu trang; mobile: tab Cá Nhân), mặc định theo trình duyệt hoặc điện thoại. Gồm cả khu vực chủ sân, quản trị và thông báo (thông báo mới được lưu kèm bản tiếng Anh, thông báo cũ vẫn hiện tiếng Việt).
 
 **Chủ sân**
 - Quản lý cụm sân, sân con, giờ mở cửa và vị trí; tải ảnh sân trực tiếp (JPG, PNG, WebP), chọn ảnh bìa.
@@ -61,7 +63,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Bảo mật nhiều lớp.** Mọi bảng bật Row Level Security, người dùng không có quyền ghi trực tiếp vào bảng nghiệp vụ, mọi thao tác ghi đi qua Server Action có kiểm tra quyền. Các quy tắc đó có bộ test SQL riêng chạy trong Docker.
 - **Realtime.** Lịch đặt, kèo, chat, thông báo và ticket cập nhật qua Supabase Realtime.
 - **Múi giờ Việt Nam nhất quán.** Hiển thị và thống kê đều tính theo giờ Việt Nam, kể cả khi máy chủ chạy UTC.
-- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (kèm kiểm tra CSP có nonce) và kiểm tra mobile ở mỗi lần push.
+- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (đăng nhập 3 vai trò, phân quyền, giao diện hai ngôn ngữ, kiểm tra CSP có nonce) và kiểm tra mobile ở mỗi lần push.
 
 ## Công nghệ
 
@@ -368,6 +370,5 @@ Sơ đồ chỉ vẽ các bảng lõi. Ngoài ra còn các bảng cho thông bá
 
 - Hoàn cọc tự động qua API của nhà cung cấp thanh toán (hiện chủ sân tự chuyển trả rồi xác nhận).
 - Thêm cổng thanh toán tự động khác (MoMo, VNPay...) bên cạnh PayOS và chuyển khoản thủ công.
-- Mobile: chủ sân dùng ứng dụng để duyệt đơn và quản lý lịch (hiện app dành cho người chơi), thông báo đẩy có hành động nhanh (duyệt/từ chối người xin vào kèo).
-- Dịch tiếng Anh cho khu vực chủ sân và quản trị, thông báo trong chuông (hiện lưu sẵn bằng tiếng Việt) và app mobile.
-- Kiểm thử đầu-cuối cho luồng có đăng nhập thật (đặt sân, mở kèo) cần một Supabase thử nghiệm thay cho bản giả hiện tại.
+- Mobile: chủ sân tạo cụm sân và chỉnh bảng giá trên app (hiện app chỉ có duyệt cọc, hủy, hoàn cọc và xem lịch).
+- Kiểm thử đầu-cuối cho các luồng ghi dữ liệu (đặt sân, mở kèo, thanh toán): bản Playwright hiện đăng nhập được 3 vai trò và kiểm tra giao diện, nhưng Supabase giả không giả lập RLS hay logic ghi nên cần một Supabase thử nghiệm thật.

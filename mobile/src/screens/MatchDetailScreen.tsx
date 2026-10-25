@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -26,6 +28,7 @@ import {
 } from 'lucide-react-native'
 
 export default function MatchDetailScreen({ route, navigation }: any) {
+  const { t } = useI18n()
   const { matchId } = route.params
   const [match, setMatch] = useState<Match | null>(null)
   const [loading, setLoading] = useState(true)
@@ -95,7 +98,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        Alert.alert('Chưa đăng nhập', 'Vui lòng đăng nhập tài khoản trước khi tham gia kèo!')
+        Alert.alert(t('match.loginTitle'), t('match.loginText'))
         return
       }
 
@@ -103,22 +106,22 @@ export default function MatchDetailScreen({ route, navigation }: any) {
         match_id: matchId,
         user_id: user.id,
         status: 'pending',
-        message: joinMessage.trim() || 'Xin chào, cho mình xin 1 slot tham gia giao lưu nhé!',
+        message: joinMessage.trim() || t('match.defaultMessage'),
       })
 
       if (error) {
         if (error.code === '23505') {
-          Alert.alert('Thông báo', 'Bạn đã gửi yêu cầu tham gia kèo này rồi!')
+          Alert.alert(t('common.notice'), t('match.alreadySent'))
         } else {
-          Alert.alert('Lỗi', error.message)
+          Alert.alert(t('common.error'), error.message)
         }
       } else {
-        Alert.alert('Thành công 🎉', 'Yêu cầu của bạn đã được gửi tới chủ kèo. Vui lòng chờ duyệt!')
+        Alert.alert(t('match.sentTitle'), t('match.sentText'))
         setJoinMessage('')
         loadMatchDetail()
       }
     } catch (err: any) {
-      Alert.alert('Lỗi', err.message)
+      Alert.alert(t('common.error'), err.message)
     } finally {
       setSubmitting(false)
     }
@@ -145,7 +148,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
           <ChevronLeft size={22} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Chi Tiết Kèo Giao Lưu
+          {t('match.headerTitle')}
         </Text>
         <View style={{ width: 40 }} />
       </View>
@@ -161,7 +164,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             <View style={styles.skillBadge}>
               <Award size={12} color={colors.primary} />
               <Text style={styles.skillBadgeText}>
-                Trình độ: {match.skill_level === 'all' ? 'Tất cả' : match.skill_level}
+                {t('match.skillLine', { skill: t(`skills.${match.skill_level}` as MessageKey) })}
               </Text>
             </View>
           </View>
@@ -179,11 +182,11 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             <View style={styles.infoRow}>
               <Calendar size={18} color={colors.primary} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.infoLabel}>Thời gian thi đấu</Text>
+                <Text style={styles.infoLabel}>{t('match.time')}</Text>
                 <Text style={styles.infoValue}>
                   {startTime
                     ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')} - ${endTime?.getHours().toString().padStart(2, '0')}:${endTime?.getMinutes().toString().padStart(2, '0')} (${startTime.getDate()}/${startTime.getMonth() + 1}/${startTime.getFullYear()})`
-                    : 'Chưa cập nhật'}
+                    : t('match.notSet')}
                 </Text>
               </View>
             </View>
@@ -193,7 +196,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             <View style={styles.infoRow}>
               <MapPin size={18} color={colors.accent} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.infoLabel}>Địa điểm sân</Text>
+                <Text style={styles.infoLabel}>{t('match.place')}</Text>
                 <Text style={styles.infoValue}>
                   {court?.name} - {club?.name}
                 </Text>
@@ -208,37 +211,37 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             <View style={styles.infoRow}>
               <CircleDollarSign size={18} color={colors.success} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.infoLabel}>Chi phí tham gia</Text>
+                <Text style={styles.infoLabel}>{t('match.cost')}</Text>
                 <Text style={[styles.infoValue, { color: colors.success }]}>
                   {match.cost_sharing_type === 'host_covers' || !match.cost_per_person
-                    ? 'Chủ bao trọn sân (0 đ)'
-                    : `${Number(match.cost_per_person).toLocaleString('vi-VN')} đ / người`}
+                    ? t('match.free')
+                    : t('match.perPerson', { price: Number(match.cost_per_person).toLocaleString('vi-VN') })}
                 </Text>
               </View>
             </View>
           </View>
 
           {/* Creator Info */}
-          <Text style={styles.sectionTitle}>Chủ Kèo</Text>
+          <Text style={styles.sectionTitle}>{t('match.host')}</Text>
           <TouchableOpacity
             style={styles.creatorCard}
             disabled={!match.creator?.id}
             onPress={() => navigation.navigate('PlayerProfile', { userId: match.creator!.id })}
             accessibilityRole="button"
-            accessibilityLabel={`Xem hồ sơ ${match.creator?.full_name ?? 'chủ kèo'}`}
+            accessibilityLabel={t('match.viewProfile', { name: match.creator?.full_name ?? t('match.hostFallback') })}
           >
             <Avatar name={match.creator?.full_name} uri={match.creator?.avatar_url} size={44} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.creatorName}>{match.creator?.full_name || 'Người dùng'}</Text>
+              <Text style={styles.creatorName}>{match.creator?.full_name || t('match.userFallback')}</Text>
               <Text style={styles.creatorSub}>
-                ⭐ Đánh giá: {match.creator?.rating || '5.0'} • Trình độ: {match.creator?.skill_level || 'Cơ bản'}
+                {t('match.ratingLine', { rating: match.creator?.rating || '5.0', skill: match.creator?.skill_level && ['beginner', 'intermediate', 'advanced', 'pro'].includes(match.creator.skill_level) ? t(`skills.${match.creator.skill_level}` as MessageKey) : t('match.basic') })}
               </Text>
             </View>
           </TouchableOpacity>
 
           {/* Participants List */}
           <Text style={styles.sectionTitle}>
-            Thành Viên Đã Tham Gia ({match.participants?.length || 0})
+            {t('match.members', { count: match.participants?.length || 0 })}
           </Text>
 
           {match.participants && match.participants.length > 0 ? (
@@ -253,7 +256,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
                 >
                   <Avatar name={p.profile?.full_name} uri={p.profile?.avatar_url} size={36} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.pName}>{p.profile?.full_name || 'Ứng viên'}</Text>
+                    <Text style={styles.pName}>{p.profile?.full_name || t('match.applicant')}</Text>
                     {p.message && <Text style={styles.pMsg}>"{p.message}"</Text>}
                   </View>
                   <View
@@ -263,22 +266,22 @@ export default function MatchDetailScreen({ route, navigation }: any) {
                     ]}
                   >
                     <Text style={styles.statusPillText}>
-                      {p.status === 'accepted' ? 'Đã duyệt' : 'Chờ duyệt'}
+                      {p.status === 'accepted' ? t('match.approved') : t('match.awaiting')}
                     </Text>
                   </View>
                 </TouchableOpacity>
               ))}
             </View>
           ) : (
-            <Text style={styles.emptyText}>Chưa có người tham gia. Hãy là người đầu tiên!</Text>
+            <Text style={styles.emptyText}>{t('match.noMembers')}</Text>
           )}
 
           {/* Join Section */}
-          <Text style={styles.sectionTitle}>Đăng Ký Tham Gia</Text>
+          <Text style={styles.sectionTitle}>{t('match.join')}</Text>
           <View style={styles.joinBox}>
             <TextInput
               style={styles.messageInput}
-              placeholder="Nhập lời chào hoặc giới thiệu trình độ..."
+              placeholder={t('match.joinPlaceholder')}
               placeholderTextColor={colors.textMuted}
               value={joinMessage}
               onChangeText={setJoinMessage}
@@ -293,7 +296,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             >
               <Send size={16} color={colors.white} />
               <Text style={styles.submitBtnText}>
-                {submitting ? 'Đang gửi...' : 'Gửi Yêu Cầu Tham Gia'}
+                {submitting ? t('match.sending') : t('match.sendRequest')}
               </Text>
             </TouchableOpacity>
           </View>

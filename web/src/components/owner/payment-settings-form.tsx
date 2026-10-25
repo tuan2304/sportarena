@@ -1,5 +1,7 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
+import { intlLocale, type Locale } from '@/i18n/config'
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +22,8 @@ interface PaymentSettingsFormProps {
 }
 
 export function PaymentSettingsForm({ clubId, clubName, connected, clientId, verifiedAt }: PaymentSettingsFormProps) {
+  const t = useTranslations('ownerPayments.form')
+  const locale = useLocale() as Locale
   const [pending, startTransition] = useTransition()
   const askConfirm = useConfirm()
   const [form, setForm] = useState({ clientId: '', apiKey: '', checksumKey: '' })
@@ -39,24 +43,24 @@ export function PaymentSettingsForm({ clubId, clubName, connected, clientId, ver
         setMessage({ type: 'error', text: res.error })
         return
       }
-      toast.success('Đã kết nối PayOS thành công')
+      toast.success(t('connected'))
       setIsConnected(true)
       setSavedClientId(form.clientId.trim())
       setForm({ clientId: '', apiKey: '', checksumKey: '' })
       setMessage({
         type: 'success',
         text: res.account
-          ? `Đã kết nối. Tiền cọc sẽ về: ${res.account.accountName} • ${res.account.bankName} • ${res.account.accountNumber}`
-          : 'Đã kết nối thành công.',
+          ? t('connectedAccount', { name: res.account.accountName, bank: res.account.bankName, number: res.account.accountNumber })
+          : t('connectedOk'),
       })
     })
   }
 
   async function handleRemove() {
     const ok = await askConfirm({
-      title: `Ngắt kết nối PayOS của "${clubName}"?`,
-      description: 'Cụm sân sẽ không nhận đặt sân online cho đến khi bạn kết nối lại.',
-      confirmText: 'Ngắt kết nối',
+      title: t('disconnectTitle', { name: clubName }),
+      description: t('disconnectText'),
+      confirmText: t('disconnectConfirm'),
       destructive: true,
     })
     if (!ok) return
@@ -69,8 +73,8 @@ export function PaymentSettingsForm({ clubId, clubName, connected, clientId, ver
       }
       setIsConnected(false)
       setSavedClientId(null)
-      setMessage({ type: 'success', text: 'Đã ngắt kết nối.' })
-      toast.success('Đã ngắt kết nối PayOS')
+      setMessage({ type: 'success', text: t('disconnected') })
+      toast.success(t('disconnectedToast'))
     })
   }
 
@@ -79,11 +83,11 @@ export function PaymentSettingsForm({ clubId, clubName, connected, clientId, ver
       <div className="flex items-center gap-2 flex-wrap">
         {isConnected ? (
           <Badge className="bg-emerald-700 text-white gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden /> Đã kết nối PayOS của bạn
+            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden /> {t('isConnected')}
           </Badge>
         ) : (
           <Badge variant="outline" className="text-amber-800 dark:text-amber-300 border-amber-500/40">
-            Chưa kết nối
+            {t('notConnected')}
           </Badge>
         )}
         {isConnected && savedClientId && (
@@ -91,7 +95,7 @@ export function PaymentSettingsForm({ clubId, clubName, connected, clientId, ver
         )}
         {isConnected && verifiedAt && (
           <span className="text-xs text-muted-foreground">
-            Xác thực lần cuối: {new Date(verifiedAt).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
+            {t('verified', { date: new Date(verifiedAt).toLocaleDateString(intlLocale(locale), { timeZone: 'Asia/Ho_Chi_Minh' }) })}
           </span>
         )}
       </div>
@@ -131,15 +135,15 @@ export function PaymentSettingsForm({ clubId, clubName, connected, clientId, ver
         <div className="sm:col-span-3 flex flex-wrap items-center gap-2">
           <Button type="submit" disabled={pending} className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
             {pending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Plug className="w-4 h-4 mr-1.5" aria-hidden />}
-            {isConnected ? 'Cập nhật khóa & kiểm tra lại' : 'Lưu & kết nối'}
+            {isConnected ? t('update') : t('save')}
           </Button>
           {isConnected && (
             <Button type="button" variant="outline" disabled={pending} onClick={handleRemove} className="text-red-700 dark:text-red-400 border-red-500/30 cursor-pointer">
               <Unplug className="w-4 h-4 mr-1.5" aria-hidden />
-              Ngắt kết nối
+              {t('disconnect')}
             </Button>
           )}
-          <p className="text-xs text-muted-foreground">Khóa được mã hóa trước khi lưu và không bao giờ hiển thị lại.</p>
+          <p className="text-xs text-muted-foreground">{t('encrypted')}</p>
         </div>
       </form>
     </div>

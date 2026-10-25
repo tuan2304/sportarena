@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,9 +8,13 @@ import { CancelPolicyForm } from '@/components/owner/cancel-policy-form'
 import { resolveAppUrl } from '@/lib/app-url'
 import { Wallet, Landmark } from 'lucide-react'
 
-export const metadata = { title: 'Nhận thanh toán' }
+export async function generateMetadata() {
+  const t = await getTranslations('ownerPayments')
+  return { title: t('metaTitle') }
+}
 
 export default async function OwnerPaymentsPage() {
+  const t = await getTranslations('ownerPayments')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -39,29 +44,33 @@ export default async function OwnerPaymentsPage() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
           <Wallet className="w-7 h-7 text-emerald-700 dark:text-emerald-400" aria-hidden />
-          Nhận thanh toán
+          {t('title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Kết nối kênh PayOS (tự động xác nhận) hoặc khai báo tài khoản để nhận cọc bằng chuyển khoản thủ công. Tiền cọc của khách chuyển <strong>thẳng vào tài khoản ngân hàng của bạn</strong>, SportArena không giữ hộ.
+          {t.rich('subtitle', { strong: (c) => <strong>{c}</strong> })}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Cách lấy khóa PayOS</CardTitle>
-          <CardDescription>Làm một lần cho mỗi cụm sân (hoặc dùng chung một kênh nếu bạn muốn).</CardDescription>
+          <CardTitle className="text-base">{t('howTitle')}</CardTitle>
+          <CardDescription>{t('howDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <ol className="list-decimal pl-5 space-y-1.5">
             <li>
-              Đăng ký tại <a href="https://my.payos.vn" target="_blank" rel="noreferrer" className="underline text-emerald-700 dark:text-emerald-400">my.payos.vn</a>,
-              tạo một <strong>Kênh thanh toán</strong> và liên kết tài khoản ngân hàng nhận tiền.
+              {t.rich('step1', {
+                strong: (c) => <strong>{c}</strong>,
+                link: (c) => <a href="https://my.payos.vn" target="_blank" rel="noreferrer" className="underline text-emerald-700 dark:text-emerald-400">{c}</a>,
+              })}
             </li>
-            <li>Trong kênh vừa tạo, sao chép <strong>Client ID</strong>, <strong>API Key</strong> và <strong>Checksum Key</strong>.</li>
+            <li>{t.rich('step2', { strong: (c) => <strong>{c}</strong> })}</li>
             <li>
-              Dán vào ô bên dưới rồi bấm <strong>Lưu &amp; kết nối</strong>. Hệ thống tự đăng ký webhook
-              <code className="mx-1 px-1.5 py-0.5 rounded bg-muted text-xs">{resolveAppUrl()}/api/payos/webhook</code>
-              cho kênh của bạn và kiểm tra khóa.
+              {t.rich('step3', {
+                strong: (c) => <strong>{c}</strong>,
+                code: (c) => <code className="mx-1 px-1.5 py-0.5 rounded bg-muted text-xs">{c}</code>,
+                url: `${resolveAppUrl()}/api/payos/webhook`,
+              })}
             </li>
           </ol>
         </CardContent>
@@ -70,7 +79,7 @@ export default async function OwnerPaymentsPage() {
       {clubList.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Bạn chưa có cụm sân nào. Hãy tạo cụm sân ở mục &quot;Cụm sân &amp; Sân con&quot; trước.
+            {t('noClubs')}
           </CardContent>
         </Card>
       ) : (
@@ -107,7 +116,7 @@ export default async function OwnerPaymentsPage() {
                   <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-xs text-amber-900 dark:text-amber-200 flex gap-2">
                     <Landmark className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
                     <span>
-                      Cụm sân này <strong>chưa nhận đặt sân online</strong> cho tới khi bạn kết nối PayOS hoặc bật chuyển khoản thủ công.
+                      {t.rich('notAccepting', { strong: (c) => <strong>{c}</strong> })}
                     </span>
                   </div>
                 )}

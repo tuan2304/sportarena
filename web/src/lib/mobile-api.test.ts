@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bearerToken, isUuid, MAX_NOTE_LENGTH, parseCreateBookingBody } from './mobile-api'
+import { bearerToken, isUuid, MAX_NOTE_LENGTH, parseCreateBookingBody, parseOwnerStatusBody, parseRespondBody } from './mobile-api'
 
 const court = '11111111-1111-1111-1111-111111111111'
 const ok = { courtId: court, startTime: '2026-11-05T11:00:00.000Z', endTime: '2026-11-05T12:00:00.000Z' }
@@ -101,3 +101,28 @@ describe('parseCreateBookingBody: mở kèo ghép', () => {
     expect(parseCreateBookingBody({ ...ok, match: null })).toEqual({ ok: true, value: ok })
   })
 })
+
+describe('parseOwnerStatusBody', () => {
+  it('nhận ba trạng thái hợp lệ', () => {
+    for (const status of ['confirmed', 'cancelled', 'completed']) {
+      expect(parseOwnerStatusBody({ status })).toEqual({ ok: true, value: { status } })
+    }
+  })
+
+  it('từ chối trạng thái lạ và dữ liệu sai dạng', () => {
+    for (const bad of [{ status: 'pending' }, { status: 'refunded' }, { status: '' }, { status: 1 }, {}, null, 'x', [], undefined]) {
+      expect(parseOwnerStatusBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parseRespondBody', () => {
+  it('chỉ nhận accepted hoặc rejected', () => {
+    expect(parseRespondBody({ status: 'accepted' })).toEqual({ ok: true, value: { status: 'accepted' } })
+    expect(parseRespondBody({ status: 'rejected' })).toEqual({ ok: true, value: { status: 'rejected' } })
+    for (const bad of [{ status: 'pending' }, { status: 'left' }, { status: '' }, {}, null, 'x', [], 1]) {
+      expect(parseRespondBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+

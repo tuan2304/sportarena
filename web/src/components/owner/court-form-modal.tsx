@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { useState } from 'react'
 import { createCourt } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
@@ -21,6 +23,9 @@ interface CourtFormModalProps {
 }
 
 export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
+  const t = useTranslations('owner.courtForm')
+  const tc = useTranslations('common')
+  const labels = useLabels()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,15 +58,15 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
         className="border-dashed border-emerald-500/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
       >
         <Plus className="w-3.5 h-3.5 mr-1" />
-        Thêm Sân Con
+        {t('openButton')}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Thêm Sân Con</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{t('title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Thêm sân con thuộc cụm: <strong>{clubName}</strong>
+            {t('description', { club: clubName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -73,46 +78,46 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="courtName">Tên / Số sân *</Label>
+            <Label htmlFor="courtName">{t('name')}</Label>
             <Input
               id="courtName"
               name="name"
-              placeholder="Sân 1 (Sân 7 người)"
+              placeholder={t('namePlaceholder')}
               required
               className="h-9"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="sportType">Bộ môn thể thao *</Label>
+            <Label htmlFor="sportType">{t('sport')}</Label>
             <select
               id="sportType"
               name="sportType"
               required
               className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="football">Bóng đá mini</option>
-              <option value="badminton">Cầu lông</option>
-              <option value="pickleball">Pickleball</option>
-              <option value="tennis">Tennis</option>
-              <option value="basketball">Bóng rổ</option>
+              <option value="football">{t('football')}</option>
+              <option value="badminton">{labels.sport('badminton')}</option>
+              <option value="pickleball">{labels.sport('pickleball')}</option>
+              <option value="tennis">{labels.sport('tennis')}</option>
+              <option value="basketball">{labels.sport('basketball')}</option>
             </select>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="surfaceType">Loại mặt sân</Label>
+            <Label htmlFor="surfaceType">{t('surface')}</Label>
             <Input
               id="surfaceType"
               name="surfaceType"
-              placeholder="Cỏ nhân tạo / Thảm cao su / Sàn gỗ"
-              defaultValue="Cỏ nhân tạo"
+              placeholder={t('surfacePlaceholder')}
+              defaultValue={t('surfaceDefault')}
               className="h-9"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="basePrice">Giá cơ bản (đ/giờ) *</Label>
+              <Label htmlFor="basePrice">{t('basePrice')}</Label>
               <Input
                 id="basePrice"
                 name="basePricePerHour"
@@ -126,7 +131,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="depositPercentage">Mức cọc (%) *</Label>
+              <Label htmlFor="depositPercentage">{t('deposit')}</Label>
               <Input
                 id="depositPercentage"
                 name="depositPercentage"
@@ -147,7 +152,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
               onClick={() => setOpen(false)}
               className="cursor-pointer"
             >
-              Hủy
+              {tc('cancel')}
             </Button>
             <Button
               type="submit"
@@ -157,10 +162,10 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Đang thêm...
+                  {t('adding')}
                 </>
               ) : (
-                'Thêm Sân Con'
+                t('submit')
               )}
             </Button>
           </DialogFooter>

@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -14,6 +15,7 @@ import { NotificationItem } from '../types'
 import { Bell, CircleDollarSign, Calendar, Flame, Info, CheckCheck } from 'lucide-react-native'
 
 export default function NotificationsScreen() {
+  const { t, lang } = useI18n()
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -99,12 +101,12 @@ export default function NotificationsScreen() {
         <View style={styles.cardContent}>
           <View style={styles.titleRow}>
             <Text style={styles.notifTitle} numberOfLines={1}>
-              {item.title}
+              {lang === 'en' && item.title_en ? item.title_en : item.title}
             </Text>
             {!item.is_read && <View style={styles.unreadDot} />}
           </View>
           <Text style={styles.notifMessage} numberOfLines={3}>
-            {item.message}
+            {lang === 'en' && item.message_en ? item.message_en : item.message}
           </Text>
           <Text style={styles.notifTime}>
             {new Date(item.created_at).toLocaleDateString('vi-VN', {
@@ -123,14 +125,14 @@ export default function NotificationsScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Thông Báo</Text>
-          <Text style={styles.subtitle}>Cập nhật tin tức đặt sân và ghép kèo tức thời</Text>
+          <Text style={styles.title}>{t('notifications.title')}</Text>
+          <Text style={styles.subtitle}>{t('notifications.subtitle')}</Text>
         </View>
 
         {notifications.some((n) => !n.is_read) && (
           <TouchableOpacity style={styles.readAllBtn} onPress={markAllAsRead}>
             <CheckCheck size={14} color={colors.primary} />
-            <Text style={styles.readAllText}>Đã đọc</Text>
+            <Text style={styles.readAllText}>{t('notifications.markRead')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -158,8 +160,8 @@ export default function NotificationsScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Bell size={48} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>Chưa có thông báo nào</Text>
-              <Text style={styles.emptyDesc}>Các cập nhật giao dịch và ghép kèo sẽ xuất hiện ở đây.</Text>
+              <Text style={styles.emptyTitle}>{t('notifications.emptyTitle')}</Text>
+              <Text style={styles.emptyDesc}>{t('notifications.emptyText')}</Text>
             </View>
           }
         />

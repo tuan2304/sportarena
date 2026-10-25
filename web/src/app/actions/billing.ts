@@ -8,6 +8,7 @@ import { createPaymentLink, getPlatformCredentials, isPaymentSimulationEnabled, 
 import { resolveAppUrl } from '@/lib/app-url'
 import { getProMonthlyPrice, SUBSCRIPTION_MONTH_OPTIONS, subscriptionPrice } from '@/lib/billing'
 import { settleSubscription } from '@/lib/subscriptions'
+import { tr } from '@/lib/localize-error'
 
 export interface SubscriptionCheckout {
   paymentId: string
@@ -28,10 +29,10 @@ export async function createSubscriptionPayment(
   months: number
 ): Promise<{ error?: string; checkout?: SubscriptionCheckout }> {
   const auth = await requireClubOwner(clubId)
-  if ('error' in auth) return { error: auth.error }
+  if ('error' in auth) return { error: await tr(auth.error) }
 
   if (!(SUBSCRIPTION_MONTH_OPTIONS as readonly number[]).includes(months)) {
-    return { error: 'Số tháng không hợp lệ' }
+    return { error: await tr('Số tháng không hợp lệ') }
   }
   const amount = subscriptionPrice(months, getProMonthlyPrice())
 
@@ -39,7 +40,7 @@ export async function createSubscriptionPayment(
   const { data: orderCode, error: seqErr } = await admin.rpc('next_payos_order_code')
   if (seqErr || orderCode == null) {
     console.error('createSubscriptionPayment: không cấp được orderCode', seqErr)
-    return { error: 'Không thể khởi tạo thanh toán. Vui lòng thử lại.' }
+    return { error: await tr('Không thể khởi tạo thanh toán. Vui lòng thử lại.') }
   }
 
   const appUrl = resolveAppUrl()
@@ -88,7 +89,7 @@ export async function createSubscriptionPayment(
 
   if (insertErr || !row) {
     console.error('createSubscriptionPayment: lưu lỗi', insertErr)
-    return { error: 'Không lưu được giao dịch. Vui lòng thử lại.' }
+    return { error: await tr('Không lưu được giao dịch. Vui lòng thử lại.') }
   }
 
   return {
@@ -110,13 +111,13 @@ export async function createSubscriptionPayment(
 export async function getSubscriptionPaymentStatus(paymentId: string): Promise<{ status?: string; error?: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase.from('subscription_payments').select('status').eq('id', paymentId).maybeSingle()
-  if (error || !data) return { error: 'Không tìm thấy giao dịch' }
+  if (error || !data) return { error: await tr('Không tìm thấy giao dịch') }
   return { status: data.status }
 }
 
 /** Chỉ cho môi trường dev khi nền tảng chưa có khóa PayOS. */
 export async function simulateSubscriptionPayment(paymentId: string): Promise<{ error?: string; success?: boolean }> {
-  if (!isPaymentSimulationEnabled()) return { error: 'Tính năng giả lập không khả dụng' }
+  if (!isPaymentSimulationEnabled()) return { error: await tr('Tính năng giả lập không khả dụng') }
 
   const supabase = await createClient()
   const { data: row } = await supabase
@@ -124,13 +125,13 @@ export async function simulateSubscriptionPayment(paymentId: string): Promise<{ 
     .select('order_code, metadata')
     .eq('id', paymentId)
     .maybeSingle()
-  if (!row) return { error: 'Không tìm thấy giao dịch của bạn' }
+  if (!row) return { error: await tr('Không tìm thấy giao dịch của bạn') }
   if ((row.metadata as { simulated?: boolean } | null)?.simulated !== true) {
-    return { error: 'Giao dịch này là giao dịch thật, không thể giả lập' }
+    return { error: await tr('Giao dịch này là giao dịch thật, không thể giả lập') }
   }
 
   const result = await settleSubscription({ orderCode: Number(row.order_code), reference: `SIM_${Date.now()}` })
-  if (!result.ok) return { error: result.error }
+  if (!result.ok) return { error: await tr(result.error) }
   revalidatePath('/owner/billing')
   return { success: true }
 }

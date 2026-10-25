@@ -15,6 +15,12 @@ export interface PushPayload {
   message: string
   /** Đường dẫn trong app/web (vd. /matches/<id>); app mobile dùng để mở đúng màn hình khi chạm vào thông báo */
   link?: string | null
+  /** Bản tiếng Anh, gửi cho người nhận đã chọn tiếng Anh (profiles.locale = 'en') */
+  en?: { title: string; message: string } | null
+  /** Nhóm nút hành động trên thông báo (đăng ký ở app, vd. 'join_request') */
+  categoryId?: string
+  /** Dữ liệu kèm theo cho app (vd. participantId); chỉ nhận chuỗi ngắn */
+  data?: Record<string, string>
 }
 
 export interface ExpoMessage {
@@ -23,11 +29,21 @@ export interface ExpoMessage {
   body: string
   sound: 'default'
   channelId: 'default'
-  data: { link?: string }
+  categoryId?: string
+  data: Record<string, string>
 }
 
 export function isExpoPushToken(value: unknown): value is string {
   return typeof value === 'string' && TOKEN_FORMAT.test(value)
+}
+
+/** Chỉ giữ dữ liệu là chuỗi ngắn (thông báo đẩy bị giới hạn kích thước, và không nên chứa gì nhạy cảm). */
+function extraData(data: Record<string, string> | undefined): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [key, value] of Object.entries(data ?? {})) {
+    if (key !== 'link' && typeof value === 'string' && value.length <= 100) out[key] = value
+  }
+  return out
 }
 
 /** Dựng tin nhắn cho từng token hợp lệ; bỏ token sai dạng và loại trùng. */
@@ -39,7 +55,8 @@ export function buildExpoMessages(tokens: readonly string[], payload: PushPayloa
     body: payload.message.slice(0, 240),
     sound: 'default' as const,
     channelId: 'default' as const,
-    data: link ? { link } : {},
+    ...(payload.categoryId && /^[a-z_]{1,40}$/.test(payload.categoryId) ? { categoryId: payload.categoryId } : {}),
+    data: { ...extraData(payload.data), ...(link ? { link } : {}) },
   }))
 }
 
@@ -103,9 +120,14 @@ export async function pushToUsers(userIds: readonly string[], payload: PushPaylo
   if (userIds.length === 0 || !payload.title) return
   try {
     const admin = createAdminClient()
-    const { data, error } = await admin.from('push_tokens').select('token').in('user_id', [...userIds])
+    const { data, error } = await admin.from('push_tokens').select('token, profile:profiles!inner(locale)').in('user_id', [...userIds])
     if (error) throw error
-    await sendPushToTokens((data ?? []).map((r) => r.token), payload)
+    const rows = data ?? []
+    const english = rows.filter((r) => r.profile?.locale === 'en').map((r) => r.token)
+    const vietnamese = rows.filter((r) => r.profile?.locale !== 'en').map((r) => r.token)
+    await sendPushToTokens(vietnamese, payload)
+    // Người nhận chọn tiếng Anh mà chưa có bản dịch thì vẫn nhận bản gốc
+    await sendPushToTokens(english, payload.en ? { ...payload, ...payload.en } : payload)
   } catch (err) {
     console.error('pushToUsers lỗi:', err instanceof Error ? err.message : err)
   }

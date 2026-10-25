@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 interface BarChartProps {
   title: string
   data: Array<{ label: string; value: number }>
@@ -8,6 +9,7 @@ interface BarChartProps {
 
 /** Biểu đồ cột đơn giản bằng CSS: không cần thư viện, đọc được bằng trình đọc màn hình qua bảng ẩn. */
 export function BarChart({ title, data, format = (v) => String(v), barClassName = 'bg-emerald-600' }: BarChartProps) {
+  const t = useTranslations('admin.chart')
   const max = Math.max(1, ...data.map((d) => d.value))
   const total = data.reduce((sum, d) => sum + d.value, 0)
   // Nhãn trục chỉ hiện ở đầu, giữa và cuối để không chồng chữ khi có 90 ngày
@@ -17,7 +19,7 @@ export function BarChart({ title, data, format = (v) => String(v), barClassName 
     <figure className="space-y-3">
       <figcaption className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-semibold">{title}</span>
-        <span className="text-xs text-muted-foreground">Tổng: {format(total)}</span>
+        <span className="text-xs text-muted-foreground">{t('total', { value: format(total) })}</span>
       </figcaption>
       <div className="flex items-end gap-px h-36" aria-hidden>
         {data.map((d) => (

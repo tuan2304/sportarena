@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react-native'
 
 export default function ClubDetailScreen({ route, navigation }: any) {
+  const { t } = useI18n()
   const { clubId } = route.params
   const [club, setClub] = useState<Club | null>(null)
   const [loading, setLoading] = useState(true)
@@ -105,7 +107,7 @@ export default function ClubDetailScreen({ route, navigation }: any) {
           <TouchableOpacity
             style={styles.directionsBtn}
             accessibilityRole="button"
-            accessibilityLabel="Chỉ đường tới sân bằng Google Maps"
+            accessibilityLabel={t('clubs.directionsLabel')}
             onPress={async () => {
               const ok = await openDirections({
                 latitude: club.latitude,
@@ -113,17 +115,17 @@ export default function ClubDetailScreen({ route, navigation }: any) {
                 name: club.name,
                 address: `${club.address}, ${club.district ?? ''}, ${club.city ?? ''}`,
               }).catch(() => false)
-              if (!ok) Alert.alert('Không mở được bản đồ', 'Vui lòng thử lại sau.')
+              if (!ok) Alert.alert(t('clubs.mapFailed'), t('profile.tryLater'))
             }}
           >
             <Navigation size={16} color="#fff" />
-            <Text style={styles.directionsText}>Chỉ đường (Google Maps)</Text>
+            <Text style={styles.directionsText}>{t('clubs.directions')}</Text>
           </TouchableOpacity>
 
           <View style={styles.infoRow}>
             <Clock size={16} color={colors.accent} />
             <Text style={styles.infoText}>
-              Mở cửa: {club.open_time.slice(0, 5)} - {club.close_time.slice(0, 5)} hàng ngày
+              {t('clubs.hours', { open: club.open_time.slice(0, 5), close: club.close_time.slice(0, 5) })}
             </Text>
           </View>
 
@@ -134,33 +136,33 @@ export default function ClubDetailScreen({ route, navigation }: any) {
           )}
 
           {/* Amenities */}
-          <Text style={styles.sectionTitle}>Tiện Ích Sân Bãi</Text>
+          <Text style={styles.sectionTitle}>{t('clubs.amenities')}</Text>
           <View style={styles.amenitiesGrid}>
             <View style={styles.amenityItem}>
               <Wifi size={16} color={colors.primary} />
-              <Text style={styles.amenityText}>Wifi miễn phí</Text>
+              <Text style={styles.amenityText}>{t('clubs.wifi')}</Text>
             </View>
             <View style={styles.amenityItem}>
               <Car size={16} color={colors.primary} />
-              <Text style={styles.amenityText}>Bãi đỗ ô tô/xe máy</Text>
+              <Text style={styles.amenityText}>{t('clubs.parking')}</Text>
             </View>
             <View style={styles.amenityItem}>
               <ShowerHead size={16} color={colors.primary} />
-              <Text style={styles.amenityText}>Phòng tắm nóng lạnh</Text>
+              <Text style={styles.amenityText}>{t('clubs.shower')}</Text>
             </View>
             <View style={styles.amenityItem}>
               <Coffee size={16} color={colors.primary} />
-              <Text style={styles.amenityText}>Căn tin giải khát</Text>
+              <Text style={styles.amenityText}>{t('clubs.canteen')}</Text>
             </View>
             <View style={styles.amenityItem}>
               <Lightbulb size={16} color={colors.primary} />
-              <Text style={styles.amenityText}>Đèn LED chống chói</Text>
+              <Text style={styles.amenityText}>{t('clubs.led')}</Text>
             </View>
           </View>
 
           {/* Courts List */}
           <Text style={styles.sectionTitle}>
-            Danh Sách Sân Con ({club.courts?.length || 0})
+            {t('clubs.courts', { count: club.courts?.length || 0 })}
           </Text>
 
           <View style={styles.courtsList}>
@@ -170,7 +172,7 @@ export default function ClubDetailScreen({ route, navigation }: any) {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.courtName}>{court.name}</Text>
                     <Text style={styles.courtSurface}>
-                      Mặt sân: {court.surface_type || 'Tiêu chuẩn'} • Cọc {court.deposit_percentage}%
+                      {t('clubs.surface', { surface: court.surface_type || t('clubs.standard'), percent: court.deposit_percentage })}
                     </Text>
                   </View>
                   <View style={styles.sportBadge}>
@@ -180,9 +182,9 @@ export default function ClubDetailScreen({ route, navigation }: any) {
 
                 <View style={styles.courtCardFooter}>
                   <View>
-                    <Text style={styles.priceLabel}>Giá cơ bản</Text>
+                    <Text style={styles.priceLabel}>{t('clubs.basePrice')}</Text>
                     <Text style={styles.priceValue}>
-                      {Number(court.base_price_per_hour).toLocaleString('vi-VN')} đ/h
+                      {t('common.perHour', { price: Number(court.base_price_per_hour).toLocaleString('vi-VN') })}
                     </Text>
                   </View>
 
@@ -192,7 +194,7 @@ export default function ClubDetailScreen({ route, navigation }: any) {
                     onPress={() => handleBookCourt(court)}
                   >
                     <Calendar size={14} color={colors.white} />
-                    <Text style={styles.bookBtnText}>Chọn Giờ Đặt</Text>
+                    <Text style={styles.bookBtnText}>{t('clubs.pickTime')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

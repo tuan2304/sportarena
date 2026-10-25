@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { bearerToken, MAX_BODY_BYTES } from '@/lib/mobile-api'
+import { translateServerMessage } from '@/i18n/server-messages'
+import { resolveLocale } from '@/i18n/config'
 import type { Database } from '@/types/database'
 
 /**
@@ -29,18 +31,24 @@ export function jsonResponse(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 }
 
-export const unauthorized = () => jsonResponse({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn' }, 401)
+/** Lỗi trả cho app, dịch theo ngôn ngữ app gửi lên qua header Accept-Language. */
+export function errorResponse(request: NextRequest, message: string, status: number) {
+  const locale = resolveLocale(null, request.headers.get('accept-language'))
+  return jsonResponse({ error: translateServerMessage(message, locale) }, status)
+}
+
+export const unauthorized = (request: NextRequest) => errorResponse(request, 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn', 401)
 
 /** Đọc thân JSON có giới hạn kích thước để không bị gửi thân khổng lồ làm tốn bộ nhớ. */
 export async function readJsonBody(request: NextRequest): Promise<{ ok: true; body: unknown } | { ok: false; response: NextResponse }> {
   const declared = Number(request.headers.get('content-length') ?? 0)
-  if (declared > MAX_BODY_BYTES) return { ok: false, response: jsonResponse({ error: 'Dữ liệu gửi lên quá lớn' }, 413) }
+  if (declared > MAX_BODY_BYTES) return { ok: false, response: errorResponse(request, 'Dữ liệu gửi lên quá lớn', 413) }
 
   try {
     const text = await request.text()
-    if (text.length > MAX_BODY_BYTES) return { ok: false, response: jsonResponse({ error: 'Dữ liệu gửi lên quá lớn' }, 413) }
+    if (text.length > MAX_BODY_BYTES) return { ok: false, response: errorResponse(request, 'Dữ liệu gửi lên quá lớn', 413) }
     return { ok: true, body: text ? JSON.parse(text) : {} }
   } catch {
-    return { ok: false, response: jsonResponse({ error: 'Dữ liệu gửi lên không phải JSON' }, 400) }
+    return { ok: false, response: errorResponse(request, 'Dữ liệu gửi lên không phải JSON', 400) }
   }
 }

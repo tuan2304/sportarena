@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BarChart3, ChevronRight, Home, LifeBuoy, LogOut, Megaphone, ShieldCheck, Wallet } from 'lucide-react'
@@ -9,11 +10,11 @@ import { Button } from '@/components/ui/button'
 import { LogoMark, Wordmark } from '@/components/brand/logo'
 
 const NAV_ITEMS = [
-  { label: 'Thống kê vận hành', href: '/admin', icon: BarChart3, exact: true },
-  { label: 'Hỗ trợ (ticket)', href: '/admin/tickets', icon: LifeBuoy, exact: false },
-  { label: 'Gửi thông báo', href: '/admin/announcements', icon: Megaphone, exact: false },
-  { label: 'Gói dịch vụ', href: '/admin/finance', icon: Wallet, exact: false },
-]
+  { key: 'stats', href: '/admin', icon: BarChart3, exact: true },
+  { key: 'tickets', href: '/admin/tickets', icon: LifeBuoy, exact: false },
+  { key: 'announcements', href: '/admin/announcements', icon: Megaphone, exact: false },
+  { key: 'plans', href: '/admin/finance', icon: Wallet, exact: false },
+] as const
 
 interface AdminSidebarProps {
   userName?: string
@@ -22,6 +23,7 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarProps) {
+  const t = useTranslations('admin.sidebar')
   const pathname = usePathname()
 
   return (
@@ -31,20 +33,20 @@ export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarP
           <LogoMark size={36} />
           <div className="flex flex-col gap-1">
             <Wordmark size={22} />
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Quản trị nền tảng</div>
+            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{t('platform')}</div>
           </div>
         </div>
 
         <div className="p-4 bg-amber-500/5 m-3 rounded-xl border border-amber-500/20">
-          <div className="font-semibold text-sm truncate">{userName || 'Quản trị viên'}</div>
+          <div className="font-semibold text-sm truncate">{userName || t('defaultName')}</div>
           <div className="text-xs text-muted-foreground truncate">{userEmail}</div>
           <Badge variant="outline" className="mt-2 bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30 text-xs font-semibold">
             <ShieldCheck className="w-3 h-3 mr-1" aria-hidden />
-            Quản trị viên
+            {t('role')}
           </Badge>
         </div>
 
-        <nav className="p-3 space-y-1.5" aria-label="Điều hướng quản trị">
+        <nav className="p-3 space-y-1.5" aria-label={t('nav')}>
           {NAV_ITEMS.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
             const Icon = item.icon
@@ -62,12 +64,12 @@ export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarP
               >
                 <span className="flex items-center gap-3">
                   <Icon className="w-4 h-4" aria-hidden />
-                  {item.label}
+                  {t(item.key)}
                 </span>
                 {showBadge ? (
                   <span
                     className="min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center"
-                    aria-label={`${openTickets} yêu cầu đang chờ`}
+                    aria-label={t('openTickets', { count: openTickets })}
                   >
                     {openTickets > 99 ? '99+' : openTickets}
                   </span>
@@ -85,12 +87,12 @@ export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarP
           href="/"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/80"
         >
-          <Home className="w-4 h-4" aria-hidden /> Về trang chủ
+          <Home className="w-4 h-4" aria-hidden /> {t('home')}
         </Link>
         <form action={logout}>
           <Button type="submit" variant="ghost" className="w-full justify-start text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer">
             <LogOut className="w-4 h-4 mr-2" aria-hidden />
-            Đăng xuất
+            {t('logout')}
           </Button>
         </form>
       </div>

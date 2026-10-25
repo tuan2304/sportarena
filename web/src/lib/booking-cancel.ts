@@ -137,7 +137,8 @@ export async function cancelBookingAsPlayer(userId: string, bookingId: string): 
   if (!outcome.ok) return { error: outcome.error }
 
   const { decision, booking } = outcome
-  const where = `${booking.court?.name ?? 'sân'} (${booking.court?.club?.name ?? ''})`
+  const courtName = booking.court?.name ?? 'sân'
+  const clubName = booking.court?.club?.name ?? ''
 
   if (booking.court?.club) {
     await notifyUser({
@@ -145,10 +146,10 @@ export async function cancelBookingAsPlayer(userId: string, bookingId: string): 
       title: decision.refundStatus === 'pending' ? 'Khách hủy đơn, cần hoàn cọc' : 'Khách đã hủy đơn đặt sân',
       message:
         decision.refundStatus === 'pending'
-          ? `Đơn ${where} đã bị khách hủy trong hạn miễn phí. Vui lòng hoàn ${formatVnd(decision.refundAmount)} cho khách.`
+          ? `Đơn ${courtName} (${clubName}) đã bị khách hủy trong hạn miễn phí. Vui lòng hoàn ${formatVnd(decision.refundAmount)} cho khách.`
           : decision.forfeited
-            ? `Đơn ${where} đã bị khách hủy muộn, bạn giữ lại tiền cọc theo chính sách.`
-            : `Đơn ${where} đã bị khách hủy (chưa có khoản cọc).`,
+            ? `Đơn ${courtName} (${clubName}) đã bị khách hủy muộn, bạn giữ lại tiền cọc theo chính sách.`
+            : `Đơn ${courtName} (${clubName}) đã bị khách hủy (chưa có khoản cọc).`,
       type: 'booking',
       link: decision.refundStatus === 'pending' ? '/owner/refunds' : '/owner/schedule',
     })
@@ -168,8 +169,9 @@ export async function cancelBookingAsOwner(bookingId: string) {
     userId: booking.user_id,
     title: 'Đơn đặt sân đã bị chủ sân hủy',
     message:
-      `Đơn đặt ${booking.court?.name} (${booking.court?.club?.name}) đã bị chủ sân hủy.` +
-      (decision.refundStatus === 'pending' ? ` Bạn sẽ được hoàn ${formatVnd(decision.refundAmount)} tiền cọc.` : ''),
+      decision.refundStatus === 'pending'
+        ? `Đơn đặt ${booking.court?.name} (${booking.court?.club?.name}) đã bị chủ sân hủy. Bạn sẽ được hoàn ${formatVnd(decision.refundAmount)} tiền cọc.`
+        : `Đơn đặt ${booking.court?.name} (${booking.court?.club?.name}) đã bị chủ sân hủy.`,
     type: 'booking',
     link: '/my-bookings',
   })

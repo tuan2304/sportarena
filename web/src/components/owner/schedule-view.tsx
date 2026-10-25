@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -56,6 +57,7 @@ const TIME_SLOTS = [
 ]
 
 export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
+  const t = useTranslations('ownerSchedule')
   const router = useRouter()
   const askConfirm = useConfirm()
   const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline')
@@ -111,10 +113,10 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
   async function handleStatusChange(bookingId: string, status: 'confirmed' | 'cancelled' | 'completed') {
     if (status === 'cancelled') {
       const ok = await askConfirm({
-        title: 'Hủy đơn đặt sân này?',
-        description: 'Khách sẽ nhận thông báo. Nếu khách đã cọc, bạn phải hoàn đủ tiền cọc cho khách (xem mục Hoàn cọc).',
-        confirmText: 'Hủy đơn',
-        cancelText: 'Giữ lại',
+        title: t('cancelTitle'),
+        description: t('cancelText'),
+        confirmText: t('cancelConfirm'),
+        cancelText: t('cancelKeep'),
         destructive: true,
       })
       if (!ok) return
@@ -129,9 +131,9 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
       return
     }
     if (status === 'cancelled' && result.refundAmount) {
-      toast.success(`Đã hủy đơn. Bạn cần hoàn ${formatVnd(result.refundAmount)} cho khách tại mục Hoàn cọc.`)
+      toast.success(t('cancelledRefund', { amount: formatVnd(result.refundAmount) }))
     } else if (status === 'cancelled') {
-      toast.success('Đã hủy đơn đặt sân.')
+      toast.success(t('cancelled'))
     }
   }
 
@@ -145,7 +147,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
             variant="outline"
             size="icon"
             onClick={() => changeDate(-1)}
-            aria-label="Ngày trước"
+            aria-label={t('prevDay')}
             className="h-9 w-9 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -165,7 +167,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
             variant="outline"
             size="icon"
             onClick={() => changeDate(1)}
-            aria-label="Ngày sau"
+            aria-label={t('nextDay')}
             className="h-9 w-9 cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
@@ -177,7 +179,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
             onClick={() => setSelectedDate(vnDateKey(Date.now()))}
             className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer"
           >
-            Hôm nay
+            {t('today')}
           </Button>
         </div>
 
@@ -185,7 +187,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>{isLive ? 'Realtime Live' : 'Đang kết nối...'}</span>
+            <span>{isLive ? t('live') : t('connecting')}</span>
           </div>
 
           <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg border border-border/60 self-start md:self-auto">
@@ -199,7 +201,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              Lưới Thời Gian (Timeline)
+              {t('timelineTab')}
             </button>
             <button
               type="button"
@@ -211,7 +213,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
               }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
-              Bảng Dữ Liệu (Table)
+              {t('tableTab')}
             </button>
           </div>
         </div>
@@ -219,7 +221,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
 
       {courts.length === 0 ? (
         <Card className="border-dashed border-2 p-12 text-center text-muted-foreground">
-          Chưa có sân con nào được tạo. Hãy vào mục &quot;Cụm sân &amp; Sân con&quot; để thêm sân trước.
+          {t('noCourts')}
         </Card>
       ) : viewMode === 'timeline' ? (
         /* ========================================================
@@ -229,23 +231,23 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
           <CardHeader className="py-4 border-b border-border/60">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-bold">Lưới Lịch Chi Tiết Theo Sân</CardTitle>
+                <CardTitle className="text-base font-bold">{t('gridTitle')}</CardTitle>
                 <CardDescription className="text-xs">
-                  Hiển thị khung giờ từ 06:00 đến 23:00 ngày {formatDate(selectedDate)}
+                  {t('gridHint', { date: formatDate(selectedDate) })}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-3 text-xs">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  Đã cọc
+                  {t('legendPaid')}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  Chờ cọc
+                  {t('legendPending')}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-border" />
-                  Sân trống
+                  {t('legendFree')}
                 </span>
               </div>
             </div>
@@ -255,7 +257,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
               {/* Header row: Danh sách sân */}
               <div className="grid grid-cols-[80px_repeat(auto-fit,minmax(180px,1fr))] border-b border-border bg-muted/40 sticky top-0 z-10">
                 <div className="p-3 text-xs font-bold text-muted-foreground text-center border-r border-border">
-                  Khung giờ
+                  {t('hourColumn')}
                 </div>
                 {courts.map((court) => (
                   <div
@@ -313,12 +315,12 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                                 }`}
                               >
                                 <div className="font-bold truncate">
-                                  {booking.user_name || 'Khách đặt'}
+                                  {booking.user_name || t('bookedBy')}
                                 </div>
                                 <div className="text-xs flex items-center justify-between opacity-80 mt-0.5">
                                   <span>{booking.user_phone}</span>
                                   <span className="font-semibold">
-                                    {booking.status === 'confirmed' ? 'Đã cọc' : 'Chờ cọc'}
+                                    {booking.status === 'confirmed' ? t('legendPaid') : t('legendPending')}
                                   </span>
                                 </div>
                               </div>
@@ -333,7 +335,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                             )
                           ) : (
                             <span className="text-xs text-muted-foreground/30 font-mono">
-                              Trống
+                              {t('free')}
                             </span>
                           )}
                         </div>
@@ -353,9 +355,9 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
           <CardHeader className="py-4 border-b border-border/60">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="text-base font-bold">Danh Sách Đơn Đặt Sân</CardTitle>
+                <CardTitle className="text-base font-bold">{t('listTitle')}</CardTitle>
                 <CardDescription className="text-xs">
-                  Tổng hợp các lịch đặt ngày {formatDate(selectedDate)}
+                  {t('listHint', { date: formatDate(selectedDate) })}
                 </CardDescription>
               </div>
 
@@ -373,12 +375,12 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                     }`}
                   >
                     {status === 'all'
-                      ? 'Tất cả'
+                      ? t('filterAll')
                       : status === 'confirmed'
-                      ? 'Đã cọc'
+                      ? t('filterPaid')
                       : status === 'pending'
-                      ? 'Chờ cọc'
-                      : 'Hoàn tất'}
+                      ? t('filterPending')
+                      : t('filterDone')}
                   </button>
                 ))}
               </div>
@@ -388,20 +390,20 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
           <CardContent className="p-0">
             {filteredTableBookings.length === 0 ? (
               <div className="py-12 text-center text-xs text-muted-foreground">
-                Không tìm thấy đơn đặt sân nào phù hợp với bộ lọc trong ngày này.
+                {t('noMatch')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-muted/40 text-muted-foreground uppercase text-xs border-b border-border">
                     <tr>
-                      <th className="py-3 px-4">Sân con</th>
-                      <th className="py-3 px-4">Khách hàng</th>
-                      <th className="py-3 px-4">Khung giờ</th>
-                      <th className="py-3 px-4">Tổng tiền</th>
-                      <th className="py-3 px-4">Tiền cọc</th>
-                      <th className="py-3 px-4">Trạng thái</th>
-                      <th className="py-3 px-4 text-right">Thao tác</th>
+                      <th className="py-3 px-4">{t('col.court')}</th>
+                      <th className="py-3 px-4">{t('col.customer')}</th>
+                      <th className="py-3 px-4">{t('col.time')}</th>
+                      <th className="py-3 px-4">{t('col.total')}</th>
+                      <th className="py-3 px-4">{t('col.deposit')}</th>
+                      <th className="py-3 px-4">{t('col.status')}</th>
+                      <th className="py-3 px-4 text-right">{t('col.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -444,12 +446,12 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                               }
                             >
                               {b.status === 'confirmed'
-                                ? 'Đã cọc'
+                                ? t('legendPaid')
                                 : b.status === 'pending'
-                                ? 'Chờ cọc'
+                                ? t('legendPending')
                                 : b.status === 'completed'
-                                ? 'Hoàn tất'
-                                : 'Đã hủy'}
+                                ? t('filterDone')
+                                : t('badgeCancelled')}
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -465,7 +467,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                                     className="h-7 text-xs text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
                                   >
                                     <CheckCircle2 className="w-3 h-3 mr-1" />
-                                    Duyệt Cọc
+                                    {t('approveDeposit')}
                                   </Button>
                                 )}
                                 {b.status === 'confirmed' && (
@@ -475,7 +477,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                                     onClick={() => handleStatusChange(b.id, 'completed')}
                                     className="h-7 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
                                   >
-                                    Hoàn Tất
+                                    {t('markDone')}
                                   </Button>
                                 )}
                                 {b.status !== 'cancelled' && b.status !== 'completed' && (
@@ -486,7 +488,7 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                                     className="h-7 text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
                                   >
                                     <XCircle className="w-3 h-3 mr-1" />
-                                    Hủy
+                                    {t('cancel')}
                                   </Button>
                                 )}
                               </div>

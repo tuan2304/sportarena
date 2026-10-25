@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPlatformStats, parsePeriod, percent, PERIOD_OPTIONS } from '@/lib/admin-stats'
@@ -6,7 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart } from '@/components/admin/bar-chart'
 import { AlertTriangle } from 'lucide-react'
 
-export const metadata = { title: 'Thống kê vận hành' }
+export async function generateMetadata() {
+  const t = await getTranslations('admin.overview')
+  return { title: t('metaTitle') }
+}
 
 function dayLabel(day: string) {
   const [, m, d] = day.split('-')
@@ -26,6 +30,7 @@ function Kpi({ label, value, hint, accent = false }: { label: string; value: str
 }
 
 export default async function AdminOverviewPage({ searchParams }: { searchParams: Promise<{ days?: string }> }) {
+  const t = await getTranslations('admin.overview')
   const { days: daysParam } = await searchParams
   const days = parsePeriod(daysParam)
   const stats = await getPlatformStats(createAdminClient(), days)
@@ -37,10 +42,10 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold">Thống kê vận hành</h1>
-          <p className="text-sm text-muted-foreground mt-1">Số liệu theo giờ Việt Nam, tính trong {days} ngày gần nhất.</p>
+          <h1 className="text-2xl font-extrabold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('subtitle', { days })}</p>
         </div>
-        <nav className="inline-flex rounded-xl border border-border bg-card p-1" aria-label="Khoảng thời gian">
+        <nav className="inline-flex rounded-xl border border-border bg-card p-1" aria-label={t('period')}>
           {PERIOD_OPTIONS.map((d) => (
             <Link
               key={d}
@@ -50,7 +55,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
                 d === days ? 'bg-emerald-700 text-white' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {d} ngày
+              {t('days', { days: d })}
             </Link>
           ))}
         </nav>
@@ -59,57 +64,57 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
       {stats.open_tickets > 0 && (
         <Link href="/admin/tickets" className="flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm hover:bg-amber-500/15">
           <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden />
-          <span><b>{stats.open_tickets}</b> yêu cầu hỗ trợ đang chờ trả lời</span>
+          <span>{t.rich('openTickets', { count: stats.open_tickets, b: (c) => <b>{c}</b> })}</span>
         </Link>
       )}
 
       <section aria-labelledby="sec-revenue" className="space-y-3">
-        <h2 id="sec-revenue" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Doanh thu nền tảng</h2>
+        <h2 id="sec-revenue" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t('revenueTitle')}</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Kpi label="Doanh thu thuê gói Pro" value={formatVnd(stats.subscriptions.revenue)} hint={`${formatNumber(stats.subscriptions.count)} lượt thanh toán`} accent />
-          <Kpi label="Giá trị đặt sân (GMV)" value={formatVnd(stats.bookings.gmv)} hint="Đơn đã xác nhận, không phải doanh thu của bạn" />
-          <Kpi label="Cọc khách đã trả" value={formatVnd(stats.deposits.collected)} hint="Về thẳng tài khoản chủ sân, không qua nền tảng" />
-          <Kpi label="Cụm sân đang dùng gói Pro" value={formatNumber(stats.clubs.pro)} hint={`Trên tổng ${formatNumber(stats.clubs.total)} cụm sân`} />
+          <Kpi label={t('kpiProRevenue')} value={formatVnd(stats.subscriptions.revenue)} hint={t('kpiPayments', { count: formatNumber(stats.subscriptions.count) })} accent />
+          <Kpi label={t('kpiGmv')} value={formatVnd(stats.bookings.gmv)} hint={t('kpiGmvHint')} />
+          <Kpi label={t('kpiDeposits')} value={formatVnd(stats.deposits.collected)} hint={t('kpiDepositsHint')} />
+          <Kpi label={t('kpiPro')} value={formatNumber(stats.clubs.pro)} hint={t('kpiProHint', { count: formatNumber(stats.clubs.total) })} />
         </div>
       </section>
 
       <section aria-labelledby="sec-ops" className="space-y-3">
-        <h2 id="sec-ops" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Vận hành</h2>
+        <h2 id="sec-ops" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{t('opsTitle')}</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Kpi label="Lượt đặt sân" value={formatNumber(stats.bookings.created)} hint={`${confirmedRate}% xác nhận · ${cancelRate}% huỷ · ${stats.bookings.pending} đang chờ cọc`} />
-          <Kpi label="Người dùng" value={formatNumber(stats.users.total)} hint={`+${stats.users.new} mới · ${stats.users.owners} chủ sân · ${stats.users.players} người chơi`} />
-          <Kpi label="Cụm sân" value={formatNumber(stats.clubs.total)} hint={`+${stats.clubs.new} mới · ${stats.clubs.pro} Pro · ${stats.clubs.own_payos} có PayOS riêng`} />
-          <Kpi label="Sân đang hoạt động" value={formatNumber(stats.courts_active)} hint={`${stats.matches.created} kèo mới · ${stats.matches.open} kèo đang mở`} />
+          <Kpi label={t('kpiBookings')} value={formatNumber(stats.bookings.created)} hint={t('kpiBookingsHint', { confirmed: confirmedRate, cancelled: cancelRate, pending: stats.bookings.pending })} />
+          <Kpi label={t('kpiUsers')} value={formatNumber(stats.users.total)} hint={t('kpiUsersHint', { new: stats.users.new, owners: stats.users.owners, players: stats.users.players })} />
+          <Kpi label={t('kpiClubs')} value={formatNumber(stats.clubs.total)} hint={t('kpiClubsHint', { new: stats.clubs.new, pro: stats.clubs.pro, payos: stats.clubs.own_payos })} />
+          <Kpi label={t('kpiCourts')} value={formatNumber(stats.courts_active)} hint={t('kpiCourtsHint', { created: stats.matches.created, open: stats.matches.open })} />
         </div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Lượt đặt sân theo ngày</CardTitle>
+            <CardTitle>{t('chartBookings')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <BarChart title="Số lượt đặt" data={stats.daily.map((d) => ({ label: dayLabel(d.day), value: Number(d.bookings) }))} format={formatNumber} />
+            <BarChart title={t('chartBookingsLabel')} data={stats.daily.map((d) => ({ label: dayLabel(d.day), value: Number(d.bookings) }))} format={formatNumber} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Cọc thu được theo ngày</CardTitle>
+            <CardTitle>{t('chartDeposits')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <BarChart title="Tiền cọc" data={stats.daily.map((d) => ({ label: dayLabel(d.day), value: Number(d.deposits) }))} format={formatVnd} barClassName="bg-amber-500" />
+            <BarChart title={t('chartDepositsLabel')} data={stats.daily.map((d) => ({ label: dayLabel(d.day), value: Number(d.deposits) }))} format={formatVnd} barClassName="bg-amber-500" />
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Cụm sân nổi bật</CardTitle>
-          <CardDescription>Top 5 theo số đơn đã xác nhận trong {days} ngày.</CardDescription>
+          <CardTitle>{t('topTitle')}</CardTitle>
+          <CardDescription>{t('topSubtitle', { days })}</CardDescription>
         </CardHeader>
         <CardContent>
           {stats.top_clubs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa có đơn nào được xác nhận trong khoảng này.</p>
+            <p className="text-sm text-muted-foreground">{t('topEmpty')}</p>
           ) : (
             <ol className="divide-y divide-border">
               {stats.top_clubs.map((c, i) => (
@@ -119,7 +124,7 @@ export default async function AdminOverviewPage({ searchParams }: { searchParams
                     <span className="font-semibold truncate">{c.name}</span>
                   </span>
                   <span className="text-right shrink-0">
-                    <b>{formatNumber(c.bookings)}</b> đơn · <span className="text-muted-foreground">{formatVnd(c.gmv)}</span>
+                    {t.rich('topBookings', { count: formatNumber(c.bookings), b: (x) => <b>{x}</b> })} · <span className="text-muted-foreground">{formatVnd(c.gmv)}</span>
                   </span>
                 </li>
               ))}

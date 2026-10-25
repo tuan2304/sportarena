@@ -42,6 +42,24 @@ describe('buildExpoMessages', () => {
   })
 })
 
+describe('buildExpoMessages: nút hành động và dữ liệu kèm theo', () => {
+  it('gắn categoryId hợp lệ và dữ liệu chuỗi ngắn', () => {
+    const [m] = buildExpoMessages([tokenA], { ...payload, categoryId: 'join_request', data: { participantId: 'abc-123' } })
+    expect(m.categoryId).toBe('join_request')
+    expect(m.data).toEqual({ participantId: 'abc-123', link: '/matches/123' })
+  })
+
+  it('bỏ categoryId lạ, dữ liệu quá dài và không cho ghi đè link', () => {
+    const [m] = buildExpoMessages([tokenA], {
+      ...payload,
+      categoryId: 'Bad Category!',
+      data: { long: 'x'.repeat(101), link: 'https://evil.example', ok: 'yes' },
+    })
+    expect(m.categoryId).toBeUndefined()
+    expect(m.data).toEqual({ ok: 'yes', link: '/matches/123' })
+  })
+})
+
 describe('chunk', () => {
   it('chia lô đúng kích thước', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
