@@ -11,7 +11,23 @@ const TIMEOUT_MS = 20_000
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; status: number }
 
-export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
+export function apiPost<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
+  return request<T>('POST', path, body)
+}
+
+export function apiPut<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
+  return request<T>('PUT', path, body)
+}
+
+export function apiPatch<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
+  return request<T>('PATCH', path, body)
+}
+
+export function apiDelete<T>(path: string): Promise<ApiResult<T>> {
+  return request<T>('DELETE', path)
+}
+
+async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<ApiResult<T>> {
   if (!API_URL) {
     return { ok: false, status: 0, error: translate('api.noServer') }
   }
@@ -23,14 +39,14 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<ApiResul
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
     const res = await fetch(`${API_URL}${path}`, {
-      method: 'POST',
+      method,
       headers: {
         'Content-Type': 'application/json',
         // Máy chủ dịch thông báo lỗi theo ngôn ngữ này
         'Accept-Language': currentLang(),
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify(body ?? {}),
+      ...(method === 'DELETE' ? {} : { body: JSON.stringify(body ?? {}) }),
       signal: controller.signal,
     })
 

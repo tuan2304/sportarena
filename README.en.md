@@ -36,7 +36,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - Player profile: avatar, skill level, phone number and a public profile page with statistics.
 - Real-time notifications, venue reviews and support requests.
 - Match hosts approve or decline join requests right from the push notification (Approve / Decline buttons).
-- Owners can use the mobile app (Owner tab) to confirm bank-transfer deposits, cancel bookings, mark them as played, refund deposits and call customers.
+- Owners can use the mobile app (Owner tab) to confirm bank-transfer deposits, cancel bookings, mark them as played, refund deposits and call customers. The same tab has a Venues & prices section to manage venues: create or delete venues, upload photos, pin the location with the phone's GPS, add, edit, switch off or delete courts, and add, edit or delete price slots.
 - On the mobile app: book (and open a match at the same time), pay the deposit, cancel, change your avatar, view player profiles and receive push notifications.
 - The web interface and the mobile app are available in **Vietnamese and English** (web: language button in the header; mobile: Profile tab; the default follows your browser or phone). This covers the owner and admin areas and notifications too (new notifications are stored with an English copy; older ones stay Vietnamese).
 
@@ -63,7 +63,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - **Defence in depth.** Row Level Security is on for every table, users cannot write to business tables directly, and every write goes through a Server Action that checks permissions. Those rules have their own SQL test suite running in Docker. Scripts are protected by a per-request nonce Content-Security-Policy with no `unsafe-inline`.
 - **Realtime.** Bookings, matches, chat, notifications and tickets update through Supabase Realtime.
 - **Consistent Vietnam time zone.** Display and statistics use Vietnam time even when the server runs in UTC.
-- **Testing and CI.** Hundreds of Vitest tests for business logic, an SQL RLS test suite, and GitHub Actions running typecheck, lint, tests, build, Playwright end-to-end tests (logins for the three roles, role guards, both languages, the nonce CSP check) and the mobile typecheck on every push.
+- **Testing and CI.** Hundreds of Vitest tests for business logic, an SQL RLS test suite, and GitHub Actions running typecheck, lint, tests, build, Playwright end-to-end tests (logins for the three roles, role guards, both languages, the nonce CSP check), a second Playwright suite that runs the write flows (booking, confirmation, cancellation, refunds, matches, photos) against a real Supabase in Docker, and the mobile typecheck on every push.
 - **Bilingual UI.** Cookie-based language selection with `next-intl` (no URL changes); a test fails if an English string is missing or a placeholder differs, and server error messages are translated at the boundary.
 
 ## Technology
@@ -114,6 +114,7 @@ Other commands, run in `web/`:
 | `npm run check` | Typecheck, lint and tests, same as CI |
 | `npm run db:test` | Apply the migrations to a throwaway Postgres in Docker and run the RLS tests |
 | `npm run e2e` | Build and run the Playwright end-to-end tests against a mock Supabase (run `npm run e2e:install` once first) |
+| `npm run e2e:real` | Run the write-flow Playwright tests against a real local Supabase (needs Docker and the Supabase CLI; run `supabase start` in the project root first, or point `E2E_SUPABASE_WORKDIR` at a separate config if another local Supabase already uses the default ports) |
 | `npm run build` | Production build |
 
 Mobile app: `cd mobile && npm install`, copy `.env.example` to `.env` and add `EXPO_PUBLIC_API_URL` (the web server address, used to hold slots, cancel bookings and report transfers), then `npm start`. The login session is kept in the Keychain/Keystore. Pricing, time, cancellation and profile logic is shared with the web through `npm run sync:mobile` (in `web/`); a test fails if the two copies drift apart.
@@ -372,5 +373,5 @@ The diagram only shows the core tables. There are more for notifications, chat, 
 
 - Automatic deposit refunds through the payment provider's API (today the owner transfers the money back and confirms).
 - More automatic payment gateways (MoMo, VNPay...) alongside PayOS and manual transfer.
-- Mobile: creating venues and editing prices in the app (today the owner tab only handles deposits, cancellations, refunds and the schedule).
-- End-to-end tests for flows that write data (booking, opening a match, payments): the Playwright suite already logs in as the three roles and checks the UI, but the mock Supabase does not simulate RLS or write logic, so these need a real test Supabase instance.
+- Mobile: reordering venue photos by drag and drop and picking the location on a map (today the location is pinned with GPS at the venue).
+- End-to-end tests for online payments through PayOS: `npm run e2e:real` already covers booking, manual transfer, cancellation and refunds, open matches and photos on a real Supabase, but does not call PayOS because that needs sandbox keys.

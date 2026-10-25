@@ -36,7 +36,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - Hồ sơ người chơi: ảnh đại diện, trình độ, số điện thoại và trang hồ sơ công khai có thống kê.
 - Thông báo realtime, đánh giá sân, gửi yêu cầu hỗ trợ.
 - Chủ kèo duyệt hoặc từ chối người xin vào kèo ngay trên thông báo đẩy (nút Duyệt / Từ chối).
-- Chủ sân dùng app mobile để duyệt cọc chuyển khoản, hủy đơn, đánh dấu đã chơi, hoàn cọc và gọi khách (tab Chủ Sân).
+- Chủ sân dùng app mobile để duyệt cọc chuyển khoản, hủy đơn, đánh dấu đã chơi, hoàn cọc và gọi khách (tab Chủ Sân). Cùng tab có mục Sân & giá để quản lý cụm sân: tạo/xóa cụm sân, tải ảnh, ghim vị trí bằng GPS của điện thoại, thêm/sửa/bật tắt/xóa sân con và thêm/sửa/xóa khung giá.
 - Đặt sân (kèm mở kèo ghép ngay lúc đặt), thanh toán cọc, hủy đơn, đổi ảnh đại diện, xem hồ sơ người chơi và nhận thông báo đẩy ngay trên ứng dụng mobile.
 - Giao diện web và app mobile có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ (web: thanh đầu trang; mobile: tab Cá Nhân), mặc định theo trình duyệt hoặc điện thoại. Gồm cả khu vực chủ sân, quản trị và thông báo (thông báo mới được lưu kèm bản tiếng Anh, thông báo cũ vẫn hiện tiếng Việt).
 
@@ -63,7 +63,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Bảo mật nhiều lớp.** Mọi bảng bật Row Level Security, người dùng không có quyền ghi trực tiếp vào bảng nghiệp vụ, mọi thao tác ghi đi qua Server Action có kiểm tra quyền. Các quy tắc đó có bộ test SQL riêng chạy trong Docker.
 - **Realtime.** Lịch đặt, kèo, chat, thông báo và ticket cập nhật qua Supabase Realtime.
 - **Múi giờ Việt Nam nhất quán.** Hiển thị và thống kê đều tính theo giờ Việt Nam, kể cả khi máy chủ chạy UTC.
-- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (đăng nhập 3 vai trò, phân quyền, giao diện hai ngôn ngữ, kiểm tra CSP có nonce) và kiểm tra mobile ở mỗi lần push.
+- **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (đăng nhập 3 vai trò, phân quyền, giao diện hai ngôn ngữ, kiểm tra CSP có nonce), thêm một bộ Playwright chạy luồng ghi dữ liệu (đặt sân, xác nhận, hủy, hoàn cọc, kèo, ảnh) trên Supabase thật trong Docker, và kiểm tra mobile ở mỗi lần push.
 
 ## Công nghệ
 
@@ -370,5 +370,5 @@ Sơ đồ chỉ vẽ các bảng lõi. Ngoài ra còn các bảng cho thông bá
 
 - Hoàn cọc tự động qua API của nhà cung cấp thanh toán (hiện chủ sân tự chuyển trả rồi xác nhận).
 - Thêm cổng thanh toán tự động khác (MoMo, VNPay...) bên cạnh PayOS và chuyển khoản thủ công.
-- Mobile: chủ sân tạo cụm sân và chỉnh bảng giá trên app (hiện app chỉ có duyệt cọc, hủy, hoàn cọc và xem lịch).
-- Kiểm thử đầu-cuối cho các luồng ghi dữ liệu (đặt sân, mở kèo, thanh toán): bản Playwright hiện đăng nhập được 3 vai trò và kiểm tra giao diện, nhưng Supabase giả không giả lập RLS hay logic ghi nên cần một Supabase thử nghiệm thật.
+- Mobile: sắp xếp lại thứ tự ảnh cụm sân bằng kéo thả và chọn vị trí trên bản đồ (hiện ghim bằng GPS tại sân).
+- Kiểm thử đầu-cuối cho luồng thanh toán online qua PayOS: bộ `npm run e2e:real` đã phủ đặt sân, chuyển khoản thủ công, hủy/hoàn cọc, kèo ghép và ảnh trên Supabase thật, nhưng chưa gọi PayOS vì cần khóa sandbox.

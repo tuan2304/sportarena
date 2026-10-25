@@ -35,6 +35,12 @@
           "photosPermission": "SportArena cần truy cập thư viện ảnh để bạn chọn ảnh đại diện."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "SportArena cần vị trí của bạn để ghim sân lên bản đồ."
+        }
+      ],
       "expo-localization"
     ]
   }

@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { bearerToken, isUuid, MAX_NOTE_LENGTH, parseCreateBookingBody, parseOwnerStatusBody, parseRespondBody } from './mobile-api'
+import {
+  bearerToken,
+  isUuid,
+  MAX_NOTE_LENGTH,
+  parseCreateBookingBody,
+  parseCreateClubBody,
+  parseCreateCourtBody,
+  parseImagesBody,
+  parseLocationBody,
+  parseOwnerStatusBody,
+  parsePricingRuleBody,
+  parseRespondBody,
+  parseUpdateCourtBody,
+} from './mobile-api'
 
 const court = '11111111-1111-1111-1111-111111111111'
 const ok = { courtId: court, startTime: '2026-11-05T11:00:00.000Z', endTime: '2026-11-05T12:00:00.000Z' }
@@ -126,3 +139,115 @@ describe('parseRespondBody', () => {
   })
 })
 
+
+describe('parseCreateClubBody', () => {
+  const base = { name: '  Sân Quận 7 ', address: '12 Nguyễn Văn Linh' }
+
+  it('nhận dữ liệu tối thiểu và cắt khoảng trắng', () => {
+    expect(parseCreateClubBody(base)).toEqual({ ok: true, value: { name: 'Sân Quận 7', address: '12 Nguyễn Văn Linh' } })
+  })
+
+  it('nhận đầy đủ trường tùy chọn', () => {
+    const parsed = parseCreateClubBody({ ...base, district: 'Q7', city: 'HCM', openTime: '06:00', closeTime: '22:30', amenities: ['wifi', ' parking '], latitude: 10.7, longitude: 106.7 })
+    expect(parsed).toEqual({
+      ok: true,
+      value: { name: 'Sân Quận 7', address: '12 Nguyễn Văn Linh', district: 'Q7', city: 'HCM', openTime: '06:00', closeTime: '22:30', amenities: ['wifi', 'parking'], latitude: 10.7, longitude: 106.7 },
+    })
+  })
+
+  it('từ chối tên hoặc địa chỉ trống hoặc quá dài, và thân sai kiểu', () => {
+    for (const bad of [{}, { ...base, name: ' ' }, { ...base, name: 'a'.repeat(101) }, { ...base, address: '' }, { ...base, address: 'a'.repeat(201) }, null, 'x', []]) {
+      expect(parseCreateClubBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+
+  it('từ chối giờ sai định dạng hoặc đóng cửa trước giờ mở', () => {
+    expect(parseCreateClubBody({ ...base, openTime: '6h' }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, openTime: '25:00' }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, openTime: '22:00', closeTime: '06:00' }).ok).toBe(false)
+  })
+
+  it('từ chối tiện ích sai và toạ độ thiếu một nửa hoặc sai kiểu', () => {
+    expect(parseCreateClubBody({ ...base, amenities: 'wifi' }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, amenities: [1] }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, amenities: Array(21).fill('a') }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, latitude: 10 }).ok).toBe(false)
+    expect(parseCreateClubBody({ ...base, latitude: '10', longitude: '106' }).ok).toBe(false)
+  })
+})
+
+describe('parseCreateCourtBody', () => {
+  const base = { name: 'Sân 1', sportType: 'pickleball', basePricePerHour: 150000, depositPercentage: 30 }
+
+  it('nhận dữ liệu hợp lệ và làm tròn giá', () => {
+    expect(parseCreateCourtBody({ ...base, basePricePerHour: 150000.4, surfaceType: ' Cỏ nhân tạo ' })).toEqual({
+      ok: true,
+      value: { name: 'Sân 1', sportType: 'pickleball', surfaceType: 'Cỏ nhân tạo', basePricePerHour: 150000, depositPercentage: 30 },
+    })
+  })
+
+  it('từ chối môn lạ, giá ngoài khoảng, cọc ngoài 1-100 hoặc không nguyên', () => {
+    for (const bad of [
+      { ...base, sportType: 'chess' },
+      { ...base, name: '' },
+      { ...base, basePricePerHour: 500 },
+      { ...base, basePricePerHour: 60_000_000 },
+      { ...base, basePricePerHour: '150000' },
+      { ...base, depositPercentage: 0 },
+      { ...base, depositPercentage: 101 },
+      { ...base, depositPercentage: 30.5 },
+      null,
+    ]) {
+      expect(parseCreateCourtBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parsePricingRuleBody', () => {
+  it('chỉ chặn sai kiểu, phần kiểm tra giờ và giá do validatePricingRule làm', () => {
+    const rule = { name: 'Giờ vàng', startTime: '17:00', endTime: '21:00', pricePerHour: 250000 }
+    expect(parsePricingRuleBody(rule)).toEqual({ ok: true, value: rule })
+    for (const bad of [{}, { ...rule, pricePerHour: '250000' }, { ...rule, name: 5 }, { ...rule, startTime: null }, null, []]) {
+      expect(parsePricingRuleBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parseUpdateCourtBody', () => {
+  it('chỉ giữ trường được gửi', () => {
+    expect(parseUpdateCourtBody({ name: ' Sân VIP ', isActive: false })).toEqual({ ok: true, value: { name: 'Sân VIP', isActive: false } })
+    expect(parseUpdateCourtBody({ basePricePerHour: 200000.2, depositPercentage: 50 })).toEqual({ ok: true, value: { basePricePerHour: 200000, depositPercentage: 50 } })
+  })
+
+  it('từ chối thân rỗng và giá trị sai', () => {
+    for (const bad of [{}, null, [], { name: '' }, { name: 'a'.repeat(81) }, { basePricePerHour: 10 }, { depositPercentage: 0 }, { depositPercentage: 101 }, { isActive: 'yes' }]) {
+      expect(parseUpdateCourtBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parseLocationBody', () => {
+  it('nhận hai số hoặc hai null', () => {
+    expect(parseLocationBody({ latitude: 10.7, longitude: 106.7 })).toEqual({ ok: true, value: { latitude: 10.7, longitude: 106.7 } })
+    expect(parseLocationBody({ latitude: null, longitude: null })).toEqual({ ok: true, value: { latitude: null, longitude: null } })
+  })
+
+  it('từ chối thiếu một nửa, sai kiểu hoặc không có', () => {
+    for (const bad of [{}, { latitude: 10 }, { latitude: 10, longitude: null }, { latitude: '10', longitude: '106' }, null]) {
+      expect(parseLocationBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parseImagesBody', () => {
+  it('nhận danh sách chuỗi ngắn, tối đa 8', () => {
+    expect(parseImagesBody({ images: [] })).toEqual({ ok: true, value: { images: [] } })
+    expect(parseImagesBody({ images: ['https://a/b.jpg'] }).ok).toBe(true)
+  })
+
+  it('từ chối danh sách quá dài, phần tử sai kiểu hoặc URL quá dài', () => {
+    for (const bad of [{}, { images: 'x' }, { images: Array(9).fill('a') }, { images: [1] }, { images: ['a'.repeat(501)] }, null]) {
+      expect(parseImagesBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})

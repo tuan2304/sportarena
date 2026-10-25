@@ -264,6 +264,10 @@ Header `Content-Security-Policy` do [src/proxy.ts](web/src/proxy.ts) tạo cho t
 ### Kiểm thử đầu-cuối
 `cd web && npm run e2e:install` (một lần) rồi `npm run e2e`. Bộ test tự build, chạy bản production với Supabase giả nên không cần `.env.local` và không chạm database thật. CI chạy cùng lệnh này ở job `e2e`.
 
+Luồng ghi dữ liệu (đặt sân, xác nhận, hủy/hoàn cọc, kèo, ảnh) chạy trên Supabase thật: bật Docker, chạy `supabase start` ở thư mục gốc, rồi `cd web && npm run e2e:real`. Bộ test tạo tài khoản riêng bằng khóa của Supabase cục bộ nên không chạm database thật. Nếu máy đã có một Supabase cục bộ khác chiếm cổng 54321, tạo thư mục có `supabase/config.toml` đổi `project_id` và các cổng rồi đặt `E2E_SUPABASE_WORKDIR` trỏ tới đó. CI chạy ở job `e2e-real`.
+
+Với app mobile: tính năng ghim vị trí dùng `expo-location`, nên sau khi cập nhật cần `npm install` trong `mobile/` và tạo lại dev build (thêm quyền vị trí).
+
 ## 🌐 Việt - Anh
 
 1. `supabase db push` để áp `20261103000000_notification_locales` (thêm cột bản dịch của thông báo, cột `profiles.locale` và hàm `set_my_locale`). Web vẫn chạy nếu chưa áp, nhưng khi đó không tạo được thông báo mới vì câu lệnh ghi thêm cột chưa có: **hãy áp migration trước khi deploy bản này**.

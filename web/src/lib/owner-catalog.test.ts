@@ -1,0 +1,250 @@
+import { describe, expect, it } from 'vitest'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
+import type { Database } from '@/types/database'
+import {
+  createClubForOwner,
+  createCourtForOwner,
+  createPricingRuleForOwner,
+  deleteClubForOwner,
+  deleteCourtForOwner,
+  deletePricingRuleForOwner,
+  setClubImagesForOwner,
+  updateClubLocationForOwner,
+  updateCourtForOwner,
+  updatePricingRuleForOwner,
+} from './owner-catalog'
+
+type Row = Record<string, unknown>
+type Tables = Record<string, Row[]>
+
+/**
+ * Supabase giả trong bộ nhớ, đủ cho các truy vấn mà lib dùng: select/insert/update/delete lọc bằng eq, và
+ * sân con tự kèm `club` để mô phỏng truy vấn lồng. Không mô phỏng RLS: quyền sở hữu phải do lib tự kiểm tra.
+ */
+function fakeClient(tables: Tables = {}, options: { failWith?: string } = {}) {
+  const removedFiles: string[] = []
+  const store: Tables = { profiles: [], clubs: [], courts: [], court_pricing_rules: [], bookings: [], payments: [], subscription_payments: [], ...tables }
+
+  function builder(table: string) {
+    let op: 'select' | 'insert' | 'update' | 'delete' = 'select'
+    let payload: Row = {}
+    const filters: Array<[string, unknown]> = []
+    const inFilters: Array<[string, unknown[]]> = []
+
+    const matching = () => store[table].filter((r) => filters.every(([col, val]) => r[col] === val) && inFilters.every(([col, vals]) => vals.includes(r[col])))
+    const withJoins = (r: Row) => (table === 'courts' ? { ...r, club: store.clubs.find((c) => c.id === r.club_id) ?? null } : r)
+
+    function run(): { data: Row[] | null; error: { message: string } | null } {
+      if (options.failWith && op !== 'select') return { data: null, error: { message: options.failWith } }
+      if (op === 'insert') {
+        const row = { id: 'new-id', ...payload }
+        store[table].push(row)
+        return { data: [row], error: null }
+      }
+      const rows = matching()
+      if (op === 'update') rows.forEach((r) => Object.assign(r, payload))
+      if (op === 'delete') store[table] = store[table].filter((r) => !rows.includes(r))
+      return { data: op === 'select' ? rows.map(withJoins) : rows, error: null }
+    }
+
+    const api = {
+      select: () => api,
+      insert(row: Row) {
+        op = 'insert'
+        payload = row
+        return api
+      },
+      update(patch: Row) {
+        op = 'update'
+        payload = patch
+        return api
+      },
+      delete() {
+        op = 'delete'
+        return api
+      },
+      eq(col: string, val: unknown) {
+        filters.push([col, val])
+        return api
+      },
+      in(col: string, vals: unknown[]) {
+        inFilters.push([col, vals])
+        return api
+      },
+      maybeSingle: async () => {
+        const res = run()
+        return { data: res.data?.[0] ?? null, error: res.error }
+      },
+      single: async () => {
+        const res = run()
+        return { data: res.data?.[0] ?? null, error: res.error }
+      },
+      then: (resolve: (value: unknown) => void) => resolve(run()),
+    }
+    return api
+  }
+
+  const client = {
+    from: (table: string) => builder(table),
+    storage: { from: () => ({ remove: async (paths: string[]) => (removedFiles.push(...paths), { error: null }) }) },
+  }
+  return { client: client as unknown as SupabaseClient<Database>, store, removedFiles }
+}
+
+const user = { id: 'user-1' } as User
+const OTHER = 'someone-else'
+
+describe('createClubForOwner', () => {
+  const input = { name: ' Sân A ', address: ' 1 Lê Lợi ' }
+
+  it('chỉ chủ sân hoặc quản trị mới tạo được', async () => {
+    const { client, store } = fakeClient({ profiles: [{ id: 'user-1', role: 'player' }] })
+    expect(await createClubForOwner(client, user, input)).toEqual({ error: 'Chỉ tài khoản chủ sân mới tạo được cụm sân' })
+    expect(store.clubs).toHaveLength(0)
+  })
+
+  it('thiếu tên hoặc địa chỉ thì báo lỗi', async () => {
+    const { client } = fakeClient({ profiles: [{ id: 'user-1', role: 'owner' }] })
+    expect(await createClubForOwner(client, user, { name: 'A', address: ' ' })).toEqual({ error: 'Vui lòng nhập tên cụm sân và địa chỉ' })
+  })
+
+  it('toạ độ sai thì không ghi', async () => {
+    const { client, store } = fakeClient({ profiles: [{ id: 'user-1', role: 'owner' }] })
+    expect(await createClubForOwner(client, user, { ...input, latitude: '200', longitude: '10' })).toEqual({ error: 'Toạ độ vị trí không hợp lệ' })
+    expect(store.clubs).toHaveLength(0)
+  })
+
+  it('tạo với giá trị mặc định và gán đúng chủ', async () => {
+    const { client, store } = fakeClient({ profiles: [{ id: 'user-1', role: 'owner' }] })
+    const result = await createClubForOwner(client, user, input)
+    expect('success' in result).toBe(true)
+    expect(store.clubs[0]).toMatchObject({
+      owner_id: 'user-1',
+      name: 'Sân A',
+      address: '1 Lê Lợi',
+      city: 'Hồ Chí Minh',
+      open_time: '06:00:00',
+      close_time: '23:00:00',
+      amenities: ['wifi', 'parking', 'shower'],
+      latitude: null,
+      longitude: null,
+    })
+  })
+
+  it('chuyển lỗi của database ra ngoài', async () => {
+    const { client } = fakeClient({ profiles: [{ id: 'user-1', role: 'admin' }] }, { failWith: 'boom' })
+    expect(await createClubForOwner(client, user, input)).toEqual({ error: 'boom' })
+  })
+})
+
+describe('createCourtForOwner', () => {
+  it('thiếu thông tin thì báo lỗi và không ghi', async () => {
+    const { client, store } = fakeClient()
+    expect(await createCourtForOwner(client, { clubId: 'c1', name: 'Sân 1' })).toEqual({ error: 'Vui lòng điền đủ thông tin sân con' })
+    expect(store.courts).toHaveLength(0)
+  })
+})
+
+describe('khung giá', () => {
+  const rule = { courtId: 'court-1', name: 'Giờ vàng', startTime: '17:00', endTime: '21:00', pricePerHour: 250000 }
+
+  it('giờ sai thì không ghi', async () => {
+    const { client, store } = fakeClient()
+    expect(await createPricingRuleForOwner(client, { ...rule, endTime: '16:00' })).toEqual({ error: 'Giờ kết thúc phải sau giờ bắt đầu' })
+    expect(store.court_pricing_rules).toHaveLength(0)
+  })
+
+  it('ghi khung giá áp dụng cả tuần', async () => {
+    const { client, store } = fakeClient()
+    expect(await createPricingRuleForOwner(client, rule)).toEqual({ success: true })
+    expect(store.court_pricing_rules[0]).toMatchObject({ court_id: 'court-1', price_per_hour: 250000, days_of_week: [1, 2, 3, 4, 5, 6, 0] })
+  })
+
+  it('sửa khung giá có kiểm tra giờ và giá, báo lỗi khi không tìm thấy', async () => {
+    const { client, store } = fakeClient({ court_pricing_rules: [{ id: 'r1', name: 'Cũ', start_time: '06:00', end_time: '09:00', price_per_hour: 100000 }] })
+    expect(await updatePricingRuleForOwner(client, 'r1', { name: 'Mới', startTime: '09:00', endTime: '08:00', pricePerHour: 200000 })).toEqual({ error: 'Giờ kết thúc phải sau giờ bắt đầu' })
+    expect(await updatePricingRuleForOwner(client, 'r1', { name: 'Mới', startTime: '07:00', endTime: '10:00', pricePerHour: 200000 })).toEqual({ success: true })
+    expect(store.court_pricing_rules[0]).toMatchObject({ name: 'Mới', start_time: '07:00', end_time: '10:00', price_per_hour: 200000 })
+    expect(await updatePricingRuleForOwner(client, 'khac', { name: 'Mới', startTime: '07:00', endTime: '10:00', pricePerHour: 200000 })).toEqual({ error: 'Không tìm thấy khung giá' })
+  })
+
+  it('xóa khung giá, báo lỗi khi không có dòng nào bị xóa', async () => {
+    const { client, store } = fakeClient({ court_pricing_rules: [{ id: 'r1' }] })
+    expect(await deletePricingRuleForOwner(client, 'r1')).toEqual({ success: true })
+    expect(store.court_pricing_rules).toHaveLength(0)
+    expect(await deletePricingRuleForOwner(client, 'r1')).toEqual({ error: 'Không tìm thấy khung giá' })
+  })
+})
+
+describe('sửa và xóa sân con', () => {
+  const tables = () => ({
+    clubs: [{ id: 'club-1', owner_id: 'user-1' }, { id: 'club-2', owner_id: OTHER }],
+    courts: [
+      { id: 'court-1', club_id: 'club-1', name: 'Sân 1', is_active: true },
+      { id: 'court-2', club_id: 'club-2', name: 'Sân của người khác', is_active: true },
+    ],
+  })
+
+  it('sửa các trường được gửi và giữ nguyên phần còn lại', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateCourtForOwner(client, user, 'court-1', { name: 'Sân VIP', basePricePerHour: 200000, isActive: false })).toEqual({ success: true })
+    expect(store.courts[0]).toMatchObject({ name: 'Sân VIP', base_price_per_hour: 200000, is_active: false })
+  })
+
+  it('không sửa được sân của cụm sân khác', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateCourtForOwner(client, user, 'court-2', { name: 'Hack' })).toEqual({ error: 'Bạn không có quyền sửa sân con này' })
+    expect(store.courts[1].name).toBe('Sân của người khác')
+  })
+
+  it('không xóa được sân của cụm sân khác', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await deleteCourtForOwner(client, client, user, 'court-2')).toEqual({ error: 'Bạn không có quyền xóa sân con này' })
+    expect(store.courts).toHaveLength(2)
+  })
+})
+
+describe('cụm sân: xóa, vị trí, ảnh', () => {
+  const SUPABASE = 'https://x.supabase.co'
+  const tables = () => ({
+    clubs: [
+      { id: 'club-1', owner_id: 'user-1', images: [`${SUPABASE}/storage/v1/object/public/club-images/club-1/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg`] },
+      { id: 'club-2', owner_id: OTHER, images: [] },
+    ],
+  })
+
+  it('không xóa được cụm sân của người khác', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await deleteClubForOwner(client, client, user, 'club-2')).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+    expect(store.clubs).toHaveLength(2)
+  })
+
+  it('xóa được cụm sân của mình khi chưa có đơn nào', async () => {
+    const { client, store } = fakeClient({ ...tables(), bookings: [] })
+    expect(await deleteClubForOwner(client, client, user, 'club-1')).toEqual({ success: true })
+    expect(store.clubs.map((c) => c.id)).toEqual(['club-2'])
+  })
+
+  it('ghim, gỡ và từ chối toạ độ sai', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubLocationForOwner(client, user, 'club-1', 10.7, 106.7)).toEqual({ success: true })
+    expect(store.clubs[0]).toMatchObject({ latitude: 10.7, longitude: 106.7 })
+    expect(await updateClubLocationForOwner(client, user, 'club-1', null, null)).toEqual({ success: true })
+    expect(store.clubs[0]).toMatchObject({ latitude: null, longitude: null })
+    expect(await updateClubLocationForOwner(client, user, 'club-1', 200, 10)).toEqual({ error: 'Toạ độ vị trí không hợp lệ' })
+    expect(await updateClubLocationForOwner(client, user, 'club-2', 10, 10)).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+  })
+
+  it('chỉ nhận ảnh trong kho của cụm sân và dọn file bị gỡ', async () => {
+    const { client, store, removedFiles } = fakeClient(tables())
+    const own = `${SUPABASE}/storage/v1/object/public/club-images/club-1/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png`
+    const foreign = `${SUPABASE}/storage/v1/object/public/club-images/club-2/cccccccc-cccc-4ccc-8ccc-cccccccccccc.png`
+
+    expect(await setClubImagesForOwner(client, user, 'club-1', [foreign], SUPABASE)).toEqual({ error: 'Có ảnh không thuộc kho ảnh của cụm sân này' })
+    expect(await setClubImagesForOwner(client, user, 'club-2', [], SUPABASE)).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+
+    expect(await setClubImagesForOwner(client, user, 'club-1', [own], SUPABASE)).toEqual({ success: true, images: [own] })
+    expect(store.clubs[0].images).toEqual([own])
+    expect(removedFiles).toEqual(['club-1/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.jpg'])
+  })
+})

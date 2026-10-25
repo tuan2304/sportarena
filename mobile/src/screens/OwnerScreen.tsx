@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { apiPost } from '../lib/api'
 import { formatDate, formatTime, formatVnd } from '../lib/format'
 import { useI18n } from '../i18n'
+import OwnerVenuesPanel from './OwnerVenuesPanel'
 
 interface OwnerBooking {
   id: string
@@ -33,10 +34,41 @@ const SELECT = `
 `
 
 /**
- * Màn hình của chủ sân: đơn chờ xác nhận cọc, khoản cần hoàn cọc và lịch sắp tới. Đọc trực tiếp từ Supabase (RLS cho
- * chủ sân xem đơn của cụm sân mình); mọi thao tác ghi đi qua API của máy chủ web, nơi kiểm tra quyền và áp quy tắc hoàn cọc.
+ * Màn hình của chủ sân, gồm hai phần: đơn đặt (xác nhận cọc, hủy, hoàn cọc) và sân & giá (tạo cụm sân, sân con, khung giá).
  */
 export default function OwnerScreen() {
+  const { t } = useI18n()
+  const [tab, setTab] = useState<'bookings' | 'venues'>('bookings')
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t('owner.title')}</Text>
+        <Text style={styles.subtitle}>{t('owner.subtitle')}</Text>
+        <View style={styles.segments}>
+          {(['bookings', 'venues'] as const).map((key) => (
+            <TouchableOpacity
+              key={key}
+              style={[styles.segment, tab === key && styles.segmentOn]}
+              onPress={() => setTab(key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === key }}
+            >
+              <Text style={[styles.segmentText, tab === key && styles.segmentTextOn]}>{t(key === 'bookings' ? 'owner.segBookings' : 'owner.segVenues')}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+      {tab === 'bookings' ? <BookingsPanel /> : <OwnerVenuesPanel />}
+    </View>
+  )
+}
+
+/**
+ * Phần đơn đặt: đơn chờ xác nhận cọc, khoản cần hoàn cọc và lịch sắp tới. Đọc trực tiếp từ Supabase (RLS cho
+ * chủ sân xem đơn của cụm sân mình); mọi thao tác ghi đi qua API của máy chủ web, nơi kiểm tra quyền và áp quy tắc hoàn cọc.
+ */
+function BookingsPanel() {
   const { t } = useI18n()
   const [rows, setRows] = useState<OwnerBooking[]>([])
   const [contacts, setContacts] = useState<Contacts>({})
@@ -195,12 +227,7 @@ export default function OwnerScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('owner.title')}</Text>
-        <Text style={styles.subtitle}>{t('owner.subtitle')}</Text>
-      </View>
-
+    <View style={styles.flex}>
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -262,6 +289,12 @@ function ActionButton({ busy, kind, label, icon, onPress }: { busy: boolean; kin
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  segments: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  segment: { flex: 1, minHeight: 40, borderRadius: 10, borderWidth: 1, borderColor: colors.cardBorder, alignItems: 'center', justifyContent: 'center' },
+  segmentOn: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+  segmentText: { color: colors.textSecondary, fontWeight: '700', fontSize: 13 },
+  segmentTextOn: { color: colors.primary },
   header: { padding: 16, paddingBottom: 8 },
   title: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
   subtitle: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },

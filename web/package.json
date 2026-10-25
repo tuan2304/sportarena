@@ -17,6 +17,7 @@
     "payos:webhook": "node --env-file=.env.local scripts/register-payos-webhook.mjs",
     "brand:generate": "node scripts/generate-brand-assets.mjs",
     "e2e": "playwright test",
+    "e2e:real": "node e2e-real/run.mjs",
     "e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {

@@ -201,3 +201,73 @@ test.describe('API duyệt người xin vào kèo cho app mobile', () => {
     expect((await res.json()).error).toBe('Participant not found')
   })
 })
+
+test.describe('API sân và giá của chủ sân cho app mobile', () => {
+  const ID = '88888888-8888-4888-8888-888888888881'
+  const mock = 'http://127.0.0.1:54399'
+
+  async function ownerToken(): Promise<string> {
+    const res = await fetch(`${mock}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: USERS.owner.email, password: 'x12345678' }),
+    })
+    return (await res.json()).access_token
+  }
+
+  test('không có token thì 401 ở cả bốn đường dẫn', async ({ request }) => {
+    expect((await request.post('/api/mobile/owner/clubs', { data: {} })).status()).toBe(401)
+    expect((await request.post(`/api/mobile/owner/clubs/${ID}/courts`, { data: {} })).status()).toBe(401)
+    expect((await request.post(`/api/mobile/owner/courts/${ID}/pricing-rules`, { data: {} })).status()).toBe(401)
+    expect((await request.delete(`/api/mobile/owner/pricing-rules/${ID}`)).status()).toBe(401)
+  })
+
+  test('dữ liệu sai bị từ chối và lỗi dịch theo header', async ({ request }) => {
+    const headers = { Authorization: `Bearer ${await ownerToken()}`, 'Accept-Language': 'en' }
+
+    const club = await request.post('/api/mobile/owner/clubs', { data: { name: '', address: 'x' }, headers })
+    expect(club.status()).toBe(400)
+    expect((await club.json()).error).toBe('The venue name must be 1 to 100 characters')
+
+    const badClubId = await request.post('/api/mobile/owner/clubs/khong-phai-uuid/courts', { data: {}, headers })
+    expect(badClubId.status()).toBe(400)
+    expect((await badClubId.json()).error).toBe('Invalid venue code')
+
+    const court = await request.post(`/api/mobile/owner/clubs/${ID}/courts`, { data: { name: 'S1', sportType: 'chess', basePricePerHour: 150000, depositPercentage: 30 }, headers })
+    expect(court.status()).toBe(400)
+    expect((await court.json()).error).toBe('Invalid sport')
+
+    const rule = await request.post(`/api/mobile/owner/courts/${ID}/pricing-rules`, { data: { name: 'Vàng', startTime: '21:00', endTime: '17:00', pricePerHour: 250000 }, headers })
+    expect(rule.status()).toBe(400)
+    expect((await rule.json()).error).toBe('The end time must be after the start time')
+
+    const badRuleId = await request.delete('/api/mobile/owner/pricing-rules/khong-phai-uuid', { headers })
+    expect(badRuleId.status()).toBe(400)
+    expect((await badRuleId.json()).error).toBe('Invalid price slot code')
+  })
+
+  test('sửa, xóa sân con, vị trí và ảnh: không token thì 401, dữ liệu sai bị từ chối', async ({ request }) => {
+    expect((await request.patch(`/api/mobile/owner/courts/${ID}`, { data: { name: 'x' } })).status()).toBe(401)
+    expect((await request.delete(`/api/mobile/owner/courts/${ID}`)).status()).toBe(401)
+    expect((await request.delete(`/api/mobile/owner/clubs/${ID}`)).status()).toBe(401)
+    expect((await request.put(`/api/mobile/owner/clubs/${ID}/location`, { data: { latitude: null, longitude: null } })).status()).toBe(401)
+    expect((await request.put(`/api/mobile/owner/clubs/${ID}/images`, { data: { images: [] } })).status()).toBe(401)
+    expect((await request.patch(`/api/mobile/owner/pricing-rules/${ID}`, { data: {} })).status()).toBe(401)
+
+    const headers = { Authorization: `Bearer ${await ownerToken()}`, 'Accept-Language': 'en' }
+    const error = async (res: Awaited<ReturnType<typeof request.get>>) => {
+      expect(res.status()).toBe(400)
+      return (await res.json()).error as string
+    }
+
+    expect(await error(await request.patch(`/api/mobile/owner/courts/${ID}`, { data: {}, headers }))).toBe('There is nothing to update')
+    expect(await error(await request.patch(`/api/mobile/owner/courts/${ID}`, { data: { depositPercentage: 500 }, headers }))).toBe('The deposit percentage must be between 1 and 100')
+    expect(await error(await request.delete('/api/mobile/owner/courts/khong-phai-uuid', { headers }))).toBe('Invalid court code')
+    expect(await error(await request.delete('/api/mobile/owner/clubs/khong-phai-uuid', { headers }))).toBe('Invalid venue code')
+    expect(await error(await request.put(`/api/mobile/owner/clubs/${ID}/location`, { data: { latitude: 10 }, headers }))).toBe('The location coordinates are not valid')
+    expect(await error(await request.put(`/api/mobile/owner/clubs/${ID}/images`, { data: { images: 'x' }, headers }))).toBe('Invalid image list')
+    expect(await error(await request.patch(`/api/mobile/owner/pricing-rules/${ID}`, { data: { name: 'a', startTime: '21:00', endTime: '17:00', pricePerHour: 250000 }, headers }))).toBe(
+      'The end time must be after the start time'
+    )
+  })
+})
