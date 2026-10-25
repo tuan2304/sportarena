@@ -189,6 +189,11 @@
     background-clip: text;
     color: transparent;
     animation: gradient-x 6s ease infinite;
+    /* background-clip: text chỉ tô trong hộp nền của phần tử; với line-height thấp, dấu thanh (dấu nặng ở dưới,
+       dấu mũ ở trên) nằm ngoài hộp nên bị cắt. Nới hộp ra rồi bù bằng margin âm để bố cục không đổi. */
+    display: inline-block;
+    padding: 0.18em 0.04em;
+    margin: -0.18em -0.04em;
   }
   /* Thẻ nâng lên khi hover */
   .card-lift {
