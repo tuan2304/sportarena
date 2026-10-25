@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { ExternalLink, Navigation } from 'lucide-react'
 import { buildDirectionsUrl, buildViewUrl, type PlaceRef } from '@/lib/maps'
 
@@ -13,6 +14,7 @@ const BASE_BTN =
 
 /** Nút mở Google Maps: "Chỉ đường" (từ vị trí của khách) và "Xem trên Google Maps". Trên điện thoại sẽ mở app Maps. */
 export function DirectionsLinks({ place, compact = false, className = '' }: DirectionsLinksProps) {
+  const t = useTranslations('maps')
   const directions = buildDirectionsUrl(place)
   const view = buildViewUrl(place)
   if (!directions) return null
@@ -26,8 +28,8 @@ export function DirectionsLinks({ place, compact = false, className = '' }: Dire
         className={`inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline ${className}`}
       >
         <Navigation className="w-3.5 h-3.5" aria-hidden />
-        Chỉ đường
-        <span className="sr-only"> (mở Google Maps trong tab mới)</span>
+        {t('directions')}
+        <span className="sr-only">{t('opensNewTab')}</span>
       </a>
     )
   }
@@ -41,8 +43,8 @@ export function DirectionsLinks({ place, compact = false, className = '' }: Dire
         className={`${BASE_BTN} px-4 py-2 text-sm bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm`}
       >
         <Navigation className="w-4 h-4" aria-hidden />
-        Chỉ đường
-        <span className="sr-only"> (mở Google Maps trong tab mới)</span>
+        {t('directions')}
+        <span className="sr-only">{t('opensNewTab')}</span>
       </a>
       {view && (
         <a
@@ -52,8 +54,8 @@ export function DirectionsLinks({ place, compact = false, className = '' }: Dire
           className={`${BASE_BTN} px-4 py-2 text-sm border border-border bg-background hover:bg-muted text-foreground`}
         >
           <ExternalLink className="w-4 h-4" aria-hidden />
-          Xem trên Google Maps
-          <span className="sr-only"> (tab mới)</span>
+          {t('viewOnGoogle')}
+          <span className="sr-only">{t('newTab')}</span>
         </a>
       )}
     </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -96,6 +97,9 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
   const [now] = useState(() => Date.now())
   const router = useRouter()
   const confirm = useConfirm()
+  const t = useTranslations('myBookings')
+  const locale = useLocale()
+  const lang = locale === 'en' ? 'en' : 'vi'
 
   async function handleCancel(item: MyBooking) {
     const club = item.court?.club
@@ -108,10 +112,10 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
       by: 'player',
     })
     const ok = await confirm({
-      title: 'Hủy đơn đặt sân này?',
-      description: describeOutcome(decision, formatVnd),
-      confirmText: 'Hủy đơn',
-      cancelText: 'Giữ lại',
+      title: t('cancelDialog.title'),
+      description: describeOutcome(decision, formatVnd, lang),
+      confirmText: t('cancelDialog.confirm'),
+      cancelText: t('cancelDialog.keep'),
       destructive: true,
     })
     if (!ok) return
@@ -124,7 +128,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
       return
     }
     toast.success(
-      result.refundAmount ? `Đã hủy đơn. Chủ sân sẽ hoàn ${formatVnd(result.refundAmount)} cho bạn.` : 'Đã hủy đơn đặt sân.'
+      result.refundAmount ? t('cancelledRefund', { amount: formatVnd(result.refundAmount) }) : t('cancelled')
     )
     router.refresh()
   }
@@ -148,7 +152,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
           }`}
         >
           <Calendar className="w-4 h-4" />
-          Sân Tôi Đã Đặt ({bookings.length})
+          {t('tabBookings', { count: bookings.length })}
         </button>
 
         <button
@@ -161,7 +165,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
           }`}
         >
           <Flame className="w-4 h-4" />
-          Kèo Tôi Tham Gia ({participations.length})
+          {t('tabMatches', { count: participations.length })}
         </button>
       </div>
 
@@ -171,27 +175,27 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
           {bookings.length === 0 ? (
             <Card className="border-dashed border-2 p-12 text-center space-y-3">
               <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-              <h3 className="text-base font-bold text-foreground">Bạn chưa có lịch đặt sân nào</h3>
+              <h3 className="text-base font-bold text-foreground">{t('emptyBookingsTitle')}</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Hãy khám phá các cụm sân thể thao gần bạn và đặt chỗ ngay hôm nay!
+                {t('emptyBookingsText')}
               </p>
               <Link href="/clubs">
                 <Button size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer mt-2">
-                  Khám Phá Sân Ngay
+                  {t('exploreNow')}
                 </Button>
               </Link>
             </Card>
           ) : (
             <div className="space-y-4">
               {bookings.map((item) => {
-                const court: CourtRef = item.court ?? { name: 'Sân tiêu chuẩn', club: null }
-                const club = court.club || { name: 'Cụm sân' }
+                const court: CourtRef = item.court ?? { name: t('defaultCourt'), club: null }
+                const club = court.club || { name: t('defaultClub') }
                 const isPending = item.status === 'pending'
                 const isConfirmed = item.status === 'confirmed'
                 const match = item.matches
                 const isCancelled = item.status === 'cancelled'
                 const canCancel = (isPending || isConfirmed) && new Date(item.start_time).getTime() > now
-                const refundNote = refundStatusLabel(item.refund_status ?? 'none', Number(item.refund_amount ?? 0), formatVnd)
+                const refundNote = refundStatusLabel(item.refund_status ?? 'none', Number(item.refund_amount ?? 0), formatVnd, lang)
 
                 const startTime = formatTime(item.start_time)
                 const endTime = formatTime(item.end_time)
@@ -216,7 +220,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                                 : 'bg-muted text-muted-foreground text-xs'
                             }
                           >
-                            {isConfirmed ? 'Đã Cọc Khóa Sân' : isPending ? 'Chờ Cọc' : isCancelled ? 'Đã Hủy' : item.status}
+                            {isConfirmed ? t('status.confirmed') : isPending ? t('status.pending') : isCancelled ? t('status.cancelled') : item.status}
                           </Badge>
 
                           {match && (
@@ -224,7 +228,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                               variant="outline"
                               className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs font-semibold"
                             >
-                              <Flame className="w-3.5 h-3.5 inline -mt-0.5 mr-1" aria-hidden />Đang Mở Ghép Kèo ({match.current_players}/{match.required_players})
+                              <Flame className="w-3.5 h-3.5 inline -mt-0.5 mr-1" aria-hidden />{t('matchOpen', { current: match.current_players, required: match.required_players })}
                             </Badge>
                           )}
                         </div>
@@ -260,7 +264,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
 
                       <div className="flex items-center justify-between md:justify-end gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-border/50 flex-wrap">
                         <div className="text-right mr-2 hidden sm:block">
-                          <div className="text-xs text-muted-foreground">Tiền cọc</div>
+                          <div className="text-xs text-muted-foreground">{t('deposit')}</div>
                           <div className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                             {formatVnd(item.deposit_amount)}
                           </div>
@@ -274,7 +278,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                               className="bg-amber-400 hover:bg-amber-300 text-slate-900 font-semibold cursor-pointer text-xs"
                             >
                               <Flame className="w-3.5 h-3.5 mr-1" />
-                              Quản Lý Kèo
+                              {t('manageMatch')}
                             </Button>
                           </Link>
                         ) : (
@@ -285,7 +289,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                             className="border-amber-500/40 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer text-xs font-semibold"
                           >
                             <PlusCircle className="w-3.5 h-3.5 mr-1" />
-                            Mở Ghép Kèo
+                            {t('openMatch')}
                           </Button>
                         )}
 
@@ -298,7 +302,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                             className="border-red-500/40 text-red-700 dark:text-red-400 hover:bg-red-500/10 cursor-pointer text-xs font-semibold"
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" />
-                            {cancellingId === item.id ? 'Đang hủy...' : 'Hủy Đơn'}
+                            {cancellingId === item.id ? t('cancelling') : t('cancelBooking')}
                           </Button>
                         )}
 
@@ -312,7 +316,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                                 : 'cursor-pointer text-xs'
                             }
                           >
-                            {isPending ? 'Quét Mã Cọc' : 'Xem Chi Tiết'}
+                            {isPending ? t('scanDeposit') : t('viewDetails')}
                             <ArrowRight className="w-3.5 h-3.5 ml-1" />
                           </Button>
                         </Link>
@@ -332,13 +336,13 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
           {participations.length === 0 ? (
             <Card className="border-dashed border-2 p-12 text-center space-y-3">
               <Flame className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-              <h3 className="text-base font-bold text-foreground">Bạn chưa tham gia kèo thể thao nào</h3>
+              <h3 className="text-base font-bold text-foreground">{t('emptyMatchesTitle')}</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Xem ngay danh sách các kèo giao lưu đang tuyển người để cùng rèn luyện thể thao!
+                {t('emptyMatchesText')}
               </p>
               <Link href="/matches">
                 <Button size="sm" className="bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer mt-2">
-                  Khám Phá Kèo Giao Lưu
+                  {t('exploreMatches')}
                 </Button>
               </Link>
             </Card>
@@ -361,7 +365,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                   ? `${formatTime(startTime)} - ${formatTime(endTime)}`
                   : ''
                 const dateStr = startTime
-                  ? formatShortDate(startTime)
+                  ? formatShortDate(startTime, lang)
                   : ''
 
                 return (
@@ -380,7 +384,7 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                                 : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30 text-xs'
                             }
                           >
-                            {isAccepted ? '✓ Đã Được Duyệt' : isPending ? '⏳ Chờ Chủ Kèo Duyệt' : 'Đã Bị Từ Chối'}
+                            {isAccepted ? t('part.accepted') : isPending ? t('part.pending') : t('part.rejected')}
                           </Badge>
                         </div>
 
@@ -399,24 +403,24 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
 
                         {part.message && (
                           <div className="text-xs text-muted-foreground italic">
-                            Lời nhắn: &ldquo;{part.message}&rdquo;
+                            {t('message', { message: part.message })}
                           </div>
                         )}
                       </div>
 
                       <div className="flex items-center gap-3 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                         <div className="text-right mr-2">
-                          <div className="text-xs text-muted-foreground">Chi phí</div>
+                          <div className="text-xs text-muted-foreground">{t('cost')}</div>
                           <div className="text-xs font-bold text-foreground">
                             {match.cost_sharing_type === 'host_covers'
-                              ? 'Miễn phí'
+                              ? t('free')
                               : `${formatVnd(match.cost_per_person || 0)}`}
                           </div>
                         </div>
 
                         <Link href={`/matches/${match.id}`}>
                           <Button size="sm" className="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold cursor-pointer text-xs">
-                            Chi Tiết Kèo
+                            {t('matchDetails')}
                             <ArrowRight className="w-3.5 h-3.5 ml-1" />
                           </Button>
                         </Link>
@@ -434,8 +438,8 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
       {selectedBookingForMatch && (
         <CreateMatchModal
           bookingId={selectedBookingForMatch.id}
-          courtName={selectedBookingForMatch.court?.name || 'Sân'}
-          clubName={selectedBookingForMatch.court?.club?.name || 'Cụm sân'}
+          courtName={selectedBookingForMatch.court?.name || t('courtFallback')}
+          clubName={selectedBookingForMatch.court?.club?.name || t('defaultClub')}
           totalPrice={Number(selectedBookingForMatch.total_price || 0)}
           sportType={selectedBookingForMatch.court?.sport_type || 'football'}
           open={isModalOpen}

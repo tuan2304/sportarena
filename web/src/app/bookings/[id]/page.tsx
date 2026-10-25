@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
 import { BookingPaymentView, type BookingPaymentViewProps } from '@/components/booking/booking-payment-view'
@@ -10,10 +11,14 @@ interface BookingPageProps {
   }>
 }
 
-export const metadata = { title: 'Chi tiết đơn đặt sân', robots: { index: false, follow: false } }
+export async function generateMetadata() {
+  const t = await getTranslations('myBookings')
+  return { title: t('detailMetaTitle'), robots: { index: false, follow: false } }
+}
 
 export default async function BookingPage({ params }: BookingPageProps) {
   const { id } = await params
+  const t = await getTranslations('myBookings')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -50,8 +55,8 @@ export default async function BookingPage({ params }: BookingPageProps) {
     notFound()
   }
 
-  const courtData = booking.court || { name: 'Sân tiêu chuẩn', sport_type: 'Thể thao' }
-  const clubData = courtData.club || { name: 'Cụm sân thể thao', address: 'Địa chỉ cụm sân' }
+  const courtData = booking.court || { name: t('defaultCourt'), sport_type: 'football' }
+  const clubData = courtData.club || { name: t('defaultClub'), address: '' }
   // cột metadata là JSONB nên có kiểu Json; ép về dạng thông tin ngân hàng do createBooking ghi vào
   const paymentData = (booking.payments?.[0] ?? null) as unknown as BookingPaymentViewProps['payment']
 

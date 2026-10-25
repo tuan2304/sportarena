@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations, getLocale } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
 import { TimeSlotPicker } from '@/components/booking/time-slot-picker'
@@ -26,6 +27,7 @@ interface ClubDetailPageProps {
 
 export async function generateMetadata({ params }: ClubDetailPageProps): Promise<Metadata> {
   const { id } = await params
+  const t = await getTranslations('clubs.detail')
   const supabase = await getSupabase()
   const { data: club } = await supabase
     .from('clubs')
@@ -33,9 +35,9 @@ export async function generateMetadata({ params }: ClubDetailPageProps): Promise
     .eq('id', id)
     .maybeSingle()
 
-  if (!club) return { title: 'Không tìm thấy cụm sân', robots: { index: false } }
+  if (!club) return { title: t('notFound'), robots: { index: false } }
 
-  const description = clubDescription(club)
+  const description = clubDescription(club, (await getLocale()) === 'en' ? 'en' : 'vi')
   const image = shareImage(club.images)
   return {
     title: club.name,
@@ -48,6 +50,8 @@ export async function generateMetadata({ params }: ClubDetailPageProps): Promise
 
 export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
   const { id } = await params
+  const t = await getTranslations('clubs.detail')
+  const lang = (await getLocale()) === 'en' ? 'en' : 'vi'
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -149,7 +153,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             href="/clubs"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Quay lại danh sách cụm sân
+            <ArrowLeft className="w-3.5 h-3.5" /> {t('backToList')}
           </Link>
         </div>
 
@@ -166,7 +170,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
             <div className="absolute top-4 left-4 flex gap-2">
               <Badge className="bg-emerald-800/95 text-white font-semibold backdrop-blur-xs">
-                <Sparkles className="w-3 h-3 mr-1" /> Cụm Sân Hoạt Động
+                <Sparkles className="w-3 h-3 mr-1" /> {t('active')}
               </Badge>
             </div>
           </div>
@@ -184,7 +188,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-teal-700 dark:text-teal-400 shrink-0" />
-                  Giờ mở cửa: {club.open_time?.slice(0, 5)} - {club.close_time?.slice(0, 5)}
+                  {t('openingHours', { open: club.open_time?.slice(0, 5) ?? '', close: club.close_time?.slice(0, 5) ?? '' })}
                 </span>
               </div>
 
@@ -202,7 +206,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             </div>
 
             <div className="text-xs text-muted-foreground max-w-md">
-              {club.description || 'Cơ sở thể thao hiện đại, mặt sân đạt chuẩn thi đấu và hệ thống chiếu sáng LED cao cấp.'}
+              {club.description || t('defaultDescription')}
             </div>
           </div>
         </div>
@@ -214,7 +218,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
         >
           <div className="md:col-span-2 p-6 space-y-4">
             <h2 id="club-location-title" className="text-xl font-extrabold text-foreground tracking-tight">
-              Vị trí &amp; chỉ đường
+              {t('locationTitle')}
             </h2>
             <p className="flex items-start gap-2 text-sm text-foreground">
               <MapPin className="w-4 h-4 mt-0.5 text-emerald-700 dark:text-emerald-400 shrink-0" aria-hidden />
@@ -222,13 +226,13 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             </p>
             {!isPinned && (
               <p className="text-xs text-muted-foreground">
-                Chủ sân chưa ghim vị trí chính xác nên bản đồ tìm theo địa chỉ và có thể lệch một chút.
+                {t('notPinned')}
               </p>
             )}
             <DirectionsLinks place={mapPlace} />
           </div>
           <div className="md:col-span-3">
-            <MapEmbed place={mapPlace} title={`Bản đồ vị trí ${club.name}`} className="h-72 md:h-full md:min-h-72" />
+            <MapEmbed place={mapPlace} title={t('mapTitle', { name: club.name })} className="h-72 md:h-full md:min-h-72" />
           </div>
         </section>
 
@@ -236,10 +240,10 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
         <div className="pt-2">
           <div className="mb-4">
             <h2 className="text-xl font-extrabold text-foreground tracking-tight">
-              Chọn Giờ Đặt Sân Trực Tuyến
+              {t('pickerTitle')}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Chọn sân con, chọn ngày và khung giờ bạn muốn chơi. Hệ thống sẽ tự động tính giá và tạo đơn cọc.
+              {t('pickerSubtitle')}
             </p>
           </div>
 
@@ -247,8 +251,8 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             <p className="text-xs text-muted-foreground flex items-start gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
               <span>
-                <strong className="text-foreground">Chính sách hủy:</strong> {describePolicy(club.free_cancel_hours)}
-                {club.accepts_manual_transfer && !club.accepts_online_payment && ' Cụm sân nhận cọc bằng chuyển khoản, chủ sân sẽ xác nhận đơn thủ công.'}
+                <strong className="text-foreground">{t('cancelPolicy')}</strong> {describePolicy(club.free_cancel_hours, lang)}
+                {club.accepts_manual_transfer && !club.accepts_online_payment && t('manualTransferNote')}
               </span>
             </p>
           )}
@@ -261,7 +265,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             />
           ) : (
             <div role="status" className="p-8 text-center border border-dashed rounded-xl text-sm text-muted-foreground">
-              Cụm sân này chưa kết nối thanh toán online nên chưa nhận đặt sân trên SportArena. Vui lòng quay lại sau hoặc liên hệ trực tiếp với chủ sân.
+              {t('noPayments')}
             </div>
           )}
         </div>

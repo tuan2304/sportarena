@@ -1,13 +1,17 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { Input } from '@/components/ui/input'
 import { Search, MapPin } from 'lucide-react'
 
 import { SPORT_FILTER_OPTIONS } from '@/lib/constants'
+import { ALL_DISTRICTS } from '@/lib/club-search'
 import { SportIcon } from '@/components/ui/sport-icon'
+// 'Tất cả khu vực' là giá trị đặc biệt (ALL_DISTRICTS) hiển thị bằng nhãn dịch; tên quận là tên riêng nên giữ nguyên
 const DISTRICTS = [
-  'Tất cả khu vực',
+  ALL_DISTRICTS,
   'Quận 1',
   'Quận 3',
   'Quận 7',
@@ -19,17 +23,19 @@ const DISTRICTS = [
 ]
 
 export function ClubFilters() {
+  const t = useTranslations('clubs.filters')
+  const labels = useLabels()
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const currentSport = searchParams.get('sport') || 'all'
-  const currentDistrict = searchParams.get('district') || 'Tất cả khu vực'
+  const currentDistrict = searchParams.get('district') || ALL_DISTRICTS
   const currentQuery = searchParams.get('q') || ''
 
   function updateParams(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
     params.delete('page') // đổi bộ lọc thì quay về trang đầu
-    if (value && value !== 'all' && value !== 'Tất cả khu vực') {
+    if (value && value !== 'all' && value !== ALL_DISTRICTS) {
       params.set(key, value)
     } else {
       params.delete(key)
@@ -46,7 +52,7 @@ export function ClubFilters() {
           <Input
             defaultValue={currentQuery}
             onChange={(e) => updateParams('q', e.target.value)}
-            placeholder="Tìm theo tên sân, đường phố hoặc quận..."
+            placeholder={t('searchPlaceholder')}
             className="pl-9 h-10 bg-muted/30 focus-visible:ring-emerald-500"
           />
         </div>
@@ -60,7 +66,7 @@ export function ClubFilters() {
           >
             {DISTRICTS.map((d) => (
               <option key={d} value={d}>
-                {d}
+                {d === ALL_DISTRICTS ? t('allDistricts') : d}
               </option>
             ))}
           </select>
@@ -83,7 +89,7 @@ export function ClubFilters() {
               }`}
             >
               {sport.id !== 'all' && <SportIcon sport={sport.id} className="w-3.5 h-3.5" />}
-              {sport.label}
+              {labels.sport(sport.id)}
             </button>
           )
         })}

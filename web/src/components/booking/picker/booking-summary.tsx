@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,11 +42,12 @@ export function BookingSummary({
   loading,
   onSubmit,
 }: BookingSummaryProps) {
+  const t = useTranslations('booking.summary')
   return (
     <Card className="border-border shadow-md sticky top-24 bg-card/90 backdrop-blur-sm">
       <CardHeader className="pb-3 border-b border-border/60">
-        <CardTitle className="text-base font-bold">Tóm Tắt Đặt Sân</CardTitle>
-        <CardDescription className="text-xs">Giữ chỗ tự động 15 phút qua VietQR PayOS</CardDescription>
+        <CardTitle className="text-base font-bold">{t('title')}</CardTitle>
+        <CardDescription className="text-xs">{t('subtitle')}</CardDescription>
       </CardHeader>
 
       <CardContent className="p-5 space-y-4 text-xs">
@@ -61,37 +63,37 @@ export function BookingSummary({
 
         <div className="space-y-2 pb-3 border-b border-border/60">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Sân đã chọn:</span>
+            <span className="text-muted-foreground">{t('court')}</span>
             <span className="font-bold text-foreground">{courtName}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Ngày chơi:</span>
+            <span className="text-muted-foreground">{t('date')}</span>
             <span className="font-semibold text-foreground">{formatDate(selectedDate)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Khung giờ:</span>
+            <span className="text-muted-foreground">{t('time')}</span>
             <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-              {slot ? `${formatTimeRange(slot.start, slot.end)} (${slot.durationHours}h)` : 'Chưa chọn giờ'}
+              {slot ? `${formatTimeRange(slot.start, slot.end)} (${slot.durationHours}h)` : t('noTime')}
             </span>
           </div>
           {price.isPeak && (
             <div className="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-400 bg-amber-500/10 p-1.5 rounded-md font-medium">
               <Zap className="w-3.5 h-3.5" aria-hidden />
-              Áp dụng giá Giờ Vàng / Cao Điểm
+              {t('peak')}
             </div>
           )}
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="bookingNote" className="text-xs text-muted-foreground">
-            Ghi chú cho chủ sân (tùy chọn)
+            {t('noteLabel')}
           </Label>
           <Input
             id="bookingNote"
             value={note}
             maxLength={500}
             onChange={(e) => onNoteChange(e.target.value)}
-            placeholder="Ví dụ: Cần mượn thêm áo pitch..."
+            placeholder={t('notePlaceholder')}
             className="h-8 text-xs"
           />
         </div>
@@ -100,15 +102,15 @@ export function BookingSummary({
 
         <div className="space-y-2 pt-2">
           <div className="flex justify-between text-muted-foreground">
-            <span>Đơn giá theo giờ:</span>
+            <span>{t('pricePerHour')}</span>
             <span>{formatNumber(price.pricePerHour)} đ/h</span>
           </div>
           <div className="flex justify-between font-bold text-foreground text-sm">
-            <span>Tổng tiền sân:</span>
+            <span>{t('total')}</span>
             <span>{formatVnd(price.totalPrice)}</span>
           </div>
           <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-emerald-700 dark:text-emerald-400">
-            <span className="font-semibold">Tiền cọc giữ chỗ ({price.depositPercent}%):</span>
+            <span className="font-semibold">{t('deposit', { percent: price.depositPercent })}</span>
             <span className="font-extrabold text-base">{formatVnd(price.depositAmount)}</span>
           </div>
         </div>
@@ -122,16 +124,16 @@ export function BookingSummary({
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Đang giữ chỗ...
+              {t('holding')}
             </>
           ) : (
-            'Xác Nhận Giữ Chỗ 15 Phút'
+            t('confirm')
           )}
         </Button>
 
         <div className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
           <ShieldCheck className="w-3 h-3 text-emerald-700 dark:text-emerald-400" aria-hidden />
-          Sân được giữ tạm 15 phút chờ quét mã QR PayOS
+          {t('holdNote')}
         </div>
       </CardContent>
     </Card>

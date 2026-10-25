@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Label } from '@/components/ui/label'
 import { Check } from 'lucide-react'
 import { DURATION_OPTIONS } from '@/lib/booking-slots'
@@ -23,17 +24,18 @@ export function HourStep({
   onSelectHour,
   onSelectDuration,
 }: HourStepProps) {
+  const t = useTranslations('booking.picker')
   return (
     <>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-bold text-foreground">3. Chọn giờ bắt đầu</Label>
+          <Label className="text-sm font-bold text-foreground">{t('stepHour')}</Label>
           <div className="flex items-center gap-3 text-xs">
             <span className="flex items-center gap-1.5 text-muted-foreground">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Còn trống
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> {t('available')}
             </span>
             <span className="flex items-center gap-1.5 text-muted-foreground">
-              <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" /> Đã kín
+              <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" /> {t('full')}
             </span>
           </div>
         </div>
@@ -51,7 +53,7 @@ export function HourStep({
                 type="button"
                 disabled={unavailable}
                 aria-pressed={isSelected}
-                aria-label={booked ? `${label}, đã kín` : label}
+                aria-label={booked ? t('slotBooked', { label }) : label}
                 onClick={() => onSelectHour(hour)}
                 className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                   unavailable
@@ -71,7 +73,7 @@ export function HourStep({
 
       {startHour !== null && (
         <div className="space-y-2 pt-2 border-t border-border">
-          <Label className="text-xs font-bold text-foreground">Thời lượng chơi</Label>
+          <Label className="text-xs font-bold text-foreground">{t('duration')}</Label>
           <div className="flex flex-wrap items-center gap-2">
             {DURATION_OPTIONS.map((dur) => {
               const available = isDurationAvailable(dur)
@@ -90,7 +92,7 @@ export function HourStep({
                       : 'bg-muted text-muted-foreground hover:text-foreground cursor-pointer'
                   }`}
                 >
-                  {dur} tiếng
+                  {t('hours', { count: dur })}
                 </button>
               )
             })}

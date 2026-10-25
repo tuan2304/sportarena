@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, MapPin } from 'lucide-react'
-import { sportLabel, skillInfo } from '@/lib/constants'
+import { skillInfo } from '@/lib/constants'
+import { useLocale, useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { formatTime, formatLongDate } from '@/lib/format'
 import { DirectionsLinks } from '@/components/maps/directions-links'
@@ -16,6 +18,9 @@ interface MatchBannerProps {
 
 /** Thẻ đầu trang: môn, trình độ, trạng thái chỗ trống, thời gian và địa điểm. */
 export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
+  const t = useTranslations('matches')
+  const labels = useLabels()
+  const lang = useLocale() === 'en' ? 'en' : 'vi'
   const skill = skillInfo(match.skill_level)
   const court = match.booking?.court
   const club = court?.club
@@ -29,10 +34,10 @@ export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5 bg-background">
               <SportIcon sport={match.sport_type} className="w-3.5 h-3.5 mr-1" />
-              {sportLabel(match.sport_type)}
+              {labels.sport(match.sport_type)}
             </Badge>
             <Badge variant="outline" className={`text-xs font-semibold py-1 px-2.5 ${skill.badge}`}>
-              {skill.longLabel}
+              {labels.skillLong(match.skill_level)}
             </Badge>
           </div>
 
@@ -47,10 +52,10 @@ export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
             }
           >
             {match.status === 'cancelled'
-              ? 'Đã hủy kèo'
+              ? t('banner.cancelled')
               : isFull
-              ? 'Đã đủ người'
-              : `Còn ${slotsLeft} chỗ trống`}
+              ? t('card.full')
+              : t('card.slotsLeft', { count: slotsLeft })}
           </Badge>
         </div>
 
@@ -71,28 +76,28 @@ export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
           <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1">
             <div className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
-              Thời Gian Thi Đấu
+              {t('banner.time')}
             </div>
             <div className="font-bold text-sm text-foreground">
               {startTime && endTime
                 ? `${formatTime(startTime)} - ${formatTime(endTime)}`
-                : 'Thỏa thuận'}
+                : t('banner.timeTbd')}
             </div>
             <div className="text-xs text-muted-foreground">
-              {startTime && formatLongDate(startTime)}
+              {startTime && formatLongDate(startTime, lang)}
             </div>
           </div>
 
           <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-1">
             <div className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-              Địa Điểm & Sân Con
+              {t('banner.place')}
             </div>
             <div className="font-bold text-sm text-foreground">
-              {club?.name || 'Cụm Sân Thể Thao'} - {court?.name || 'Sân tiêu chuẩn'}
+              {club?.name || t('banner.venueFallback')} - {court?.name || t('banner.courtFallback')}
             </div>
             <div className="text-xs text-muted-foreground line-clamp-1">
-              {club?.address || club?.district || 'Hồ Chí Minh'}
+              {club?.address || club?.district || t('banner.areaFallback')}
             </div>
             {club && (
               <DirectionsLinks

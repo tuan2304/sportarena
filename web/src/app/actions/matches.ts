@@ -7,6 +7,7 @@ import { notifyUser } from '@/lib/notify'
 
 import { isMatchSkill } from '@/lib/constants'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { tr } from '@/lib/localize-error'
 export interface CreateMatchInput {
   bookingId: string
   title: string
@@ -29,13 +30,13 @@ async function requireUser() {
 export async function createMatch(input: CreateMatchInput) {
   const { supabase, user } = await requireUser()
   if (!user) {
-    return { error: 'Vui lòng đăng nhập để tạo bài ghép kèo' }
+    return { error: await tr('Vui lòng đăng nhập để tạo bài ghép kèo') }
   }
 
   const limited = await enforceRateLimit('createMatch', user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
   const title = input.title?.trim()
-  if (!title) return { error: 'Vui lòng nhập tên kèo' }
+  if (!title) return { error: await tr('Vui lòng nhập tên kèo') }
 
   // 1. Booking phải tồn tại, của chính user, còn hiệu lực và chưa kết thúc
   const { data: booking, error: bookingErr } = await supabase
@@ -45,16 +46,16 @@ export async function createMatch(input: CreateMatchInput) {
     .single()
 
   if (bookingErr || !booking) {
-    return { error: 'Không tìm thấy thông tin đơn đặt sân tương ứng' }
+    return { error: await tr('Không tìm thấy thông tin đơn đặt sân tương ứng') }
   }
   if (booking.user_id !== user.id) {
-    return { error: 'Bạn chỉ có thể tạo ghép kèo cho đơn đặt sân của chính mình' }
+    return { error: await tr('Bạn chỉ có thể tạo ghép kèo cho đơn đặt sân của chính mình') }
   }
   if (!['pending', 'confirmed'].includes(booking.status)) {
-    return { error: 'Đơn đặt sân này không còn hiệu lực để mở kèo' }
+    return { error: await tr('Đơn đặt sân này không còn hiệu lực để mở kèo') }
   }
   if (new Date(booking.end_time).getTime() < Date.now()) {
-    return { error: 'Khung giờ này đã kết thúc, không thể mở kèo' }
+    return { error: await tr('Khung giờ này đã kết thúc, không thể mở kèo') }
   }
 
   const admin = createAdminClient()
@@ -66,7 +67,7 @@ export async function createMatch(input: CreateMatchInput) {
     .eq('booking_id', input.bookingId)
     .maybeSingle()
   if (existingMatch) {
-    return { error: 'Đơn đặt sân này đã được mở ghép kèo trước đó' }
+    return { error: await tr('Đơn đặt sân này đã được mở ghép kèo trước đó') }
   }
 
   // 3. Chuẩn hóa dữ liệu và tính chi phí mỗi người
@@ -103,7 +104,7 @@ export async function createMatch(input: CreateMatchInput) {
 
   if (matchErr || !match) {
     console.error('createMatch lỗi', matchErr)
-    return { error: 'Không thể tạo kèo ghép. Vui lòng thử lại.' }
+    return { error: await tr('Không thể tạo kèo ghép. Vui lòng thử lại.') }
   }
 
   await admin.from('bookings').update({ is_open_match: true }).eq('id', input.bookingId)
@@ -118,11 +119,11 @@ export async function createMatch(input: CreateMatchInput) {
 export async function joinMatch(matchId: string, message?: string) {
   const { user } = await requireUser()
   if (!user) {
-    return { error: 'Vui lòng đăng nhập để gửi yêu cầu tham gia' }
+    return { error: await tr('Vui lòng đăng nhập để gửi yêu cầu tham gia') }
   }
 
   const limited = await enforceRateLimit('joinMatch', user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
   const admin = createAdminClient()
 
   const { data: match, error: matchErr } = await admin
@@ -132,13 +133,13 @@ export async function joinMatch(matchId: string, message?: string) {
     .single()
 
   if (matchErr || !match) {
-    return { error: 'Không tìm thấy thông tin kèo thể thao' }
+    return { error: await tr('Không tìm thấy thông tin kèo thể thao') }
   }
   if (match.creator_id === user.id) {
-    return { error: 'Bạn là chủ tạo kèo này nên không cần gửi yêu cầu tham gia' }
+    return { error: await tr('Bạn là chủ tạo kèo này nên không cần gửi yêu cầu tham gia') }
   }
   if (match.status !== 'open') {
-    return { error: 'Kèo này hiện đã đóng hoặc đã đủ người tham gia' }
+    return { error: await tr('Kèo này hiện đã đóng hoặc đã đủ người tham gia') }
   }
 
   const note = message?.trim().slice(0, 300) || null
@@ -152,27 +153,27 @@ export async function joinMatch(matchId: string, message?: string) {
 
   if (existing) {
     if (existing.status === 'pending') {
-      return { error: 'Bạn đã gửi yêu cầu tham gia rồi, vui lòng chờ chủ kèo duyệt' }
+      return { error: await tr('Bạn đã gửi yêu cầu tham gia rồi, vui lòng chờ chủ kèo duyệt') }
     }
     if (existing.status === 'accepted') {
-      return { error: 'Bạn đã là thành viên chính thức của kèo này' }
+      return { error: await tr('Bạn đã là thành viên chính thức của kèo này') }
     }
     if (existing.status === 'rejected') {
-      return { error: 'Yêu cầu trước đó của bạn đã bị từ chối bởi chủ kèo' }
+      return { error: await tr('Yêu cầu trước đó của bạn đã bị từ chối bởi chủ kèo') }
     }
     // status = 'left' → cho phép xin tham gia lại
     const { error: reapplyErr } = await admin
       .from('match_participants')
       .update({ status: 'pending', message: note, joined_at: new Date().toISOString() })
       .eq('id', existing.id)
-    if (reapplyErr) return { error: 'Không thể gửi lại yêu cầu tham gia' }
+    if (reapplyErr) return { error: await tr('Không thể gửi lại yêu cầu tham gia') }
   } else {
     const { error: insertErr } = await admin
       .from('match_participants')
       .insert({ match_id: matchId, user_id: user.id, status: 'pending', message: note })
     if (insertErr) {
       console.error('joinMatch lỗi', insertErr)
-      return { error: 'Không thể gửi yêu cầu tham gia' }
+      return { error: await tr('Không thể gửi yêu cầu tham gia') }
     }
   }
 
@@ -191,10 +192,10 @@ export async function joinMatch(matchId: string, message?: string) {
 export async function respondParticipant(participantId: string, newStatus: 'accepted' | 'rejected') {
   const { user } = await requireUser()
   if (!user) {
-    return { error: 'Vui lòng đăng nhập' }
+    return { error: await tr('Vui lòng đăng nhập') }
   }
   if (newStatus !== 'accepted' && newStatus !== 'rejected') {
-    return { error: 'Trạng thái không hợp lệ' }
+    return { error: await tr('Trạng thái không hợp lệ') }
   }
 
   const admin = createAdminClient()
@@ -206,7 +207,7 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
     .single()
 
   if (pErr || !participant) {
-    return { error: 'Không tìm thấy thông tin người tham gia' }
+    return { error: await tr('Không tìm thấy thông tin người tham gia') }
   }
 
   const match = participant.match as unknown as {
@@ -217,13 +218,13 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
   } | null
 
   if (!match || match.creator_id !== user.id) {
-    return { error: 'Chỉ chủ phòng mới có quyền duyệt thành viên' }
+    return { error: await tr('Chỉ chủ phòng mới có quyền duyệt thành viên') }
   }
   if (participant.status !== 'pending') {
-    return { error: 'Yêu cầu này đã được xử lý trước đó' }
+    return { error: await tr('Yêu cầu này đã được xử lý trước đó') }
   }
   if (newStatus === 'accepted' && !['open', 'full'].includes(match.status)) {
-    return { error: 'Kèo này đã đóng, không thể duyệt thêm thành viên' }
+    return { error: await tr('Kèo này đã đóng, không thể duyệt thêm thành viên') }
   }
 
   // current_players và status của kèo do trigger trong database tự cập nhật; trigger cũng chặn duyệt quá số người
@@ -235,13 +236,13 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
 
   if (updateErr) {
     if (updateErr.message.includes('MATCH_FULL')) {
-      return { error: 'Kèo đã đủ người, không thể duyệt thêm' }
+      return { error: await tr('Kèo đã đủ người, không thể duyệt thêm') }
     }
     if (updateErr.message.includes('MATCH_CLOSED')) {
-      return { error: 'Kèo này đã đóng, không thể duyệt thêm thành viên' }
+      return { error: await tr('Kèo này đã đóng, không thể duyệt thêm thành viên') }
     }
     console.error('respondParticipant lỗi', updateErr)
-    return { error: 'Không thể cập nhật yêu cầu' }
+    return { error: await tr('Không thể cập nhật yêu cầu') }
   }
 
   const isAccepted = newStatus === 'accepted'
@@ -262,7 +263,7 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
 export async function leaveMatch(matchId: string) {
   const { user } = await requireUser()
   if (!user) {
-    return { error: 'Vui lòng đăng nhập' }
+    return { error: await tr('Vui lòng đăng nhập') }
   }
 
   const admin = createAdminClient()
@@ -275,7 +276,7 @@ export async function leaveMatch(matchId: string) {
     .maybeSingle()
 
   if (!participant || !['pending', 'accepted'].includes(participant.status)) {
-    return { error: 'Bạn chưa tham gia kèo này' }
+    return { error: await tr('Bạn chưa tham gia kèo này') }
   }
 
   // Trigger tự trừ current_players và mở lại kèo nếu đang "đủ người"
@@ -286,7 +287,7 @@ export async function leaveMatch(matchId: string) {
 
   if (updateErr) {
     console.error('leaveMatch lỗi', updateErr)
-    return { error: 'Không thể rời kèo' }
+    return { error: await tr('Không thể rời kèo') }
   }
 
   revalidatePath(`/matches/${matchId}`)
@@ -296,7 +297,7 @@ export async function leaveMatch(matchId: string) {
 export async function cancelMatch(matchId: string) {
   const { user } = await requireUser()
   if (!user) {
-    return { error: 'Vui lòng đăng nhập' }
+    return { error: await tr('Vui lòng đăng nhập') }
   }
 
   const admin = createAdminClient()
@@ -308,7 +309,7 @@ export async function cancelMatch(matchId: string) {
     .single()
 
   if (!match || match.creator_id !== user.id) {
-    return { error: 'Chỉ chủ phòng mới có thể hủy kèo này' }
+    return { error: await tr('Chỉ chủ phòng mới có thể hủy kèo này') }
   }
 
   await admin.from('matches').update({ status: 'cancelled' }).eq('id', matchId)

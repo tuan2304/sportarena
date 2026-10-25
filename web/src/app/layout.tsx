@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Be_Vietnam_Pro, Barlow_Condensed, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -28,30 +30,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  // Gốc để đổi các đường dẫn tương đối (canonical, ảnh chia sẻ) thành địa chỉ tuyệt đối
-  metadataBase: new URL(resolveAppUrl()),
-  title: {
-    default: "SportArena - Đặt sân & Ghép kèo thể thao",
-    template: "%s | SportArena",
-  },
-  description:
-    "Đặt sân chống trùng lịch, đặt cọc qua VietQR và ghép kèo giao lưu thể thao theo thời gian thực.",
-  openGraph: {
-    type: "website",
-    siteName: "SportArena",
-    locale: "vi_VN",
-    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "SportArena" }],
-  },
-  twitter: { card: "summary" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("meta");
+  return {
+    // Gốc để đổi các đường dẫn tương đối (canonical, ảnh chia sẻ) thành địa chỉ tuyệt đối
+    metadataBase: new URL(resolveAppUrl()),
+    title: {
+      default: t("title"),
+      template: "%s | SportArena",
+    },
+    description: t("description"),
+    openGraph: {
+      type: "website",
+      siteName: t("siteName"),
+      locale: (await getLocale()) === "en" ? "en_GB" : "vi_VN",
+      images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "SportArena" }],
+    },
+    twitter: { card: "summary" },
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Nonce do proxy.ts tạo cho từng request; đọc header khiến mọi trang render lúc có request (cần cho CSP có nonce)
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const locale = await getLocale();
   return (
     <html
-      lang="vi"
+      lang={locale}
       className={`${beVietnam.variable} ${barlow.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -60,8 +65,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <ConfirmProvider>{children}</ConfirmProvider>
-        <Toaster />
+        <NextIntlClientProvider>
+          <ConfirmProvider>{children}</ConfirmProvider>
+          <Toaster />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

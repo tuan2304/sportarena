@@ -28,10 +28,14 @@ export function truncateDescription(text: string, max = DESCRIPTION_MAX): string
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
 }
 
-export function clubDescription(club: Pick<ClubSeoInput, 'name' | 'description' | 'address' | 'district' | 'city'>): string {
+export function clubDescription(club: Pick<ClubSeoInput, 'name' | 'description' | 'address' | 'district' | 'city'>, lang: 'vi' | 'en' = 'vi'): string {
   if (club.description?.trim()) return truncateDescription(club.description)
   const place = [club.address, club.district, club.city].filter(Boolean).join(', ')
-  return truncateDescription(`Đặt sân tại ${club.name}, ${place}. Xem lịch trống và đặt cọc nhanh qua VietQR trên SportArena.`)
+  return truncateDescription(
+    lang === 'en'
+      ? `Book a court at ${club.name}, ${place}. Check availability and pay a quick deposit with VietQR on SportArena.`
+      : `Đặt sân tại ${club.name}, ${place}. Xem lịch trống và đặt cọc nhanh qua VietQR trên SportArena.`
+  )
 }
 
 /** Ảnh dùng cho thẻ chia sẻ phải là địa chỉ tuyệt đối http(s); bỏ qua giá trị khác. */

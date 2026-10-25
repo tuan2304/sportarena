@@ -1,4 +1,5 @@
 import { MapPinOff } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { buildEmbedUrl, type PlaceRef } from '@/lib/maps'
 
 interface MapEmbedProps {
@@ -13,13 +14,14 @@ interface MapEmbedProps {
  * trong Google Cloud), nếu không dùng dạng nhúng không cần khóa. Tải lười để không làm chậm trang.
  */
 export function MapEmbed({ place, title, className = '' }: MapEmbedProps) {
+  const t = useTranslations('maps')
   const src = buildEmbedUrl(place, process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
 
   if (!src) {
     return (
       <div className={`flex flex-col items-center justify-center gap-2 bg-muted/40 text-muted-foreground text-xs p-6 ${className}`}>
         <MapPinOff className="w-6 h-6" aria-hidden />
-        Chưa có thông tin vị trí để hiển thị bản đồ.
+        {t('noLocation')}
       </div>
     )
   }

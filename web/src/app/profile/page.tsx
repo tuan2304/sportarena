@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
 import { ProfileForm } from '@/components/profile/profile-form'
@@ -7,9 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from 'lucide-react'
 
-export const metadata = { title: 'Hồ sơ của tôi', robots: { index: false, follow: false } }
+export async function generateMetadata() {
+  const t = await getTranslations('profile')
+  return { title: t('metaTitle'), robots: { index: false, follow: false } }
+}
 
 export default async function ProfilePage() {
+  const t = await getTranslations('profile')
   const user = await getCurrentUser()
   if (!user) redirect('/login?next=/profile')
 
@@ -25,21 +30,21 @@ export default async function ProfilePage() {
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Hồ sơ của tôi</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{t('heading')}</h1>
             <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
           </div>
           <Link href={`/players/${user.id}`}>
             <Button variant="outline" size="sm" className="cursor-pointer">
               <ExternalLink className="w-3.5 h-3.5 mr-1.5" aria-hidden />
-              Xem hồ sơ công khai
+              {t('viewPublic')}
             </Button>
           </Link>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Thông tin cá nhân</CardTitle>
-            <CardDescription>Tên, ảnh đại diện và trình độ hiển thị ở các kèo bạn tạo hoặc tham gia.</CardDescription>
+            <CardTitle className="text-base">{t('cardTitle')}</CardTitle>
+            <CardDescription>{t('cardDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ProfileForm

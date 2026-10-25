@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import {
   getNotifications,
@@ -37,6 +38,7 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const router = useRouter()
+  const t = useTranslations('notifications')
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -175,12 +177,12 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   function formatTime(dateStr: string) {
     const diff = now - new Date(dateStr).getTime()
     const minutes = Math.floor(diff / 60000)
-    if (minutes < 1) return 'Vừa xong'
-    if (minutes < 60) return `${minutes} phút trước`
+    if (minutes < 1) return t('justNow')
+    if (minutes < 60) return t('minutesAgo', { count: minutes })
     const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours} giờ trước`
+    if (hours < 24) return t('hoursAgo', { count: hours })
     const days = Math.floor(hours / 24)
-    return `${days} ngày trước`
+    return t('daysAgo', { count: days })
   }
 
   return (
@@ -190,7 +192,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer select-none"
-        title="Thông báo"
+        title={t('tooltip')}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -206,10 +208,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           {/* Header */}
           <div className="px-4 py-3 bg-muted/40 border-b border-border/70 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-foreground">Thông Báo</span>
+              <span className="font-bold text-sm text-foreground">{t('title')}</span>
               {unreadCount > 0 && (
                 <Badge variant="outline" className="text-xs bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 py-0">
-                  {unreadCount} mới
+                  {t('newCount', { count: unreadCount })}
                 </Badge>
               )}
             </div>
@@ -222,7 +224,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                 className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-1 cursor-pointer"
               >
                 <CheckCheck className="w-3.5 h-3.5" />
-                Đọc tất cả
+                {t('markAll')}
               </button>
             )}
           </div>
@@ -232,8 +234,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-xs text-muted-foreground space-y-1">
                 <Bell className="w-7 h-7 mx-auto text-muted-foreground/40 mb-2" />
-                <div>Bạn chưa có thông báo nào</div>
-                <div className="text-xs">Các tin tức về đơn đặt và kèo sẽ hiển thị tại đây</div>
+                <div>{t('empty')}</div>
+                <div className="text-xs">{t('emptyHint')}</div>
               </div>
             ) : (
               notifications.map((notif) => (
@@ -267,7 +269,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                       </span>
                       {notif.link && (
                         <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                          Xem chi tiết <ExternalLink className="w-2.5 h-2.5" />
+                          {t('viewDetails')} <ExternalLink className="w-2.5 h-2.5" />
                         </span>
                       )}
                     </div>

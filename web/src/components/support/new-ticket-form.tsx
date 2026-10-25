@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ interface NewTicketFormProps {
 
 export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
   const router = useRouter()
+  const t = useTranslations('support')
   const [pending, startTransition] = useTransition()
   const [form, setForm] = useState({ subject: '', category: 'other', body: '', clubId: '' })
 
@@ -28,10 +30,10 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
     startTransition(async () => {
       const res = await createTicket({ ...form, clubId: form.clubId || null })
       if (res.error || !res.ticketId) {
-        toast.error(res.error ?? 'Không gửi được yêu cầu')
+        toast.error(res.error ?? t('form.failed'))
         return
       }
-      toast.success('Đã gửi yêu cầu hỗ trợ', { description: 'Chúng tôi sẽ trả lời ngay khi có thể.' })
+      toast.success(t('form.sent'), { description: t('form.sentHint') })
       router.push(`/support/${res.ticketId}`)
     })
   }
@@ -40,7 +42,7 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
     <form onSubmit={submit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="t-category" className="text-xs font-semibold">Vấn đề thuộc nhóm</Label>
+          <Label htmlFor="t-category" className="text-xs font-semibold">{t('form.category')}</Label>
           <select
             id="t-category"
             value={form.category}
@@ -48,20 +50,20 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
             className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             {TICKET_CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>{c.label}</option>
+              <option key={c.id} value={c.id}>{t(`categories.${c.id}`)}</option>
             ))}
           </select>
         </div>
         {clubs.length > 0 && (
           <div className="space-y-1.5">
-            <Label htmlFor="t-club" className="text-xs font-semibold">Liên quan tới cụm sân (không bắt buộc)</Label>
+            <Label htmlFor="t-club" className="text-xs font-semibold">{t('form.club')}</Label>
             <select
               id="t-club"
               value={form.clubId}
               onChange={set('clubId')}
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Không chọn</option>
+              <option value="">{t('form.noClub')}</option>
               {clubs.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -71,20 +73,20 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="t-subject" className="text-xs font-semibold">Tiêu đề</Label>
+        <Label htmlFor="t-subject" className="text-xs font-semibold">{t('form.subject')}</Label>
         <Input
           id="t-subject"
           value={form.subject}
           onChange={set('subject')}
           maxLength={SUBJECT_MAX}
           required
-          placeholder="Ví dụ: Đã chuyển khoản nhưng đơn chưa được xác nhận"
+          placeholder={t('form.subjectPlaceholder')}
           className="h-10"
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="t-body" className="text-xs font-semibold">Mô tả chi tiết</Label>
+        <Label htmlFor="t-body" className="text-xs font-semibold">{t('form.body')}</Label>
         <textarea
           id="t-body"
           value={form.body}
@@ -92,7 +94,7 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
           maxLength={BODY_MAX}
           rows={6}
           required
-          placeholder="Bạn gặp vấn đề gì, ở sân nào, vào lúc nào? Nếu liên quan đến thanh toán, hãy ghi số tiền và thời điểm chuyển khoản."
+          placeholder={t('form.bodyPlaceholder')}
           className="w-full resize-y rounded-xl border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         />
         <div className="text-right text-xs text-muted-foreground">{form.body.length}/{BODY_MAX}</div>
@@ -100,7 +102,7 @@ export function NewTicketForm({ clubs = [] }: NewTicketFormProps) {
 
       <Button type="submit" disabled={pending} className="cursor-pointer bg-emerald-700 text-white hover:bg-emerald-800">
         {pending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Send className="mr-1.5 h-4 w-4" aria-hidden />}
-        Gửi yêu cầu
+        {t('form.submit')}
       </Button>
     </form>
   )

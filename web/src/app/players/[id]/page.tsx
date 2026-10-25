@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { getLabels } from '@/i18n/labels-server'
 import { notFound } from 'next/navigation'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
@@ -7,7 +9,6 @@ import { Avatar } from '@/components/profile/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { skillLabel } from '@/lib/profile'
 import { formatDate, formatTime } from '@/lib/format'
 import { Calendar, Flame, Star, Trophy, Users } from 'lucide-react'
 
@@ -22,11 +23,12 @@ const PUBLIC_COLUMNS = 'id, full_name, avatar_url, skill_level, rating'
 
 export async function generateMetadata({ params }: PlayerPageProps): Promise<Metadata> {
   const { id } = await params
-  if (!UUID.test(id)) return { title: 'Không tìm thấy người chơi', robots: { index: false } }
+  const t = await getTranslations('profile.player')
+  if (!UUID.test(id)) return { title: t('notFound'), robots: { index: false } }
   const supabase = await getSupabase()
   const { data } = await supabase.from('profiles').select('full_name').eq('id', id).maybeSingle()
   return {
-    title: data?.full_name ? `${data.full_name} - Hồ sơ người chơi` : 'Không tìm thấy người chơi',
+    title: data?.full_name ? t('metaTitle', { name: data.full_name }) : t('notFound'),
     // Hồ sơ cá nhân không nên xuất hiện trên công cụ tìm kiếm
     robots: { index: false, follow: true },
   }
@@ -34,6 +36,8 @@ export async function generateMetadata({ params }: PlayerPageProps): Promise<Met
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const { id } = await params
+  const t = await getTranslations('profile.player')
+  const labels = await getLabels()
   if (!UUID.test(id)) notFound()
 
   const supabase = await getSupabase()
@@ -56,9 +60,9 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   const s = stats?.[0] ?? { matches_created: 0, matches_joined: 0, bookings_played: 0 }
   const isMe = viewer?.id === profile.id
   const tiles = [
-    { icon: Calendar, label: 'Lần đã chơi', value: s.bookings_played },
-    { icon: Flame, label: 'Kèo đã tạo', value: s.matches_created },
-    { icon: Users, label: 'Kèo đã tham gia', value: s.matches_joined },
+    { icon: Calendar, label: t('played'), value: s.bookings_played },
+    { icon: Flame, label: t('created'), value: s.matches_created },
+    { icon: Users, label: t('joined'), value: s.matches_joined },
   ]
 
   return (
@@ -70,11 +74,11 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center gap-5">
             <Avatar name={profile.full_name} src={profile.avatar_url} size={88} />
             <div className="flex-1 space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{profile.full_name || 'Người chơi'}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{profile.full_name || t('fallback')}</h1>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
                   <Trophy className="w-3.5 h-3.5 mr-1" aria-hidden />
-                  {skillLabel(profile.skill_level)}
+                  {labels.playerSkill(profile.skill_level)}
                 </Badge>
                 {profile.rating !== null && (
                   <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-400">
@@ -86,7 +90,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
             </div>
             {isMe && (
               <Link href="/profile">
-                <Button variant="outline" size="sm" className="cursor-pointer">Chỉnh sửa hồ sơ</Button>
+                <Button variant="outline" size="sm" className="cursor-pointer">{t('edit')}</Button>
               </Link>
             )}
           </CardContent>
@@ -105,10 +109,10 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
         </div>
 
         <section aria-labelledby="open-matches" className="space-y-3">
-          <h2 id="open-matches" className="text-lg font-bold">Kèo đang mở</h2>
+          <h2 id="open-matches" className="text-lg font-bold">{t('openMatches')}</h2>
           {(openMatches ?? []).length === 0 ? (
             <Card className="border-dashed">
-              <CardContent className="py-8 text-center text-sm text-muted-foreground">Hiện chưa có kèo nào đang mở.</CardContent>
+              <CardContent className="py-8 text-center text-sm text-muted-foreground">{t('noOpenMatches')}</CardContent>
             </Card>
           ) : (
             <ul className="space-y-2">
@@ -127,7 +131,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
                               </div>
                             )}
                           </div>
-                          <Badge variant="outline" className="shrink-0">{m.current_players}/{m.required_players} người</Badge>
+                          <Badge variant="outline" className="shrink-0">{t('playersCount', { current: m.current_players, required: m.required_players })}</Badge>
                         </CardContent>
                       </Card>
                     </Link>

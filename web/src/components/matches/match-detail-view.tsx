@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { joinMatch, respondParticipant, leaveMatch, cancelMatch } from '@/app/actions/matches'
 import { Card, CardContent } from '@/components/ui/card'
@@ -30,6 +31,7 @@ export function MatchDetailView({
   currentUserId,
 }: MatchDetailProps) {
   const router = useRouter()
+  const t = useTranslations('matches.detail')
   const askConfirm = useConfirm()
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
   const [joinMessage, setJoinMessage] = useState('')
@@ -80,7 +82,7 @@ export function MatchDetailView({
       setActionError(res.error)
       toast.error(res.error)
     } else {
-      toast.success('Đã gửi yêu cầu tham gia', { description: 'Chủ kèo sẽ duyệt và báo cho bạn.' })
+      toast.success(t('joinSent'), { description: t('joinSentHint') })
       setIsJoinModalOpen(false)
       setJoinMessage('')
       router.refresh()
@@ -98,17 +100,17 @@ export function MatchDetailView({
       setActionError(res.error)
       toast.error(res.error)
     } else {
-      toast.success(status === 'accepted' ? 'Đã duyệt thành viên' : 'Đã từ chối yêu cầu')
+      toast.success(status === 'accepted' ? t('approved') : t('declined'))
       router.refresh()
     }
   }
 
   async function handleLeave() {
     const ok = await askConfirm({
-      title: 'Rời khỏi kèo này?',
-      description: 'Bạn sẽ mất chỗ trong kèo và phải xin tham gia lại nếu muốn quay lại.',
-      confirmText: 'Rời kèo',
-      cancelText: 'Ở lại',
+      title: t('leave.title'),
+      description: t('leave.text'),
+      confirmText: t('leave.confirm'),
+      cancelText: t('leave.stay'),
       destructive: true,
     })
     if (!ok) return
@@ -123,17 +125,17 @@ export function MatchDetailView({
       setActionError(res.error)
       toast.error(res.error)
     } else {
-      toast.success('Đã rời khỏi kèo')
+      toast.success(t('left'))
       router.refresh()
     }
   }
 
   async function handleCancelMatch() {
     const ok = await askConfirm({
-      title: 'Hủy kèo này?',
-      description: 'Các thành viên đã được duyệt sẽ nhận thông báo kèo bị hủy. Thao tác này không hoàn tác được.',
-      confirmText: 'Hủy kèo',
-      cancelText: 'Giữ lại',
+      title: t('cancel.title'),
+      description: t('cancel.text'),
+      confirmText: t('cancel.confirm'),
+      cancelText: t('cancel.keep'),
       destructive: true,
     })
     if (!ok) return
@@ -148,7 +150,7 @@ export function MatchDetailView({
       setActionError(res.error)
       toast.error(res.error)
     } else {
-      toast.success('Đã hủy kèo')
+      toast.success(t('cancelled'))
       router.refresh()
     }
   }
@@ -161,7 +163,7 @@ export function MatchDetailView({
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Quay lại danh sách kèo
+          {t('back')}
         </Link>
       </div>
 
@@ -197,9 +199,9 @@ export function MatchDetailView({
           ) : (
             <Card className="border-dashed border-border shadow-sm">
               <CardContent className="p-8 text-center space-y-2">
-                <div className="text-sm font-bold text-foreground">Phòng chat dành cho thành viên</div>
+                <div className="text-sm font-bold text-foreground">{t('chatMembersOnly')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Hãy gửi yêu cầu tham gia. Khi chủ kèo duyệt, bạn sẽ vào được phòng chat của kèo này.
+                  {t('chatMembersHint')}
                 </p>
               </CardContent>
             </Card>

@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Clock, MapPin, Users, ArrowRight } from 'lucide-react'
 
-import { sportLabel, skillInfo } from '@/lib/constants'
+import { skillInfo } from '@/lib/constants'
+import { useLocale, useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { formatNumber, formatTime, formatShortDate } from '@/lib/format'
 export interface MatchCardProps {
@@ -45,7 +47,10 @@ export interface MatchCardProps {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const sportName = sportLabel(match.sport_type)
+  const t = useTranslations('matches.card')
+  const labels = useLabels()
+  const lang = useLocale() === 'en' ? 'en' : 'vi'
+  const sportName = labels.sport(match.sport_type)
   const skill = skillInfo(match.skill_level)
 
   const court = match.booking?.court
@@ -58,10 +63,10 @@ export function MatchCard({ match }: MatchCardProps) {
 
   const timeStr = startTime && endTime
     ? `${formatTime(startTime)} - ${formatTime(endTime)}`
-    : 'Thời gian thỏa thuận'
+    : t('timeTbd')
 
   const dateStr = startTime
-    ? formatShortDate(startTime)
+    ? formatShortDate(startTime, lang)
     : ''
 
   const isHostCovers = match.cost_sharing_type === 'host_covers'
@@ -91,7 +96,7 @@ export function MatchCard({ match }: MatchCardProps) {
                   : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs font-bold'
               }
             >
-              {isFull ? 'Đã đủ người' : `Còn ${slotsLeft} chỗ trống`}
+              {isFull ? t('full') : t('slotsLeft', { count: slotsLeft })}
             </Badge>
           </div>
 
@@ -118,7 +123,7 @@ export function MatchCard({ match }: MatchCardProps) {
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 <span className="line-clamp-1">
-                  <strong className="text-foreground">{club.name}</strong> ({court?.name || 'Sân'}) - {club.address || club.district || 'TP.HCM'}
+                  <strong className="text-foreground">{club.name}</strong> ({court?.name || t('courtFallback')}) - {club.address || club.district || t('cityFallback')}
                 </span>
               </div>
             )}
@@ -134,9 +139,9 @@ export function MatchCard({ match }: MatchCardProps) {
                 {match.creator?.full_name ? match.creator.full_name.charAt(0).toUpperCase() : 'H'}
               </div>
               <div className="text-xs">
-                <span className="text-muted-foreground text-xs block">Chủ kèo</span>
+                <span className="text-muted-foreground text-xs block">{t('host')}</span>
                 <span className="font-semibold text-foreground line-clamp-1">
-                  {match.creator?.full_name || 'Người dùng'}
+                  {match.creator?.full_name || t('userFallback')}
                 </span>
               </div>
             </div>
@@ -153,12 +158,12 @@ export function MatchCard({ match }: MatchCardProps) {
           {/* Pricing & CTA */}
           <div className="flex items-center justify-between gap-2 pt-1">
             <div>
-              <div className="text-xs text-muted-foreground">Chi phí tham gia</div>
+              <div className="text-xs text-muted-foreground">{t('cost')}</div>
               <div className="font-extrabold text-sm text-foreground">
                 {isHostCovers ? (
-                  <span className="text-emerald-700 dark:text-emerald-400">Miễn phí (Chủ bao)</span>
+                  <span className="text-emerald-700 dark:text-emerald-400">{t('free')}</span>
                 ) : (
-                  <span className="text-amber-700 dark:text-amber-400">{formatNumber(costNumber)} đ/người</span>
+                  <span className="text-amber-700 dark:text-amber-400">{t('perPerson', { price: formatNumber(costNumber) })}</span>
                 )}
               </div>
             </div>
@@ -168,7 +173,7 @@ export function MatchCard({ match }: MatchCardProps) {
                 size="sm"
                 className="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold cursor-pointer text-xs shadow-xs shadow-amber-500/20"
               >
-                Xem Kèo
+                {t('view')}
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             </Link>

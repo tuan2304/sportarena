@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { MainHeader } from '@/components/layout/main-header'
 import { MatchFilters } from '@/components/matches/match-filters'
@@ -8,10 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Flame, PlusCircle, Trophy, Users } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: 'Kèo giao lưu thể thao',
-  description: 'Tìm kèo giao lưu pickleball, cầu lông, bóng đá, tennis, bóng rổ còn thiếu người hoặc mở kèo để rủ thêm bạn chơi cùng.',
-  alternates: { canonical: '/matches' },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('matches')
+  return { title: t('metaTitle'), description: t('metaDescription'), alternates: { canonical: '/matches' } }
 }
 
 interface MatchesPageProps {
@@ -25,6 +25,7 @@ interface MatchesPageProps {
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { sport, skill, cost, q } = await searchParams
+  const t = await getTranslations('matches')
   const supabase = await createClient()
 
   let query = supabase
@@ -95,14 +96,13 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-amber-100">
               <Flame className="w-3.5 h-3.5 text-amber-300" />
-              Cộng Đồng Ghép Kèo Thể Thao
+              {t('hero.badge')}
             </div>
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
-              Giao Lưu Thể Thao, Tìm Bạn Chơi Cùng Mọi Lúc Mọi Nơi
+              {t('hero.title')}
             </h1>
             <p className="text-xs sm:text-sm text-amber-100/90 max-w-xl">
-              Thiếu 1 slot cầu lông? Cần đối tác pickleball đôi hay lập đội bóng đá giao lưu?
-              Tham gia ngay các kèo đang mở hoặc tự tạo kèo riêng cho sân bạn đã đặt!
+              {t('hero.text')}
             </p>
 
             <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -112,7 +112,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   className="bg-white text-amber-700 hover:bg-amber-50 font-bold shadow-md cursor-pointer text-xs sm:text-sm h-10 px-4"
                 >
                   <PlusCircle className="w-4 h-4 mr-1.5" />
-                  Mở Kèo Từ Sân Của Tôi
+                  {t('hero.openFromMine')}
                 </Button>
               </Link>
               <Link href="/clubs">
@@ -121,7 +121,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
                   variant="outline"
                   className="bg-black/20 hover:bg-black/30 text-white border-white/30 font-semibold cursor-pointer text-xs sm:text-sm h-10 px-4"
                 >
-                  Đặt Sân Mới & Ghép Kèo
+                  {t('hero.bookNew')}
                 </Button>
               </Link>
             </div>
@@ -141,24 +141,24 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           <div className="flex items-center justify-between">
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <Flame className="w-5 h-5 text-amber-500" />
-              Các Kèo Đang Tuyển Người ({matchList.length})
+              {t('listTitle', { count: matchList.length })}
             </h2>
             <div className="text-xs text-muted-foreground hidden sm:block">
-              Cập nhật trực tiếp thời gian thực
+              {t('live')}
             </div>
           </div>
 
           {matchList.length === 0 ? (
             <Card className="p-12 text-center border-dashed border-2 space-y-3">
               <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto" />
-              <h3 className="text-base font-bold text-foreground">Không tìm thấy kèo phù hợp</h3>
+              <h3 className="text-base font-bold text-foreground">{t('emptyTitle')}</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Chưa có ai mở ghép kèo phù hợp với bộ lọc hiện tại. Bạn có thể là người đầu tiên tạo kèo giao lưu!
+                {t('emptyText')}
               </p>
               <div className="pt-2 flex justify-center gap-3">
                 <Link href="/my-bookings">
                   <Button size="sm" className="bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer">
-                    Mở Ghép Kèo Ngay
+                    {t('openNow')}
                   </Button>
                 </Link>
               </div>

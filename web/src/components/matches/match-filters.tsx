@@ -1,12 +1,16 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 
 import { SPORT_FILTER_OPTIONS, SKILL_FILTER_OPTIONS, COST_TYPE_FILTER_OPTIONS } from '@/lib/constants'
 import { SportIcon } from '@/components/ui/sport-icon'
 export function MatchFilters() {
+  const t = useTranslations('matches.filters')
+  const labels = useLabels()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -34,7 +38,7 @@ export function MatchFilters() {
           <Input
             defaultValue={currentQuery}
             onChange={(e) => updateParams('q', e.target.value)}
-            placeholder="Tìm theo tiêu đề kèo, khu vực hoặc tên sân..."
+            placeholder={t('search')}
             className="pl-9 h-10 bg-muted/30 focus-visible:ring-amber-500"
           />
         </div>
@@ -48,7 +52,7 @@ export function MatchFilters() {
           >
             {SKILL_FILTER_OPTIONS.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.label}
+                {s.id === 'all' ? labels.t('skills.filterAll') : labels.skill(s.id)}
               </option>
             ))}
           </select>
@@ -61,7 +65,7 @@ export function MatchFilters() {
           >
             {COST_TYPE_FILTER_OPTIONS.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.label}
+                {labels.costType(c.id)}
               </option>
             ))}
           </select>
@@ -84,7 +88,7 @@ export function MatchFilters() {
               }`}
             >
               {sport.id !== 'all' && <SportIcon sport={sport.id} className="w-3.5 h-3.5" />}
-              {sport.label}
+              {labels.sport(sport.id)}
             </button>
           )
         })}

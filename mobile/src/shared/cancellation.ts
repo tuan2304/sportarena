@@ -76,33 +76,55 @@ export function parseFreeCancelHours(raw: unknown): { ok: true; hours: number } 
   return { ok: true, hours: n }
 }
 
+/** Ngôn ngữ của các câu mô tả; mặc định tiếng Việt (mobile chỉ dùng tiếng Việt). */
+export type CopyLang = 'vi' | 'en'
+
+const EN_REASONS: Record<string, string> = {
+  'Đơn này đã hủy hoặc đã hoàn thành nên không thể hủy nữa.': 'This booking is already cancelled or completed, so it cannot be cancelled again.',
+  'Đơn đã đến giờ chơi nên không thể tự hủy. Hãy liên hệ chủ sân nếu có sự cố.':
+    'The play time has started, so you cannot cancel it yourself. Please contact the owner if something went wrong.',
+}
+
 /** "24 giờ", "48 giờ (2 ngày)"... */
-export function formatHours(hours: number): string {
+export function formatHours(hours: number, lang: CopyLang = 'vi'): string {
+  if (lang === 'en') {
+    const unit = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+    return hours >= 24 && hours % 24 === 0 ? `${unit(hours, 'hour')} (${unit(hours / 24, 'day')})` : unit(hours, 'hour')
+  }
   return hours >= 24 && hours % 24 === 0 ? `${hours} giờ (${hours / 24} ngày)` : `${hours} giờ`
 }
 
 /** Câu mô tả chính sách của cụm sân, hiện ở trang đặt sân. */
-export function describePolicy(freeCancelHours: number): string {
+export function describePolicy(freeCancelHours: number, lang: CopyLang = 'vi'): string {
   const h = clampFreeCancelHours(freeCancelHours)
+  if (lang === 'en') {
+    return h === 0
+      ? 'Free cancellation with a full deposit refund at any time before the play time.'
+      : `Cancel at least ${formatHours(h, 'en')} before the play time for a deposit refund; later cancellations forfeit the deposit. If the owner cancels, you are always refunded in full.`
+  }
   return h === 0
     ? 'Hủy miễn phí và được hoàn cọc bất cứ lúc nào trước giờ chơi.'
     : `Hủy trước giờ chơi ít nhất ${formatHours(h)} được hoàn cọc; hủy muộn hơn sẽ mất cọc. Chủ sân hủy thì luôn hoàn đủ.`
 }
 
 /** Thông báo kết quả cho người dùng ngay trước khi họ xác nhận hủy. */
-export function describeOutcome(decision: CancelDecision, formatMoney: (n: number) => string): string {
-  if (!decision.allowed) return decision.reason
+export function describeOutcome(decision: CancelDecision, formatMoney: (n: number) => string, lang: CopyLang = 'vi'): string {
+  if (!decision.allowed) return lang === 'en' ? (EN_REASONS[decision.reason] ?? decision.reason) : decision.reason
   if (decision.refundStatus === 'pending') {
-    return `Bạn sẽ được hoàn ${formatMoney(decision.refundAmount)}. Chủ sân sẽ chuyển lại tiền cọc cho bạn.`
+    return lang === 'en'
+      ? `You will be refunded ${formatMoney(decision.refundAmount)}. The owner will transfer your deposit back.`
+      : `Bạn sẽ được hoàn ${formatMoney(decision.refundAmount)}. Chủ sân sẽ chuyển lại tiền cọc cho bạn.`
   }
   if (decision.forfeited) {
-    return 'Đơn nằm trong thời gian hủy muộn theo chính sách của cụm sân nên bạn sẽ không được hoàn cọc.'
+    return lang === 'en'
+      ? "This booking is inside the venue's late-cancellation window, so your deposit will not be refunded."
+      : 'Đơn nằm trong thời gian hủy muộn theo chính sách của cụm sân nên bạn sẽ không được hoàn cọc.'
   }
-  return 'Đơn này chưa có khoản cọc nào nên không phát sinh hoàn tiền.'
+  return lang === 'en' ? 'This booking has no deposit, so there is nothing to refund.' : 'Đơn này chưa có khoản cọc nào nên không phát sinh hoàn tiền.'
 }
 
-export function refundStatusLabel(status: string, amount: number, formatMoney: (n: number) => string): string | null {
-  if (status === 'pending') return `Chờ chủ sân hoàn cọc ${formatMoney(amount)}`
-  if (status === 'refunded') return `Đã hoàn cọc ${formatMoney(amount)}`
+export function refundStatusLabel(status: string, amount: number, formatMoney: (n: number) => string, lang: CopyLang = 'vi'): string | null {
+  if (status === 'pending') return lang === 'en' ? `Waiting for the owner to refund ${formatMoney(amount)}` : `Chờ chủ sân hoàn cọc ${formatMoney(amount)}`
+  if (status === 'refunded') return lang === 'en' ? `Deposit of ${formatMoney(amount)} refunded` : `Đã hoàn cọc ${formatMoney(amount)}`
   return null
 }

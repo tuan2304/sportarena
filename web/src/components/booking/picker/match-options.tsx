@@ -1,8 +1,10 @@
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Flame } from 'lucide-react'
-import { MATCH_SKILL_IDS, SKILL_LEVELS, type MatchSkillId } from '@/lib/constants'
+import { MATCH_SKILL_IDS, type MatchSkillId } from '@/lib/constants'
 import { formatNumber } from '@/lib/format'
 import type { MatchDraft } from './types'
 
@@ -16,6 +18,8 @@ const PLAYER_COUNTS = [2, 3, 4, 6, 8, 10, 12, 14]
 
 /** Công tắc "mở ghép kèo" + form cấu hình kèo, hiện ngay trong lúc đặt sân. */
 export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps) {
+  const t = useTranslations('booking.match')
+  const labels = useLabels()
   const { enabled, title, requiredPlayers, skillLevel, costSharingType } = draft
 
   return (
@@ -35,15 +39,15 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
             <Flame className="w-4 h-4" aria-hidden />
           </span>
           <span>
-            <span className="block text-xs font-bold leading-tight">Mở Ghép Kèo Giao Lưu</span>
-            <span className="block text-xs text-muted-foreground">Tuyển thêm người chơi chung</span>
+            <span className="block text-xs font-bold leading-tight">{t('title')}</span>
+            <span className="block text-xs text-muted-foreground">{t('subtitle')}</span>
           </span>
         </span>
         <Badge
           variant={enabled ? 'default' : 'outline'}
           className={enabled ? 'bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs' : 'text-xs'}
         >
-          {enabled ? 'Đang Bật' : 'Bấm để bật'}
+          {enabled ? t('on') : t('tapToEnable')}
         </Badge>
       </button>
 
@@ -51,14 +55,14 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
         <div className="mt-3 p-3.5 bg-amber-500/5 rounded-xl border border-amber-500/20 space-y-3">
           <div className="space-y-1">
             <Label htmlFor="matchTitle" className="text-xs font-semibold text-foreground">
-              Tiêu đề bài đăng ghép kèo
+              {t('postTitle')}
             </Label>
             <Input
               id="matchTitle"
               value={title}
               maxLength={100}
               onChange={(e) => onChange({ title: e.target.value })}
-              placeholder={`Ví dụ: Tuyển ${Math.max(1, requiredPlayers - 1)} bạn giao lưu vui vẻ`}
+              placeholder={t('titlePlaceholder', { count: Math.max(1, requiredPlayers - 1) })}
               className="h-8 text-xs bg-background"
             />
           </div>
@@ -66,7 +70,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label htmlFor="matchPlayers" className="text-xs font-semibold text-foreground">
-                Tổng số người cần
+                {t('totalPlayers')}
               </Label>
               <select
                 id="matchPlayers"
@@ -76,7 +80,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
               >
                 {PLAYER_COUNTS.map((num) => (
                   <option key={num} value={num}>
-                    {num} người ({num - 1} slot trống)
+                    {t('playersOption', { count: num, slots: num - 1 })}
                   </option>
                 ))}
               </select>
@@ -84,7 +88,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
 
             <div className="space-y-1">
               <Label htmlFor="matchSkill" className="text-xs font-semibold text-foreground">
-                Trình độ yêu cầu
+                {t('skill')}
               </Label>
               <select
                 id="matchSkill"
@@ -94,7 +98,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
               >
                 {MATCH_SKILL_IDS.map((id) => (
                   <option key={id} value={id}>
-                    {SKILL_LEVELS[id].longLabel}
+                    {labels.skillLong(id)}
                   </option>
                 ))}
               </select>
@@ -102,7 +106,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground">Hình thức chia tiền sân</Label>
+            <Label className="text-xs font-semibold text-foreground">{t('costTitle')}</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -114,7 +118,7 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
                     : 'bg-background border-border text-muted-foreground hover:bg-muted'
                 }`}
               >
-                Chia đều tiền
+                {t('split')}
               </button>
               <button
                 type="button"
@@ -126,15 +130,15 @@ export function MatchOptions({ draft, totalPrice, onChange }: MatchOptionsProps)
                     : 'bg-background border-border text-muted-foreground hover:bg-muted'
                 }`}
               >
-                Chủ bao trọn (0đ)
+                {t('hostCovers')}
               </button>
             </div>
 
             {costSharingType === 'split' && (
               <div className="text-xs text-muted-foreground pt-1 flex justify-between items-center">
-                <span>Gợi ý mỗi người đóng:</span>
+                <span>{t('perPersonHint')}</span>
                 <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                  {formatNumber(Math.round(totalPrice / Math.max(1, requiredPlayers)))} đ/người
+                  {t('perPerson', { price: formatNumber(Math.round(totalPrice / Math.max(1, requiredPlayers))) })}
                 </span>
               </div>
             )}

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { UserRole } from '@/types/database'
 import { enforceRateLimit, enforceRateLimitByIp } from '@/lib/rate-limit'
+import { tr } from '@/lib/localize-error'
 
 export type AuthResult = {
   error?: string
@@ -16,13 +17,13 @@ export async function login(formData: FormData): Promise<AuthResult> {
   const password = formData.get('password') as string
 
   if (!email || !password) {
-    return { error: 'Vui lòng nhập đầy đủ email và mật khẩu' }
+    return { error: await tr('Vui lòng nhập đầy đủ email và mật khẩu') }
   }
 
   // Hai lớp: theo IP (chặn dò nhiều tài khoản) và theo email (chặn dò mật khẩu của một tài khoản từ nhiều IP)
   const limited =
     (await enforceRateLimitByIp('loginByIp')) ?? (await enforceRateLimit('loginByEmail', email.trim().toLowerCase()))
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
 
   const supabase = await createClient()
 
@@ -32,7 +33,7 @@ export async function login(formData: FormData): Promise<AuthResult> {
   })
 
   if (error) {
-    return { error: 'Email hoặc mật khẩu không chính xác' }
+    return { error: await tr('Email hoặc mật khẩu không chính xác') }
   }
 
   if (data?.user) {
@@ -66,14 +67,14 @@ export async function register(formData: FormData): Promise<AuthResult> {
   const role: UserRole = formData.get('role') === 'owner' ? 'owner' : 'player'
 
   if (!email || !password || !fullName) {
-    return { error: 'Vui lòng điền các thông tin bắt buộc (họ tên, email, mật khẩu)' }
+    return { error: await tr('Vui lòng điền các thông tin bắt buộc (họ tên, email, mật khẩu)') }
   }
 
   const limited = await enforceRateLimitByIp('registerByIp')
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
 
   if (password.length < 8) {
-    return { error: 'Mật khẩu phải có ít nhất 8 ký tự' }
+    return { error: await tr('Mật khẩu phải có ít nhất 8 ký tự') }
   }
 
   const supabase = await createClient()
@@ -90,7 +91,7 @@ export async function register(formData: FormData): Promise<AuthResult> {
   })
 
   if (error) {
-    return { error: error.message || 'Không thể tạo tài khoản. Vui lòng thử lại.' }
+    return { error: await tr(error.message || 'Không thể tạo tài khoản. Vui lòng thử lại.') }
   }
 
   if (data?.user) {

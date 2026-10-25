@@ -11,6 +11,7 @@ import { Star, MessageSquare, ThumbsUp, Send } from 'lucide-react'
 import { formatDate } from '@/lib/format'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 interface ClubReviewsSectionProps {
   clubId: string
   currentUserId?: string | null
@@ -23,6 +24,7 @@ export function ClubReviewsSection({
   initialReviews,
 }: ClubReviewsSectionProps) {
   const router = useRouter()
+  const t = useTranslations('reviews')
   const [reviews, setReviews] = useState<ClubReview[]>(initialReviews)
   const [rating, setRating] = useState<number>(5)
   const [hoverRating, setHoverRating] = useState<number>(0)
@@ -93,8 +95,8 @@ export function ClubReviewsSection({
   async function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault()
     if (!currentUserId) {
-      toast.info('Vui lòng đăng nhập để gửi đánh giá', {
-        action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+      toast.info(t('loginToast'), {
+        action: { label: t('loginAction'), onClick: () => router.push('/login') },
       })
       return
     }
@@ -108,7 +110,7 @@ export function ClubReviewsSection({
     if (res.error) {
       toast.warning(res.error)
     } else {
-      setSuccessMsg('Cảm ơn bạn đã gửi đánh giá cho cụm sân!')
+      setSuccessMsg(t('thanks'))
       setComment('')
       setTimeout(() => setSuccessMsg(''), 4000)
     }
@@ -120,10 +122,10 @@ export function ClubReviewsSection({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
-            Đánh Giá & Trải Nghiệm Sân Bãi
+            {t('title')}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Nhận xét thực tế từ các vận động viên và người chơi đã từng trải nghiệm
+            {t('subtitle')}
           </p>
         </div>
 
@@ -134,8 +136,8 @@ export function ClubReviewsSection({
             {averageRating}
           </div>
           <div className="text-xs text-muted-foreground leading-tight">
-            <div className="font-semibold text-foreground">Điểm Uy Tín</div>
-            <div>Dựa trên {totalReviews} đánh giá</div>
+            <div className="font-semibold text-foreground">{t('score')}</div>
+            <div>{t('basedOn', { count: totalReviews })}</div>
           </div>
         </div>
       </div>
@@ -147,7 +149,7 @@ export function ClubReviewsSection({
             <CardHeader className="bg-muted/30 border-b border-border/60 pb-3">
               <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
                 <ThumbsUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                Gửi Đánh Giá Của Bạn
+                {t('formTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
@@ -161,7 +163,7 @@ export function ClubReviewsSection({
                 {/* Chọn số sao */}
                 <div>
                   <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Mức độ hài lòng của bạn:
+                    {t('satisfaction')}
                   </label>
                   <div className="flex items-center gap-1.5">
                     {[1, 2, 3, 4, 5].map((star) => {
@@ -194,15 +196,15 @@ export function ClubReviewsSection({
                 {/* Nhập nhận xét */}
                 <div>
                   <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Lời nhận xét (chất lượng mặt sân, đèn, tiện ích...):
+                    {t('commentLabel')}
                   </label>
                   <textarea
                     rows={3}
                     className="w-full bg-background border border-border rounded-xl p-3 text-xs sm:text-sm text-foreground focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
                     placeholder={
                       currentUserId
-                        ? 'Ví dụ: Sân đẹp, mặt thảm êm, ánh sáng đèn led không bị chói mắt...'
-                        : 'Vui lòng đăng nhập để viết nhận xét...'
+                        ? t('commentPlaceholder')
+                        : t('commentLoginPlaceholder')
                     }
                     disabled={!currentUserId || submitting}
                     value={comment}
@@ -217,7 +219,7 @@ export function ClubReviewsSection({
                   className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold cursor-pointer text-xs h-9 shadow-xs"
                 >
                   <Send className="w-3.5 h-3.5 mr-1.5" />
-                  {submitting ? 'Đang gửi...' : 'Gửi Đánh Giá'}
+                  {submitting ? t('sending') : t('submit')}
                 </Button>
               </form>
             </CardContent>
@@ -229,12 +231,12 @@ export function ClubReviewsSection({
           {reviews.length === 0 ? (
             <div className="p-8 rounded-2xl border border-dashed border-border text-center text-muted-foreground space-y-2">
               <MessageSquare className="w-8 h-8 text-muted-foreground/30 mx-auto" />
-              <div className="text-sm font-semibold">Chưa có đánh giá nào cho cụm sân này</div>
-              <div className="text-xs">Hãy là người đầu tiên để lại đánh giá giúp anh em thể thao nhé!</div>
+              <div className="text-sm font-semibold">{t('emptyTitle')}</div>
+              <div className="text-xs">{t('emptyText')}</div>
             </div>
           ) : (
             reviews.map((r) => {
-              const author = r.profile?.full_name || 'Người chơi ẩn danh'
+              const author = r.profile?.full_name || t('anonymous')
               const initial = author.charAt(0).toUpperCase()
               const dateStr = formatDate(r.created_at)
 

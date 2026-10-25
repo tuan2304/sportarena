@@ -1,0 +1,652 @@
+{
+  "language": {
+    "switchTo": "Switch to {language}",
+    "vi": "Vietnamese",
+    "en": "English"
+  },
+  "header": {
+    "homeLabel": "SportArena, go to home page",
+    "explore": "Find Courts",
+    "matches": "Open Matches",
+    "myBookings": "My Bookings",
+    "support": "Support",
+    "ownerPortal": "Owner Portal",
+    "adminPage": "Admin panel",
+    "adminShort": "Admin",
+    "myProfile": "My profile",
+    "playerFallback": "Player",
+    "roleAdmin": "Admin",
+    "roleOwner": "Owner",
+    "rolePlayer": "Player",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "Sign up"
+  },
+  "theme": {
+    "toDark": "Switch to dark mode",
+    "toLight": "Switch to light mode"
+  },
+  "meta": {
+    "title": "SportArena - Court booking & sports matchmaking",
+    "description": "Conflict-free court booking, VietQR deposits and real-time matchmaking for sports sessions.",
+    "siteName": "SportArena"
+  },
+  "home": {
+    "nav": {
+      "explore": "Find Courts",
+      "matches": "Open Matches",
+      "bookings": "Bookings"
+    },
+    "userFallback": "User",
+    "registerAccount": "Create an account",
+    "badge": "Court booking & matchmaking in real time",
+    "heroLine1": "Book a court in seconds,",
+    "heroLine2": "play with a smile.",
+    "heroText": "Pick any time slot without worrying about double bookings. Pay the deposit with a VietQR code, invite more players to your match and get notified the moment someone asks to join.",
+    "ctaExplore": "Explore courts",
+    "ctaMatches": "Find a match",
+    "featuresTitle": "Everything in one place",
+    "featuresSubtitle": "From choosing a court to inviting your friends to play.",
+    "features": {
+      "calendar": {
+        "title": "Bookings never overlap",
+        "desc": "A time slot is locked as soon as someone holds it, and released automatically after 15 minutes if no deposit is paid."
+      },
+      "qr": {
+        "title": "Fast deposits with VietQR",
+        "desc": "Every booking gets its own QR code. Once you transfer, the status updates instantly with no page reload."
+      },
+      "match": {
+        "title": "Find players, split the cost",
+        "desc": "Open a match while booking, set the skill level and split the cost or cover it all. The host approves each player."
+      }
+    },
+    "stepsTitle": "Four steps to your court",
+    "steps": {
+      "1": {
+        "title": "Choose a court",
+        "desc": "Filter by sport and area, and see prices by time slot."
+      },
+      "2": {
+        "title": "Pick a time",
+        "desc": "Tap the free slots on the calendar and the price and deposit are calculated for you."
+      },
+      "3": {
+        "title": "Scan the deposit QR",
+        "desc": "You have 15 minutes to transfer, with a countdown right on screen."
+      },
+      "4": {
+        "title": "Invite friends",
+        "desc": "Open a match, approve players and chat live."
+      }
+    },
+    "footer": "© 2026 SportArena - Real-time court booking & sports matchmaking platform."
+  },
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "subtitle": "Court management & real-time matchmaking platform",
+      "emailPlaceholder": "name@example.com",
+      "forgot": "Forgot password?",
+      "processing": "Processing...",
+      "submit": "Log in",
+      "noAccount": "Don't have an account?",
+      "signUpNow": "Sign up now",
+      "metaTitle": "Log in - Court Booking & Matchmaking",
+      "metaDescription": "Log in to the sports court management and matchmaking platform"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Choose your role to get the most relevant features",
+      "roleQuestion": "How will you use SportArena?",
+      "ownerTitle": "Venue Owner / Manager",
+      "ownerHint": "List courts & receive deposits",
+      "playerTitle": "Player",
+      "playerHint": "Find courts & matches",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "John Smith",
+      "phone": "Phone number",
+      "password": "Password (at least 8 characters)",
+      "creating": "Creating your account...",
+      "submitOwner": "Sign up as a Venue Owner",
+      "submitPlayer": "Sign up as a Player",
+      "haveAccount": "Already have an account?",
+      "logInHere": "Log in here",
+      "metaTitle": "Sign up - Court Booking & Matchmaking",
+      "metaDescription": "Create a Player or Venue Owner account to get started"
+    },
+    "email": "Email",
+    "passwordLabel": "Password"
+  },
+  "common": {
+    "sports": {
+      "football": "Football",
+      "badminton": "Badminton",
+      "pickleball": "Pickleball",
+      "tennis": "Tennis",
+      "basketball": "Basketball",
+      "all": "All sports"
+    },
+    "skills": {
+      "all": {
+        "short": "All levels",
+        "long": "All levels (casual)"
+      },
+      "beginner": {
+        "short": "Beginner",
+        "long": "Beginner / Newcomer"
+      },
+      "intermediate": {
+        "short": "Intermediate",
+        "long": "Intermediate / Good"
+      },
+      "advanced": {
+        "short": "Advanced",
+        "long": "Advanced / Semi-pro"
+      },
+      "filterAll": "All skill levels"
+    },
+    "costTypes": {
+      "all": "Any cost",
+      "split": "Split evenly",
+      "host_covers": "Host pays (free)"
+    },
+    "playerSkills": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "pro": "Professional",
+      "unknown": "Not set"
+    },
+    "pricePerHour": "{price} đ/h",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "loading": "Loading...",
+    "back": "Back"
+  },
+  "clubs": {
+    "metaTitle": "Explore sports courts",
+    "metaTitlePage": "Explore sports courts - Page {page}",
+    "metaDescription": "Find football, badminton, pickleball, tennis and basketball venues near you, check availability and pay a quick deposit with VietQR.",
+    "badge": "Book directly & lock the court instantly",
+    "heading": "Explore Sports Courts",
+    "subheading": "Find the venue closest to you, check availability and pay your deposit quickly through VietQR PayOS.",
+    "found": "{count} venues found",
+    "pageOf": " · page {page}/{pages}",
+    "emptyTitle": "No matching courts found",
+    "emptyText": "Try another sport or clear your search to see more courts.",
+    "viewAll": "View all venues",
+    "amenities": "Amenities:",
+    "priceFrom": "From",
+    "bookNow": "Book Now",
+    "filters": {
+      "allDistricts": "All areas",
+      "searchPlaceholder": "Search by venue name, street or district..."
+    },
+    "pagination": {
+      "label": "Venue list pagination",
+      "prev": "Previous page",
+      "next": "Next page",
+      "page": "Page {page}"
+    },
+    "detail": {
+      "notFound": "Venue not found",
+      "backToList": "Back to venue list",
+      "active": "Active Venue",
+      "openingHours": "Opening hours: {open} - {close}",
+      "defaultDescription": "A modern sports facility with competition-standard surfaces and premium LED lighting.",
+      "locationTitle": "Location & directions",
+      "notPinned": "The owner hasn't pinned the exact location, so the map searches by address and may be slightly off.",
+      "mapTitle": "Map of {name}",
+      "pickerTitle": "Book a Time Slot Online",
+      "pickerSubtitle": "Choose a court, a date and the time you want to play. The price and deposit are calculated automatically.",
+      "cancelPolicy": "Cancellation policy:",
+      "manualTransferNote": " This venue takes deposits by bank transfer; the owner confirms bookings manually.",
+      "noPayments": "This venue hasn't set up online payment yet, so it can't take bookings on SportArena. Please come back later or contact the owner directly."
+    }
+  },
+  "booking": {
+    "picker": {
+      "noCourts": "This venue has no active courts at the moment.",
+      "chooseSlot": "Please choose a time slot to book",
+      "defaultMatchTitle": "Match at {court} ({date})",
+      "stepCourt": "1. Choose a court",
+      "stepDate": "2. Choose a date",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "dateLabel": "Play date",
+      "stepHour": "3. Choose a start time",
+      "available": "Available",
+      "full": "Booked",
+      "slotBooked": "{label}, booked",
+      "duration": "Duration",
+      "hours": "{count} h"
+    },
+    "match": {
+      "title": "Open a Match",
+      "subtitle": "Find more players to join you",
+      "on": "On",
+      "tapToEnable": "Tap to enable",
+      "postTitle": "Match title",
+      "titlePlaceholder": "e.g. Looking for {count} players for a friendly game",
+      "totalPlayers": "Total players needed",
+      "playersOption": "{count} players ({slots} open spots)",
+      "skill": "Required skill level",
+      "costTitle": "How to share the court cost",
+      "split": "Split evenly",
+      "hostCovers": "Host pays (free)",
+      "perPersonHint": "Suggested per person:",
+      "perPerson": "{price} đ/person"
+    },
+    "summary": {
+      "title": "Booking Summary",
+      "subtitle": "The slot is held automatically for 15 minutes via VietQR PayOS",
+      "court": "Court:",
+      "date": "Date:",
+      "time": "Time:",
+      "noTime": "No time selected",
+      "peak": "Peak-hour pricing applies",
+      "noteLabel": "Note for the owner (optional)",
+      "notePlaceholder": "e.g. Could we borrow some bibs?",
+      "pricePerHour": "Hourly rate:",
+      "total": "Court total:",
+      "deposit": "Booking deposit ({percent}%):",
+      "holding": "Holding your slot...",
+      "confirm": "Hold This Slot for 15 Minutes",
+      "holdNote": "The court is held for 15 minutes while you scan the PayOS QR code"
+    }
+  },
+  "maps": {
+    "directions": "Directions",
+    "opensNewTab": " (opens Google Maps in a new tab)",
+    "viewOnGoogle": "View on Google Maps",
+    "newTab": " (new tab)",
+    "noLocation": "No location information is available to show a map."
+  },
+  "reviews": {
+    "loginToast": "Please log in to leave a review",
+    "loginAction": "Log in",
+    "thanks": "Thanks for reviewing this venue!",
+    "title": "Reviews & Experiences",
+    "subtitle": "Real feedback from athletes and players who have played here",
+    "score": "Rating",
+    "basedOn": "Based on {count} reviews",
+    "formTitle": "Write Your Review",
+    "satisfaction": "How satisfied are you?",
+    "commentLabel": "Your comments (court surface, lighting, facilities...):",
+    "commentPlaceholder": "e.g. Great court, smooth surface, LED lighting that is easy on the eyes...",
+    "commentLoginPlaceholder": "Please log in to write a review...",
+    "sending": "Sending...",
+    "submit": "Submit Review",
+    "emptyTitle": "No reviews for this venue yet",
+    "emptyText": "Be the first to leave a review and help other players!",
+    "anonymous": "Anonymous player"
+  },
+  "payment": {
+    "success": {
+      "title": "Booking Confirmed!",
+      "text": "Your deposit has been verified and the court is now officially reserved for you."
+    },
+    "venue": "Venue:",
+    "court": "Court:",
+    "time": "Time:",
+    "depositPaid": "Deposit paid:",
+    "viewMyBookings": "View My Bookings",
+    "bookAgain": "Keep Booking",
+    "cancelled": {
+      "title": "Booking Cancelled",
+      "expired": "Hold Expired",
+      "text": "This hold has expired or was cancelled. The court has been released for others to book.",
+      "rebook": "Find & Book Another Slot"
+    },
+    "qr": {
+      "title": "Scan the VietQR Deposit Code",
+      "subtitle": "Open any banking app to scan the deposit code",
+      "alt": "VietQR deposit code",
+      "failed": "Could not load the QR code. Please reload the page or book the slot again."
+    },
+    "amountDue": "Deposit to transfer:",
+    "bank": "Bank:",
+    "accountNumber": "Account number:",
+    "copyAccount": "Copy account number",
+    "accountName": "Account holder:",
+    "transferContent": "Transfer note:",
+    "copyContent": "Copy note",
+    "simulating": "Simulating...",
+    "simulate": "[DEV] Simulate transfer",
+    "simulateError": "Could not simulate the payment, please try again",
+    "claimed": "The owner has been notified. They will check their statement and confirm the booking; this page updates automatically.",
+    "claimSending": "Sending...",
+    "claim": "I've made the transfer",
+    "claimError": "Could not send the notification, please try again",
+    "liveManual": "The owner confirms manually — this page moves on once the booking is confirmed",
+    "liveAuto": "Live updates are on — this page moves on automatically when the payment arrives",
+    "cancelling": "Cancelling...",
+    "cancelHold": "Cancel this hold",
+    "cancelDialog": {
+      "title": "Cancel this hold?",
+      "text": "You haven't paid a deposit, so nothing is lost. The time slot will be released for others.",
+      "confirm": "Cancel booking",
+      "keep": "Keep it"
+    },
+    "details": {
+      "title": "Booking Details",
+      "sport": "Sport:",
+      "date": "Date:",
+      "slot": "Time slot:",
+      "total": "Court total:",
+      "deposit": "Booking deposit:",
+      "remaining": "Remaining to pay at the venue:"
+    },
+    "policy": {
+      "title": "Hold Policy",
+      "manual": "The court is held for 60 minutes, extended when you report your transfer so the owner can check it. If it is not confirmed in time, the booking is cancelled automatically and the court is released.",
+      "auto": "The court is held for 15 minutes. If the deposit is not completed in that time, the booking is cancelled automatically and the court is released for other players."
+    }
+  },
+  "myBookings": {
+    "metaTitle": "My bookings",
+    "heading": "Bookings & Matches",
+    "subheading": "Track your bookings and deposits, and manage the matches you have joined.",
+    "detailMetaTitle": "Booking details",
+    "tabBookings": "My Bookings ({count})",
+    "tabMatches": "My Matches ({count})",
+    "emptyBookingsTitle": "You don't have any bookings yet",
+    "emptyBookingsText": "Explore sports venues near you and book your first court today!",
+    "exploreNow": "Explore Courts",
+    "defaultCourt": "Standard court",
+    "defaultClub": "Venue",
+    "status": {
+      "confirmed": "Deposit Paid",
+      "pending": "Awaiting Deposit",
+      "cancelled": "Cancelled"
+    },
+    "matchOpen": "Match Open ({current}/{required})",
+    "deposit": "Deposit",
+    "manageMatch": "Manage Match",
+    "openMatch": "Open a Match",
+    "cancelBooking": "Cancel",
+    "cancelling": "Cancelling...",
+    "scanDeposit": "Scan Deposit Code",
+    "viewDetails": "View Details",
+    "cancelDialog": {
+      "title": "Cancel this booking?",
+      "confirm": "Cancel booking",
+      "keep": "Keep it"
+    },
+    "cancelledRefund": "Booking cancelled. The owner will refund {amount} to you.",
+    "cancelled": "Booking cancelled.",
+    "emptyMatchesTitle": "You haven't joined any matches yet",
+    "emptyMatchesText": "Browse open matches that are looking for players and get playing!",
+    "exploreMatches": "Explore Matches",
+    "part": {
+      "accepted": "✓ Approved",
+      "pending": "⏳ Awaiting Host Approval",
+      "rejected": "Declined"
+    },
+    "message": "Message: “{message}”",
+    "cost": "Cost",
+    "free": "Free",
+    "matchDetails": "Match Details",
+    "courtFallback": "Court"
+  },
+  "matches": {
+    "metaTitle": "Open sports matches",
+    "metaDescription": "Find pickleball, badminton, football, tennis and basketball matches that need players, or open your own match to invite friends.",
+    "notFound": "Match not found",
+    "detailMetaDescription": "Join the match \"{title}\" on SportArena: see the time, skill level and request to join.",
+    "hero": {
+      "badge": "Sports Matchmaking Community",
+      "title": "Play Sports, Find Partners Anytime, Anywhere",
+      "text": "Short one player for badminton? Need a pickleball doubles partner or a friendly football team? Join an open match now or create your own for a court you booked!",
+      "openFromMine": "Open a Match From My Booking",
+      "bookNew": "Book a Court & Open a Match"
+    },
+    "listTitle": "Matches Looking for Players ({count})",
+    "live": "Updated live in real time",
+    "emptyTitle": "No matching matches found",
+    "emptyText": "Nobody has opened a match that fits these filters yet. You could be the first!",
+    "openNow": "Open a Match Now",
+    "filters": {
+      "search": "Search by match title, area or venue name..."
+    },
+    "card": {
+      "timeTbd": "Time to be agreed",
+      "full": "Full",
+      "slotsLeft": "{count} spots left",
+      "courtFallback": "Court",
+      "cityFallback": "Ho Chi Minh City",
+      "host": "Host",
+      "userFallback": "User",
+      "cost": "Cost to join",
+      "free": "Free (host pays)",
+      "perPerson": "{price} đ/person",
+      "view": "View Match"
+    },
+    "detail": {
+      "back": "Back to matches",
+      "joinSent": "Join request sent",
+      "joinSentHint": "The host will review it and let you know.",
+      "approved": "Member approved",
+      "declined": "Request declined",
+      "leave": {
+        "title": "Leave this match?",
+        "text": "You'll lose your spot and have to request to join again if you want to come back.",
+        "confirm": "Leave match",
+        "stay": "Stay"
+      },
+      "left": "You left the match",
+      "cancel": {
+        "title": "Cancel this match?",
+        "text": "Approved members will be told the match was cancelled. This cannot be undone.",
+        "confirm": "Cancel match",
+        "keep": "Keep it"
+      },
+      "cancelled": "Match cancelled",
+      "chatMembersOnly": "Chat room for members",
+      "chatMembersHint": "Request to join. Once the host approves you, you'll get access to this match's chat."
+    },
+    "banner": {
+      "cancelled": "Match cancelled",
+      "time": "Play Time",
+      "timeTbd": "To be agreed",
+      "place": "Venue & Court",
+      "venueFallback": "Sports Venue",
+      "courtFallback": "Standard court",
+      "areaFallback": "Ho Chi Minh City"
+    },
+    "join": {
+      "title": "Request to Join",
+      "subtitle": "Send the host a note about your level or just say hello.",
+      "messageLabel": "Message to the host (optional)",
+      "messagePlaceholder": "e.g. I've played badminton for a year, could I have a spot?",
+      "rulesTitle": "Match etiquette:",
+      "rule1": "• Arrive on time at the venue.",
+      "rule2": "• Bring suitable sportswear and equipment.",
+      "sending": "Sending...",
+      "submit": "Send Request"
+    },
+    "chat": {
+      "loginToast": "Please log in to join the chat",
+      "loginAction": "Log in",
+      "title": "Match Chat",
+      "subtitle": "Talk live with the other members",
+      "live": "Live",
+      "empty": "No messages yet",
+      "emptyHint": "Send the first message and say hi to the group!",
+      "playerFallback": "Player",
+      "placeholder": "Type a message to the group...",
+      "placeholderLogin": "Log in to join the chat...",
+      "send": "Send"
+    },
+    "roster": {
+      "title": "Members ({current}/{required})",
+      "subtitle": "The host and approved players",
+      "count": "{current} / {required} players",
+      "hostTitle": "Host",
+      "hostFallback": "Host",
+      "hostBadge": "Host",
+      "organizer": "Organizer",
+      "leader": "Leader",
+      "noMembers": "No members approved yet. Be the first to join!",
+      "memberFallback": "Player",
+      "approvedBadge": "Approved",
+      "pendingTitle": "Pending Requests ({count})",
+      "noPending": "There are no pending requests right now.",
+      "applicant": "Applicant",
+      "message": "Message: “{message}”",
+      "accept": "Accept",
+      "reject": "Decline"
+    },
+    "panel": {
+      "title": "Cost & Joining",
+      "costMode": "How the court cost is shared:",
+      "hostCovers": "Host covers the cost (free)",
+      "split": "Split evenly between players",
+      "perPerson": "Cost per person:",
+      "free": "Free",
+      "loginToJoin": "Log In to Join",
+      "youAreHost": "You are the host of this match",
+      "cancelMatch": "Cancel Match",
+      "pending": "Your request is waiting for the host to approve",
+      "accepted": "You are now a member of this match!",
+      "rejected": "Your request was declined by the host",
+      "leave": "Leave this match",
+      "full": "Match Is Full",
+      "cancelledNote": "This Match Was Cancelled",
+      "join": "Request to Join",
+      "footer": "The host will review your request and add you to the group"
+    },
+    "create": {
+      "title": "Open a Match for Your Booking",
+      "subtitle": "{club} ({court}) • Court total: {price}",
+      "defaultTitle": "Players wanted at {court} - {club}",
+      "needTitle": "Please enter a match title",
+      "postTitle": "Match title",
+      "titlePlaceholder": "e.g. Need 2 players for a friendly badminton game...",
+      "description": "Description / notes (optional)",
+      "descriptionPlaceholder": "e.g. Intermediate level, bring your racket...",
+      "creating": "Creating...",
+      "submit": "Create & Open Match",
+      "splitCourt": "Split the court cost"
+    }
+  },
+  "profile": {
+    "metaTitle": "My profile",
+    "heading": "My profile",
+    "viewPublic": "View public profile",
+    "cardTitle": "Personal information",
+    "cardDescription": "Your name, photo and skill level are shown on the matches you create or join.",
+    "avatar": "Profile photo",
+    "avatarUpdated": "Profile photo updated",
+    "avatarRemoved": "Profile photo removed",
+    "saved": "Profile saved",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "phoneHint": "Only the owner of a venue you book can see this number, so they can contact you if needed.",
+    "skill": "Skill level",
+    "skillHint": "Shown publicly so others can match with you.",
+    "save": "Save profile",
+    "player": {
+      "notFound": "Player not found",
+      "metaTitle": "{name} - Player profile",
+      "fallback": "Player",
+      "edit": "Edit profile",
+      "played": "Games played",
+      "created": "Matches created",
+      "joined": "Matches joined",
+      "openMatches": "Open matches",
+      "noOpenMatches": "No open matches right now.",
+      "playersCount": "{current}/{required} players"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "tooltip": "Notifications",
+    "newCount": "{count} new",
+    "markAll": "Mark all as read",
+    "empty": "You don't have any notifications",
+    "emptyHint": "Updates about your bookings and matches will appear here",
+    "viewDetails": "View details",
+    "justNow": "Just now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count} h ago",
+    "daysAgo": "{count} d ago"
+  },
+  "images": {
+    "maxImages": "At most {max} photos",
+    "uploadFailed": "Could not upload {name}: {message}",
+    "addMore": "You can only add {room} more (maximum {max})",
+    "alt": "Photo {index}",
+    "cover": "Cover",
+    "setCover": "Set as cover",
+    "remove": "Remove photo",
+    "uploading": "Uploading...",
+    "add": "Add photo",
+    "chooseLabel": "Choose a photo to upload",
+    "hint": "JPG, PNG or WebP, up to {size} MB each. {count}/{max} photos."
+  },
+  "support": {
+    "categories": {
+      "payment": "Payments & deposits",
+      "booking": "Booking & schedule",
+      "technical": "Technical issue",
+      "account": "Account",
+      "other": "Other"
+    },
+    "status": {
+      "open": "Waiting for support",
+      "answered": "Answered",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "list": {
+      "metaTitle": "Support",
+      "heading": "Support",
+      "subtitle": "Send a request to the SportArena team and follow the replies here.",
+      "newRequest": "New request",
+      "empty": "You haven't sent any support requests yet."
+    },
+    "new": {
+      "metaTitle": "Send a support request",
+      "back": "My requests",
+      "heading": "Send a support request",
+      "subtitle": "The more specific you are, the faster we can help."
+    },
+    "detail": {
+      "metaTitle": "Support request",
+      "meta": "{category} · Sent on {date}"
+    },
+    "form": {
+      "category": "Topic",
+      "club": "Related venue (optional)",
+      "noClub": "None",
+      "subject": "Subject",
+      "subjectPlaceholder": "e.g. I transferred the deposit but my booking is not confirmed",
+      "body": "Details",
+      "bodyPlaceholder": "What went wrong, at which venue and when? For payment issues, include the amount and the time of the transfer.",
+      "submit": "Send request",
+      "failed": "Could not send the request",
+      "sent": "Support request sent",
+      "sentHint": "We'll reply as soon as we can."
+    },
+    "thread": {
+      "markedResolved": "Marked as resolved",
+      "resolved": "Resolved",
+      "closedToast": "Request closed",
+      "close": "Close request",
+      "reopenedToast": "Request reopened",
+      "reopen": "Reopen",
+      "log": "Conversation",
+      "staffFallback": "SportArena Support",
+      "userFallback": "User",
+      "closedNote": "This request is closed. If you need more help, please create a new one.",
+      "replyLabel": "Your reply",
+      "placeholderAdmin": "Write a reply to the user...",
+      "placeholderUser": "Write a message to support...",
+      "send": "Send"
+    }
+  }
+}

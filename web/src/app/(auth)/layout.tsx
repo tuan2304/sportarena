@@ -1,4 +1,5 @@
 import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { LanguageSwitcher } from '@/components/layout/language-switcher'
 
 export default function AuthLayout({
   children,
@@ -11,7 +12,8 @@ export default function AuthLayout({
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="absolute top-4 right-4 z-20">
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-1">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
 

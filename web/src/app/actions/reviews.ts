@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { ClubReview } from '@/types/database'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { tr } from '@/lib/localize-error'
 
 export async function getClubReviews(clubId: string): Promise<ClubReview[]> {
   const supabase = await createClient()
@@ -41,21 +42,21 @@ export async function submitClubReview(
   comment?: string
 ) {
   if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-    return { error: 'Điểm đánh giá phải từ 1 đến 5 sao' }
+    return { error: await tr('Điểm đánh giá phải từ 1 đến 5 sao') }
   }
   if (comment && comment.trim().length > 1000) {
-    return { error: 'Nhận xét tối đa 1000 ký tự' }
+    return { error: await tr('Nhận xét tối đa 1000 ký tự') }
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Vui lòng đăng nhập để gửi đánh giá' }
+    return { error: await tr('Vui lòng đăng nhập để gửi đánh giá') }
   }
 
   const limited = await enforceRateLimit('review', user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
   const { data, error } = await supabase
     .from('club_reviews')
     .upsert(
@@ -75,9 +76,9 @@ export async function submitClubReview(
     console.error('Error submitting review:', error)
     // 42501 = bị RLS từ chối: chưa từng chơi tại cụm sân này (hoặc là chủ sân)
     if (error.code === '42501') {
-      return { error: 'Bạn cần đặt sân và chơi tại cụm sân này trước khi đánh giá' }
+      return { error: await tr('Bạn cần đặt sân và chơi tại cụm sân này trước khi đánh giá') }
     }
-    return { error: 'Không thể gửi đánh giá' }
+    return { error: await tr('Không thể gửi đánh giá') }
   }
 
   revalidatePath(`/clubs/${clubId}`)

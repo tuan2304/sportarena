@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { getLabels } from '@/i18n/labels-server'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MainHeader } from '@/components/layout/main-header'
@@ -25,16 +27,14 @@ import {
   totalPages as countPages,
 } from '@/lib/club-search'
 
-const DESCRIPTION =
-  'Tìm cụm sân bóng đá, cầu lông, pickleball, tennis, bóng rổ gần bạn, xem lịch trống và đặt cọc nhanh qua VietQR.'
-
 export async function generateMetadata({ searchParams }: ClubsPageProps): Promise<Metadata> {
   const params = await searchParams
   const page = parsePage(params.page)
   const q = sanitizeSearch(params.q)
+  const t = await getTranslations('clubs')
   return {
-    title: page > 1 ? `Khám phá sân thể thao - Trang ${page}` : 'Khám phá sân thể thao',
-    description: DESCRIPTION,
+    title: page > 1 ? t('metaTitlePage', { page }) : t('metaTitle'),
+    description: t('metaDescription'),
     alternates: { canonical: clubsHref({ sport: params.sport, district: params.district, page }) },
     // Kết quả tìm theo từ khóa là vô hạn biến thể, không nên để công cụ tìm kiếm lập chỉ mục
     robots: q ? { index: false, follow: true } : undefined,
@@ -70,6 +70,8 @@ type ClubRow = {
 }
 
 export default async function ClubsPage({ searchParams }: ClubsPageProps) {
+  const t = await getTranslations('clubs')
+  const labels = await getLabels()
   const params = await searchParams
   const sportFilter = params.sport || ALL_SPORTS
   const districtFilter = params.district || ALL_DISTRICTS
@@ -123,13 +125,13 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              Đặt sân trực tiếp & Khóa sân tức thì
+              {t('badge')}
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground animate-fade-up">
-              Khám Phá Sân Thể Thao
+              {t('heading')}
             </h1>
             <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-              Tìm cụm sân gần bạn nhất, kiểm tra lịch trống và thanh toán cọc nhanh chóng qua VietQR PayOS.
+              {t('subheading')}
             </p>
           </div>
         </div>
@@ -141,21 +143,21 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold uppercase tracking-wider">
             <span>
-              Tìm thấy {totalClubs} cụm sân
-              {pages > 1 && ` · trang ${page}/${pages}`}
+              {t('found', { count: totalClubs })}
+              {pages > 1 && t('pageOf', { page, pages })}
             </span>
           </div>
 
           {filteredClubs.length === 0 ? (
             <Card className="border-dashed border-2 p-16 text-center">
               <Trophy className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-              <h3 className="text-base font-bold text-foreground">Không tìm thấy sân phù hợp</h3>
+              <h3 className="text-base font-bold text-foreground">{t('emptyTitle')}</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-4">
-                Vui lòng thử chọn môn thể thao khác hoặc xóa từ khóa tìm kiếm để xem thêm nhiều sân hơn.
+                {t('emptyText')}
               </p>
               <Link href="/clubs">
                 <Button size="sm" variant="outline" className="cursor-pointer">
-                  Xem tất cả cụm sân
+                  {t('viewAll')}
                 </Button>
               </Link>
             </Card>
@@ -218,7 +220,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                               key={idx}
                               className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold capitalize"
                             >
-                              {s}
+                              {labels.sport(s)}
                             </span>
                           ))}
                         </div>
@@ -226,7 +228,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                         {/* Amenities */}
                         {club.amenities && club.amenities.length > 0 && (
                           <div className="text-xs text-muted-foreground flex items-center gap-2 pt-1 border-t border-border/50 truncate">
-                            <span>Tiện ích:</span>
+                            <span>{t('amenities')}</span>
                             <span className="font-medium text-foreground truncate">
                               {club.amenities.join(' • ')}
                             </span>
@@ -238,7 +240,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                     {/* Bottom CTA */}
                     <div className="p-5 pt-0 border-t border-border/50 flex items-center justify-between mt-auto">
                       <div>
-                        <div className="text-xs text-muted-foreground">Giá từ</div>
+                        <div className="text-xs text-muted-foreground">{t('priceFrom')}</div>
                         <div className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400">
                           {formatNumber(minPrice)} đ/h
                         </div>
@@ -246,7 +248,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
 
                       <Link href={`/clubs/${club.id}`}>
                         <Button size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold cursor-pointer shadow-xs">
-                          Đặt Sân Ngay <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                          {t('bookNow')} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                         </Button>
                       </Link>
                     </div>

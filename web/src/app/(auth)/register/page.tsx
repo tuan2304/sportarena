@@ -2,10 +2,11 @@ import { redirect } from 'next/navigation'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { RegisterForm } from '@/components/auth/register-form'
 import { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Đăng ký tài khoản - Đặt Sân & Ghép Kèo',
-  description: 'Đăng ký tài khoản Người chơi hoặc Chủ sân để bắt đầu',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth')
+  return { title: t('register.metaTitle'), description: t('register.metaDescription') }
 }
 
 export default async function RegisterPage() {

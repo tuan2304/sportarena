@@ -1,11 +1,16 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
 import { MyBookingsView } from '@/components/booking/my-bookings-view'
 
-export const metadata = { title: 'Lịch đặt của tôi', robots: { index: false, follow: false } }
+export async function generateMetadata() {
+  const t = await getTranslations('myBookings')
+  return { title: t('metaTitle'), robots: { index: false, follow: false } }
+}
 
 export default async function MyBookingsPage() {
+  const t = await getTranslations('myBookings')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -79,10 +84,10 @@ export default async function MyBookingsPage() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Lịch Đặt Sân & Kèo Giao Lưu
+            {t('heading')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Theo dõi tình trạng đơn đặt sân, thông tin cọc và quản lý các kèo thể thao bạn tham gia.
+            {t('subheading')}
           </p>
         </div>
 

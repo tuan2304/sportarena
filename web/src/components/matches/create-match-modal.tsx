@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { createMatch } from '@/app/actions/matches'
 import {
   Dialog,
@@ -15,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Flame, Loader2, AlertCircle } from 'lucide-react'
 
-import { MATCH_SKILL_IDS, SKILL_LEVELS, type MatchSkillId } from '@/lib/constants'
+import { MATCH_SKILL_IDS, type MatchSkillId } from '@/lib/constants'
 import { formatNumber, formatVnd } from '@/lib/format'
 interface CreateMatchModalProps {
   bookingId: string
@@ -37,7 +39,11 @@ export function CreateMatchModal({
   onOpenChange,
 }: CreateMatchModalProps) {
   const router = useRouter()
-  const [title, setTitle] = useState(`Tuyển người chơi tại ${courtName} - ${clubName}`)
+  const t = useTranslations('matches.create')
+  const tb = useTranslations('booking.match')
+  const tc = useTranslations('common')
+  const labels = useLabels()
+  const [title, setTitle] = useState(t('defaultTitle', { court: courtName, club: clubName }))
   const [description, setDescription] = useState('')
   const [skillLevel, setSkillLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all')
   const [requiredPlayers, setRequiredPlayers] = useState<number>(4)
@@ -57,7 +63,7 @@ export function CreateMatchModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim()) {
-      setError('Vui lòng nhập tiêu đề kèo')
+      setError(t('needTitle'))
       return
     }
 
@@ -91,10 +97,10 @@ export function CreateMatchModal({
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2 text-foreground">
             <Flame className="w-4 h-4 text-amber-500" />
-            Mở Ghép Kèo Cho Sân Đã Đặt
+            {t('title')}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            {clubName} ({courtName}) • Tổng tiền sân: {formatVnd(totalPrice)}
+            {t('subtitle', { club: clubName, court: courtName, price: formatVnd(totalPrice) })}
           </DialogDescription>
         </DialogHeader>
 
@@ -108,13 +114,13 @@ export function CreateMatchModal({
 
           <div className="space-y-1">
             <Label htmlFor="matchTitle" className="text-xs font-semibold">
-              Tiêu đề bài đăng kèo
+              {t('postTitle')}
             </Label>
             <Input
               id="matchTitle"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ví dụ: Cần 2 bạn giao lưu cầu lông vui vẻ..."
+              placeholder={t('titlePlaceholder')}
               className="text-xs"
               required
             />
@@ -122,20 +128,20 @@ export function CreateMatchModal({
 
           <div className="space-y-1">
             <Label htmlFor="matchDesc" className="text-xs font-semibold">
-              Mô tả thêm / Ghi chú (tùy chọn)
+              {t('description')}
             </Label>
             <Input
               id="matchDesc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ví dụ: Trình độ trung bình, mang vợt theo..."
+              placeholder={t('descriptionPlaceholder')}
               className="text-xs"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">Tổng số người cần</Label>
+              <Label className="text-xs font-semibold">{tb('totalPlayers')}</Label>
               <select
                 value={requiredPlayers}
                 onChange={(e) => setRequiredPlayers(Number(e.target.value))}
@@ -143,14 +149,14 @@ export function CreateMatchModal({
               >
                 {[2, 3, 4, 6, 8, 10, 12, 14].map((num) => (
                   <option key={num} value={num}>
-                    {num} người ({num - 1} slot trống)
+                    {tb('playersOption', { count: num, slots: num - 1 })}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold">Trình độ yêu cầu</Label>
+              <Label className="text-xs font-semibold">{tb('skill')}</Label>
               <select
                 value={skillLevel}
                 onChange={(e) => setSkillLevel(e.target.value as MatchSkillId)}
@@ -158,7 +164,7 @@ export function CreateMatchModal({
               >
                 {MATCH_SKILL_IDS.map((id) => (
                   <option key={id} value={id}>
-                    {SKILL_LEVELS[id].longLabel}
+                    {labels.skillLong(id)}
                   </option>
                 ))}
               </select>
@@ -166,7 +172,7 @@ export function CreateMatchModal({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">Hình thức chia tiền sân</Label>
+            <Label className="text-xs font-semibold">{tb('costTitle')}</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -177,7 +183,7 @@ export function CreateMatchModal({
                     : 'bg-background border-border text-muted-foreground hover:bg-muted'
                 }`}
               >
-                Chia đều tiền sân
+                {t('splitCourt')}
               </button>
               <button
                 type="button"
@@ -188,15 +194,15 @@ export function CreateMatchModal({
                     : 'bg-background border-border text-muted-foreground hover:bg-muted'
                 }`}
               >
-                Chủ bao trọn (0đ)
+                {tb('hostCovers')}
               </button>
             </div>
 
             {costSharingType === 'split' && (
               <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs flex justify-between items-center text-emerald-800 dark:text-emerald-300">
-                <span>Gợi ý mỗi người đóng:</span>
+                <span>{tb('perPersonHint')}</span>
                 <span className="font-bold text-xs">
-                  {formatNumber(suggestedCost)} đ/người
+                  {tb('perPerson', { price: formatNumber(suggestedCost) })}
                 </span>
               </div>
             )}
@@ -210,7 +216,7 @@ export function CreateMatchModal({
               onClick={() => onOpenChange(false)}
               className="cursor-pointer text-xs"
             >
-              Hủy
+              {tc('cancel')}
             </Button>
             <Button
               type="submit"
@@ -221,10 +227,10 @@ export function CreateMatchModal({
               {loading ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Đang tạo...
+                  {t('creating')}
                 </>
               ) : (
-                'Tạo & Mở Ghép Kèo'
+                t('submit')
               )}
             </Button>
           </div>

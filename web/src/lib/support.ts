@@ -38,7 +38,7 @@ export function categoryLabel(id: string): string {
   return TICKET_CATEGORIES.find((c) => c.id === id)?.label ?? 'Khác'
 }
 
-function isTicketCategory(value: unknown): value is TicketCategory {
+export function isTicketCategory(value: unknown): value is TicketCategory {
   return TICKET_CATEGORIES.some((c) => c.id === value)
 }
 

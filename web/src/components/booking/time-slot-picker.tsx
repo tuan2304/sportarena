@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createBooking } from '@/app/actions/booking'
 import { computePrice } from '@/lib/pricing'
 import { vnDateKey, vnDateTime } from '@/lib/datetime'
@@ -22,6 +23,7 @@ interface TimeSlotPickerProps {
 /** Luồng chọn sân → ngày → giờ → thời lượng, kèm tùy chọn mở ghép kèo. Mọi mốc giờ tính theo giờ Việt Nam. */
 export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubCloseTime }: TimeSlotPickerProps) {
   const router = useRouter()
+  const t = useTranslations('booking.picker')
 
   // Mốc "bây giờ" lấy một lần khi mở trang để biết hôm nay và giờ nào đã qua
   const [nowMs] = useState(() => Date.now())
@@ -79,7 +81,7 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
 
   async function handleBook() {
     if (!slot || !selectedCourt) {
-      setError('Vui lòng chọn khung giờ muốn đặt')
+      setError(t('chooseSlot'))
       return
     }
 
@@ -94,7 +96,7 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
       matchDraft.enabled
         ? {
             isOpenMatch: true,
-            title: matchDraft.title.trim() || `Kèo ${selectedCourt.name} (${selectedDate})`,
+            title: matchDraft.title.trim() || t('defaultMatchTitle', { court: selectedCourt.name, date: selectedDate }),
             skillLevel: matchDraft.skillLevel,
             requiredPlayers: matchDraft.requiredPlayers,
             costSharingType: matchDraft.costSharingType,
@@ -115,7 +117,7 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
   if (courts.length === 0) {
     return (
       <div className="p-8 text-center border border-dashed rounded-xl text-muted-foreground text-sm">
-        Cơ sở này hiện chưa có sân con nào hoạt động.
+        {t('noCourts')}
       </div>
     )
   }

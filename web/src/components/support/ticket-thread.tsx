@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { CheckCircle2, Loader2, LockKeyhole, RotateCcw, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +30,7 @@ interface TicketThreadProps {
 
 export function TicketThread({ ticketId, initialMessages, initialStatus, viewer }: TicketThreadProps) {
   const router = useRouter()
+  const t = useTranslations('support.thread')
   const [messages, setMessages] = useState<TicketMessage[]>(initialMessages)
   const [status, setStatus] = useState<string>(initialStatus)
   const [text, setText] = useState('')
@@ -104,18 +106,18 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
         <TicketStatusBadge status={isTicketStatus(status) ? status : 'closed'} forAdmin={isAdmin} />
         <div className="flex flex-wrap gap-2">
           {isAdmin && status !== 'resolved' && status !== 'closed' && (
-            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('resolved', 'Đã đánh dấu giải quyết')} className="cursor-pointer">
-              <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Đã giải quyết
+            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('resolved', t('markedResolved'))} className="cursor-pointer">
+              <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" aria-hidden /> {t('resolved')}
             </Button>
           )}
           {!closed && (
-            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('closed', 'Đã đóng yêu cầu')} className="cursor-pointer">
-              <LockKeyhole className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Đóng yêu cầu
+            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('closed', t('closedToast'))} className="cursor-pointer">
+              <LockKeyhole className="mr-1.5 h-3.5 w-3.5" aria-hidden /> {t('close')}
             </Button>
           )}
           {isAdmin && (status === 'resolved' || status === 'closed') && (
-            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('open', 'Đã mở lại yêu cầu')} className="cursor-pointer">
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Mở lại
+            <Button type="button" size="sm" variant="outline" disabled={changing} onClick={() => changeStatus('open', t('reopenedToast'))} className="cursor-pointer">
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden /> {t('reopen')}
             </Button>
           )}
         </div>
@@ -124,7 +126,7 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
       <div
         role="log"
         aria-live="polite"
-        aria-label="Nội dung trao đổi"
+        aria-label={t('log')}
         className="max-h-[55vh] min-h-48 space-y-3 overflow-y-auto rounded-2xl border border-border bg-muted/30 p-4"
       >
         {messages.map((m) => {
@@ -137,7 +139,7 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
                 }`}
               >
                 <div className={`mb-0.5 text-xs font-semibold ${mine ? 'text-emerald-100' : 'text-muted-foreground'}`}>
-                  {m.sender_name || (m.is_staff ? 'Hỗ trợ SportArena' : 'Người dùng')}
+                  {m.sender_name || (m.is_staff ? t('staffFallback') : t('userFallback'))}
                   <span className="font-normal"> · {formatDate(m.created_at)} {formatTime(m.created_at)}</span>
                 </div>
                 <p className="whitespace-pre-wrap break-words leading-relaxed">{m.body}</p>
@@ -150,12 +152,12 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
 
       {closed && !isAdmin ? (
         <p className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-          Yêu cầu này đã đóng. Nếu bạn cần thêm hỗ trợ, hãy tạo yêu cầu mới.
+          {t('closedNote')}
         </p>
       ) : (
         <form onSubmit={send} className="space-y-2">
           <label htmlFor="ticket-reply" className="sr-only">
-            Nội dung trả lời
+            {t('replyLabel')}
           </label>
           <textarea
             id="ticket-reply"
@@ -163,14 +165,14 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
             onChange={(e) => setText(e.target.value)}
             maxLength={BODY_MAX}
             rows={3}
-            placeholder={isAdmin ? 'Nhập câu trả lời cho người dùng...' : 'Nhập tin nhắn cho bộ phận hỗ trợ...'}
+            placeholder={isAdmin ? t('placeholderAdmin') : t('placeholderUser')}
             className="w-full resize-y rounded-xl border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           />
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">{text.length}/{BODY_MAX}</span>
             <Button type="submit" disabled={sending || !text.trim()} className="cursor-pointer bg-emerald-700 text-white hover:bg-emerald-800">
               {sending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Send className="mr-1.5 h-4 w-4" aria-hidden />}
-              Gửi
+              {t('send')}
             </Button>
           </div>
         </form>

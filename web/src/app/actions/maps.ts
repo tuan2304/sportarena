@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { resolveCoordinates } from '@/lib/maps-resolve'
+import { tr } from '@/lib/localize-error'
 
 /**
  * Chủ sân dán link Google Maps (kể cả link rút gọn maps.app.goo.gl) hoặc toạ độ → trả về toạ độ.
@@ -10,11 +11,11 @@ import { resolveCoordinates } from '@/lib/maps-resolve'
 export async function resolveMapsInput(input: string): Promise<{ error?: string; lat?: number; lng?: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vui lòng đăng nhập' }
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
   const text = (input ?? '').trim()
-  if (!text) return { error: 'Hãy dán link Google Maps hoặc toạ độ' }
-  if (text.length > 1000) return { error: 'Nội dung quá dài' }
+  if (!text) return { error: await tr('Hãy dán link Google Maps hoặc toạ độ') }
+  if (text.length > 1000) return { error: await tr('Nội dung quá dài') }
 
   try {
     const found = await resolveCoordinates(text)
@@ -27,6 +28,6 @@ export async function resolveMapsInput(input: string): Promise<{ error?: string;
     return { lat: found.lat, lng: found.lng }
   } catch (err) {
     console.error('resolveMapsInput lỗi', err)
-    return { error: 'Không mở được link này. Hãy thử dán toạ độ trực tiếp.' }
+    return { error: await tr('Không mở được link này. Hãy thử dán toạ độ trực tiếp.') }
   }
 }

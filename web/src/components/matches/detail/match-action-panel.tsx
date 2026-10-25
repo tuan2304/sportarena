@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Flame, ShieldCheck, CheckCircle2, LogOut, Hourglass } from 'lucide-react'
@@ -29,11 +30,12 @@ export function MatchActionPanel({
   onLeave,
   onCancelMatch,
 }: MatchActionPanelProps) {
+  const t = useTranslations('matches.panel')
   return (
     <Card className="border-border shadow-sm sticky top-24">
       <CardHeader className="bg-muted/30 border-b border-border/60 pb-4">
         <CardTitle className="text-base font-bold text-foreground">
-          Chi Phí & Tham Gia
+          {t('title')}
         </CardTitle>
       </CardHeader>
 
@@ -41,19 +43,19 @@ export function MatchActionPanel({
         {/* Cost Box */}
         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
           <div className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-            Hình thức chia tiền sân:
+            {t('costMode')}
           </div>
           <div className="text-sm font-bold text-foreground">
             {match.cost_sharing_type === 'host_covers'
-              ? 'Chủ sân bao trọn (0đ)'
-              : 'Chia đều theo số người'}
+              ? t('hostCovers')
+              : t('split')}
           </div>
 
           <div className="pt-2 border-t border-amber-500/20 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Số tiền mỗi người:</span>
+            <span className="text-xs text-muted-foreground">{t('perPerson')}</span>
             <span className="text-lg font-black text-amber-700 dark:text-amber-400">
               {match.cost_sharing_type === 'host_covers'
-                ? 'Miễn phí'
+                ? t('free')
                 : `${formatVnd(match.cost_per_person || 0)}`}
             </span>
           </div>
@@ -64,13 +66,13 @@ export function MatchActionPanel({
           {!currentUserId ? (
             <Link href={`/login?next=/matches/${match.id}`} className="block">
               <Button className="w-full h-10 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold cursor-pointer text-xs sm:text-sm">
-                Đăng Nhập Để Tham Gia
+                {t('loginToJoin')}
               </Button>
             </Link>
           ) : isHost ? (
             <div className="space-y-2">
               <div className="p-3 rounded-lg bg-muted text-xs text-center font-medium text-muted-foreground">
-                Bạn là chủ tạo kèo này
+                {t('youAreHost')}
               </div>
               {match.status !== 'cancelled' && (
                 <Button
@@ -79,7 +81,7 @@ export function MatchActionPanel({
                   onClick={onCancelMatch}
                   className="w-full text-xs text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 cursor-pointer"
                 >
-                  Hủy Kèo Ghép
+                  {t('cancelMatch')}
                 </Button>
               )}
             </div>
@@ -87,18 +89,18 @@ export function MatchActionPanel({
             <div className="space-y-3">
               {userParticipant.status === 'pending' && (
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs text-center font-semibold">
-                  <Hourglass className="w-4 h-4 inline -mt-0.5 mr-1" aria-hidden />Yêu cầu của bạn đang chờ chủ kèo duyệt
+                  <Hourglass className="w-4 h-4 inline -mt-0.5 mr-1" aria-hidden />{t('pending')}
                 </div>
               )}
               {userParticipant.status === 'accepted' && (
                 <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs text-center font-semibold flex items-center justify-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  Bạn đã là thành viên chính thức của kèo!
+                  {t('accepted')}
                 </div>
               )}
               {userParticipant.status === 'rejected' && (
                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs text-center font-semibold">
-                  Yêu cầu tham gia của bạn đã bị từ chối bởi chủ kèo
+                  {t('rejected')}
                 </div>
               )}
 
@@ -110,17 +112,17 @@ export function MatchActionPanel({
                   className="w-full text-xs text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5 mr-1" />
-                  Rời khỏi kèo này
+                  {t('leave')}
                 </Button>
               )}
             </div>
           ) : isFull ? (
             <Button disabled className="w-full h-10 text-xs font-bold">
-              Kèo Đã Đủ Số Lượng
+              {t('full')}
             </Button>
           ) : match.status === 'cancelled' ? (
             <Button disabled className="w-full h-10 text-xs font-bold text-muted-foreground">
-              Kèo Này Đã Bị Hủy
+              {t('cancelledNote')}
             </Button>
           ) : (
             <Button
@@ -128,14 +130,14 @@ export function MatchActionPanel({
               className="w-full h-11 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold cursor-pointer text-sm shadow-md shadow-amber-500/20"
             >
               <Flame className="w-4 h-4 mr-1.5" />
-              Xin Tham Gia Kèo Này
+              {t('join')}
             </Button>
           )}
         </div>
 
         <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1 pt-1">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-          Chủ kèo sẽ liên hệ và duyệt bạn vào nhóm thi đấu
+          {t('footer')}
         </div>
       </CardContent>
     </Card>

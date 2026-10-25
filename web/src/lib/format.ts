@@ -1,4 +1,5 @@
 import { VN_TIMEZONE } from '@/lib/datetime'
+import { intlLocale, type Locale } from '@/i18n/config'
 
 // Tất cả hiển thị giờ/ngày đều ép múi giờ Việt Nam. Trước đây các trang server dùng múi giờ của máy chủ
 // (UTC trên Vercel) nên giờ hiện lệch 7 tiếng so với người dùng.
@@ -32,9 +33,9 @@ export function formatDate(d: DateInput): string {
   return toDate(d).toLocaleDateString('vi-VN', { timeZone: VN_TIMEZONE })
 }
 
-/** "T6, 23/10" */
-export function formatShortDate(d: DateInput): string {
-  return toDate(d).toLocaleDateString('vi-VN', {
+/** "T6, 23/10" (hoặc "Fri, 23/10" khi lang = 'en') */
+export function formatShortDate(d: DateInput, lang: Locale = 'vi'): string {
+  return toDate(d).toLocaleDateString(intlLocale(lang), {
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',
@@ -42,9 +43,9 @@ export function formatShortDate(d: DateInput): string {
   })
 }
 
-/** "Thứ Sáu, 23 tháng 10, 2026" */
-export function formatLongDate(d: DateInput): string {
-  return toDate(d).toLocaleDateString('vi-VN', {
+/** "Thứ Sáu, 23 tháng 10, 2026" (hoặc "Friday 23 October 2026" khi lang = 'en') */
+export function formatLongDate(d: DateInput, lang: Locale = 'vi'): string {
+  return toDate(d).toLocaleDateString(intlLocale(lang), {
     weekday: 'long',
     year: 'numeric',
     month: 'long',

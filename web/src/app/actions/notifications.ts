@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { tr } from '@/lib/localize-error'
 
 export async function getNotifications(limit = 15) {
   const supabase = await createClient()
@@ -48,7 +49,7 @@ export async function markNotificationAsRead(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return { error: 'Chưa đăng nhập' }
+  if (!user) return { error: await tr('Chưa đăng nhập') }
 
   const { error } = await supabase
     .from('notifications')
@@ -56,7 +57,7 @@ export async function markNotificationAsRead(id: string) {
     .eq('id', id)
     .eq('user_id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: await tr(error.message) }
 
   revalidatePath('/', 'layout')
   return { success: true }
@@ -66,7 +67,7 @@ export async function markAllNotificationsAsRead() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return { error: 'Chưa đăng nhập' }
+  if (!user) return { error: await tr('Chưa đăng nhập') }
 
   const { error } = await supabase
     .from('notifications')
@@ -74,7 +75,7 @@ export async function markAllNotificationsAsRead() {
     .eq('user_id', user.id)
     .eq('is_read', false)
 
-  if (error) return { error: error.message }
+  if (error) return { error: await tr(error.message) }
 
   revalidatePath('/', 'layout')
   return { success: true }

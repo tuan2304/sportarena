@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyAdmins, notifyUser } from '@/lib/notify'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { tr } from '@/lib/localize-error'
 import {
   isTicketStatus,
   MAX_ACTIVE_TICKETS_PER_USER,
@@ -33,12 +34,12 @@ export async function createTicket(input: {
   clubId?: string | null
 }): Promise<{ error?: string; ticketId?: string }> {
   const actor = await currentActor()
-  if (!actor) return { error: 'Vui lòng đăng nhập để gửi yêu cầu hỗ trợ' }
+  if (!actor) return { error: await tr('Vui lòng đăng nhập để gửi yêu cầu hỗ trợ') }
   const limited = await enforceRateLimit('ticket', actor.user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
 
   const parsed = validateNewTicket(input)
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return { error: await tr(parsed.error) }
 
   const admin = createAdminClient()
 
@@ -48,7 +49,7 @@ export async function createTicket(input: {
     .eq('user_id', actor.user.id)
     .in('status', ['open', 'answered'])
   if ((count ?? 0) >= MAX_ACTIVE_TICKETS_PER_USER) {
-    return { error: `Bạn đang có ${MAX_ACTIVE_TICKETS_PER_USER} yêu cầu chưa giải quyết. Vui lòng chờ hỗ trợ trả lời hoặc đóng bớt yêu cầu cũ.` }
+    return { error: await tr(`Bạn đang có ${MAX_ACTIVE_TICKETS_PER_USER} yêu cầu chưa giải quyết. Vui lòng chờ hỗ trợ trả lời hoặc đóng bớt yêu cầu cũ.`) }
   }
 
   // Chỉ gắn cụm sân của chính mình (chủ sân báo vấn đề về sân)
@@ -71,7 +72,7 @@ export async function createTicket(input: {
     .single()
   if (error || !ticket) {
     console.error('createTicket: lỗi tạo phiếu', error)
-    return { error: 'Không gửi được yêu cầu. Vui lòng thử lại.' }
+    return { error: await tr('Không gửi được yêu cầu. Vui lòng thử lại.') }
   }
 
   const { error: msgError } = await admin.from('ticket_messages').insert({
@@ -84,7 +85,7 @@ export async function createTicket(input: {
   if (msgError) {
     console.error('createTicket: lỗi lưu nội dung', msgError)
     await admin.from('support_tickets').delete().eq('id', ticket.id)
-    return { error: 'Không gửi được yêu cầu. Vui lòng thử lại.' }
+    return { error: await tr('Không gửi được yêu cầu. Vui lòng thử lại.') }
   }
 
   await notifyAdmins({
@@ -100,21 +101,21 @@ export async function createTicket(input: {
 
 export async function replyToTicket(ticketId: string, body: string): Promise<{ error?: string }> {
   const actor = await currentActor()
-  if (!actor) return { error: 'Vui lòng đăng nhập' }
+  if (!actor) return { error: await tr('Vui lòng đăng nhập') }
   const limited = await enforceRateLimit('ticketReply', actor.user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
 
   const parsed = validateReply(body)
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return { error: await tr(parsed.error) }
 
   const admin = createAdminClient()
   const { data: ticket } = await admin.from('support_tickets').select('id, user_id, subject, status').eq('id', ticketId).maybeSingle()
-  if (!ticket) return { error: 'Không tìm thấy yêu cầu hỗ trợ' }
+  if (!ticket) return { error: await tr('Không tìm thấy yêu cầu hỗ trợ') }
 
   const isAuthor = ticket.user_id === actor.user.id
-  if (!isAuthor && !actor.isAdmin) return { error: 'Bạn không có quyền trả lời yêu cầu này' }
+  if (!isAuthor && !actor.isAdmin) return { error: await tr('Bạn không có quyền trả lời yêu cầu này') }
   if (ticket.status === 'closed' && !actor.isAdmin) {
-    return { error: 'Yêu cầu này đã đóng. Hãy tạo yêu cầu mới nếu bạn cần thêm hỗ trợ.' }
+    return { error: await tr('Yêu cầu này đã đóng. Hãy tạo yêu cầu mới nếu bạn cần thêm hỗ trợ.') }
   }
 
   // Quản trị trả lời phiếu của người khác = nhân viên hỗ trợ; còn lại là người dùng
@@ -128,7 +129,7 @@ export async function replyToTicket(ticketId: string, body: string): Promise<{ e
   })
   if (error) {
     console.error('replyToTicket lỗi', error)
-    return { error: 'Không gửi được tin nhắn. Vui lòng thử lại.' }
+    return { error: await tr('Không gửi được tin nhắn. Vui lòng thử lại.') }
   }
 
   // Nhân viên trả lời → chờ người dùng; người dùng trả lời (kể cả phiếu đã giải quyết) → mở lại chờ hỗ trợ
@@ -161,24 +162,24 @@ export async function replyToTicket(ticketId: string, body: string): Promise<{ e
 
 export async function setTicketStatus(ticketId: string, status: string): Promise<{ error?: string }> {
   const actor = await currentActor()
-  if (!actor) return { error: 'Vui lòng đăng nhập' }
-  if (!isTicketStatus(status)) return { error: 'Trạng thái không hợp lệ' }
+  if (!actor) return { error: await tr('Vui lòng đăng nhập') }
+  if (!isTicketStatus(status)) return { error: await tr('Trạng thái không hợp lệ') }
 
   const admin = createAdminClient()
   const { data: ticket } = await admin.from('support_tickets').select('id, user_id, subject').eq('id', ticketId).maybeSingle()
-  if (!ticket) return { error: 'Không tìm thấy yêu cầu hỗ trợ' }
+  if (!ticket) return { error: await tr('Không tìm thấy yêu cầu hỗ trợ') }
 
   const isAuthor = ticket.user_id === actor.user.id
   // Người dùng chỉ được tự đóng yêu cầu của mình; mọi trạng thái khác là việc của quản trị
   if (!actor.isAdmin && !(isAuthor && status === 'closed')) {
-    return { error: 'Bạn không có quyền đổi trạng thái này' }
+    return { error: await tr('Bạn không có quyền đổi trạng thái này') }
   }
 
   const next: TicketStatus = status
   const { error } = await admin.from('support_tickets').update({ status: next }).eq('id', ticketId)
   if (error) {
     console.error('setTicketStatus lỗi', error)
-    return { error: 'Không cập nhật được trạng thái' }
+    return { error: await tr('Không cập nhật được trạng thái') }
   }
 
   if (actor.isAdmin && !isAuthor && (next === 'resolved' || next === 'closed')) {

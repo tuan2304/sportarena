@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useSyncExternalStore } from 'react'
+import { useTranslations } from 'next-intl'
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { applyTheme, readStoredTheme, type ThemeChoice } from '@/lib/theme'
@@ -34,10 +35,11 @@ function useFollowSystemTheme() {
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
+  const t = useTranslations('theme')
   const theme = useResolvedTheme()
   useFollowSystemTheme()
   const next: ThemeChoice = theme === 'dark' ? 'light' : 'dark'
-  const label = next === 'dark' ? 'Chuyển sang giao diện tối' : 'Chuyển sang giao diện sáng'
+  const label = next === 'dark' ? t('toDark') : t('toLight')
 
   return (
     <Button

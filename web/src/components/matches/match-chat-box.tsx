@@ -10,6 +10,7 @@ import { MessageSquare, Send } from 'lucide-react'
 import { formatTime } from '@/lib/format'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 interface MatchChatBoxProps {
   matchId: string
   currentUserId?: string
@@ -22,6 +23,7 @@ export function MatchChatBox({
   initialMessages,
 }: MatchChatBoxProps) {
   const router = useRouter()
+  const t = useTranslations('matches.chat')
   const [messages, setMessages] = useState<MatchMessage[]>(initialMessages)
   const [inputMessage, setInputMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -97,8 +99,8 @@ export function MatchChatBox({
     if (!inputMessage.trim() || sending) return
 
     if (!currentUserId) {
-      toast.info('Vui lòng đăng nhập để tham gia trò chuyện', {
-        action: { label: 'Đăng nhập', onClick: () => router.push('/login') },
+      toast.info(t('loginToast'), {
+        action: { label: t('loginAction'), onClick: () => router.push('/login') },
       })
       return
     }
@@ -131,13 +133,13 @@ export function MatchChatBox({
             <MessageSquare className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-foreground">Phòng Chat Giao Lưu</h3>
-            <p className="text-xs text-muted-foreground">Thảo luận trực tiếp cùng các thành viên</p>
+            <h3 className="font-bold text-sm text-foreground">{t('title')}</h3>
+            <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
           </div>
         </div>
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Live Realtime
+          {t('live')}
         </span>
       </div>
 
@@ -146,15 +148,15 @@ export function MatchChatBox({
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
             <MessageSquare className="w-10 h-10 text-muted-foreground/30 mb-2" />
-            <p className="text-sm font-semibold">Chưa có tin nhắn nào</p>
+            <p className="text-sm font-semibold">{t('empty')}</p>
             <p className="text-xs text-muted-foreground/70">
-              Hãy gửi tin nhắn đầu tiên để chào hỏi anh em trong kèo nhé!
+              {t('emptyHint')}
             </p>
           </div>
         ) : (
           messages.map((msg) => {
             const isMe = msg.user_id === currentUserId
-            const senderName = msg.profile?.full_name || 'Người chơi'
+            const senderName = msg.profile?.full_name || t('playerFallback')
             const initial = senderName.charAt(0).toUpperCase()
             const timeStr = formatTime(msg.created_at)
 
@@ -214,8 +216,8 @@ export function MatchChatBox({
           className="flex-1 bg-background border border-border rounded-xl px-3.5 py-2 text-xs sm:text-sm text-foreground focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
           placeholder={
             currentUserId
-              ? 'Nhập tin nhắn thảo luận cùng anh em...'
-              : 'Đăng nhập để tham gia chat...'
+              ? t('placeholder')
+              : t('placeholderLogin')
           }
           disabled={!currentUserId || sending}
           value={inputMessage}
@@ -229,7 +231,7 @@ export function MatchChatBox({
           onClick={handleSend}
         >
           <Send className="w-4 h-4 mr-1" />
-          Gửi
+          {t('send')}
         </Button>
       </div>
     </div>

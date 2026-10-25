@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { LanguageSwitcher } from '@/components/layout/language-switcher'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { logout } from '@/app/actions/auth'
@@ -13,34 +15,16 @@ import { SPORT_IDS } from '@/lib/constants'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { Logo } from '@/components/brand/logo'
 const FEATURES = [
-  {
-    icon: CalendarCheck,
-    tone: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-    title: 'Lịch đặt không bao giờ trùng',
-    desc: 'Hệ thống khóa khung giờ ngay khi có người giữ chỗ và tự nhả sau 15 phút nếu chưa cọc.',
-  },
-  {
-    icon: QrCode,
-    tone: 'bg-teal-500/10 text-teal-700 dark:text-teal-400',
-    title: 'Cọc nhanh bằng VietQR',
-    desc: 'Mỗi đơn có một mã QR riêng. Chuyển khoản xong, trạng thái cập nhật tức thì, không cần tải lại trang.',
-  },
-  {
-    icon: Users,
-    tone: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-    title: 'Ghép kèo, chia tiền sân',
-    desc: 'Mở kèo ngay lúc đặt sân, chọn trình độ, chia đều tiền hoặc bao trọn. Chủ kèo duyệt từng người.',
-  },
-]
+  { key: 'calendar', icon: CalendarCheck, tone: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
+  { key: 'qr', icon: QrCode, tone: 'bg-teal-500/10 text-teal-700 dark:text-teal-400' },
+  { key: 'match', icon: Users, tone: 'bg-amber-500/10 text-amber-700 dark:text-amber-400' },
+] as const
 
-const STEPS = [
-  { n: '01', t: 'Chọn sân', d: 'Lọc theo môn và khu vực, xem giá theo khung giờ.' },
-  { n: '02', t: 'Chọn giờ', d: 'Bấm các ô trống trên lịch, hệ thống tự tính giá và tiền cọc.' },
-  { n: '03', t: 'Quét QR cọc', d: 'Có 15 phút để chuyển khoản, đồng hồ đếm ngược ngay trên màn hình.' },
-  { n: '04', t: 'Rủ bạn chơi', d: 'Mở kèo, duyệt người tham gia và trò chuyện trực tiếp.' },
-]
+const STEPS = ['1', '2', '3', '4'] as const
 
 export default async function Home() {
+  const t = await getTranslations('home')
+  const th = await getTranslations('header')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -73,27 +57,28 @@ export default async function Home() {
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               >
                 <Compass className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                Khám Phá Sân
+                {t('nav.explore')}
               </Link>
               <Link
                 href="/matches"
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               >
                 <Flame className="w-4 h-4 text-amber-500" />
-                Kèo Giao Lưu
+                {t('nav.matches')}
               </Link>
               <Link
                 href="/my-bookings"
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
               >
                 <Calendar className="w-4 h-4 text-teal-700 dark:text-teal-400" />
-                Lịch Đặt
+                {t('nav.bookings')}
               </Link>
             </nav>
           )}
 
           {/* Auth section */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <ThemeToggle />
             {user ? (
               <div className="flex items-center gap-2 sm:gap-3">
@@ -105,10 +90,10 @@ export default async function Home() {
                   </div>
                   <div className="hidden sm:block text-left text-xs">
                     <div className="font-bold text-foreground truncate max-w-[120px]">
-                      {profile?.full_name || 'Người dùng'}
+                      {profile?.full_name || t('userFallback')}
                     </div>
                     <Badge variant="outline" className="text-xs py-0 px-1 border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
-                      {isAdmin ? 'Quản trị' : isOwner ? 'Chủ sân' : 'Người chơi'}
+                      {isAdmin ? th('roleAdmin') : isOwner ? th('roleOwner') : th('rolePlayer')}
                     </Badge>
                   </div>
                 </div>
@@ -117,8 +102,8 @@ export default async function Home() {
                   <Link href="/admin">
                     <Button size="sm" className="text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer shadow-sm shadow-amber-500/20">
                       <ShieldCheck className="w-3.5 h-3.5 mr-1.5" aria-hidden />
-                      <span className="hidden sm:inline">Trang quản trị</span>
-                      <span className="sm:hidden">Quản trị</span>
+                      <span className="hidden sm:inline">{th('adminPage')}</span>
+                      <span className="sm:hidden">{th('adminShort')}</span>
                     </Button>
                   </Link>
                 )}
@@ -126,7 +111,7 @@ export default async function Home() {
                 {isOwner && (
                   <Link href="/owner/dashboard">
                     <Button size="sm" variant="outline" className="text-xs font-semibold border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer hidden sm:flex">
-                      Cổng Chủ Sân
+                      {th('ownerPortal')}
                     </Button>
                   </Link>
                 )}
@@ -137,8 +122,8 @@ export default async function Home() {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
-                    title="Đăng xuất"
-                  aria-label="Đăng xuất"
+                    title={th('logout')}
+                  aria-label={th('logout')}
                   >
                     <LogOut className="w-4 h-4" />
                   </Button>
@@ -148,12 +133,12 @@ export default async function Home() {
               <div className="flex items-center gap-2">
                 <Link href="/login">
                   <Button variant="ghost" className="text-sm font-semibold cursor-pointer">
-                    Đăng nhập
+                    {th('login')}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button className="bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm shadow-emerald-600/20 font-semibold cursor-pointer">
-                    Đăng ký tài khoản
+                    {t('registerAccount')}
                   </Button>
                 </Link>
               </div>
@@ -175,24 +160,23 @@ export default async function Home() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
             </span>
-            Đặt sân &amp; ghép kèo theo thời gian thực
+            {t('badge')}
           </div>
 
           <h1
             className="text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-[1.1] text-foreground animate-fade-up stagger"
             style={{ '--i': 1 } as CSSProperties}
           >
-            Đặt sân thật nhanh,
+            {t('heroLine1')}
             <br />
-            <span className="text-gradient-brand">ra sân thật vui.</span>
+            <span className="text-gradient-brand">{t('heroLine2')}</span>
           </h1>
 
           <p
             className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-up stagger"
             style={{ '--i': 2 } as CSSProperties}
           >
-            Chọn giờ tự do, không lo trùng lịch. Cọc bằng mã VietQR, rủ thêm người chơi vào kèo
-            và nhận thông báo ngay khi có người xin tham gia.
+            {t('heroText')}
           </p>
 
           <div
@@ -201,13 +185,13 @@ export default async function Home() {
           >
             <Link href="/clubs">
               <Button size="lg" className="btn-shine w-full sm:w-auto h-12 px-7 bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-lg shadow-emerald-600/30 text-base cursor-pointer hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/40">
-                Khám phá sân thể thao <ArrowRight className="w-4 h-4 ml-2" />
+                {t('ctaExplore')} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
             <Link href="/matches">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-7 font-bold text-base cursor-pointer border-2 border-amber-500/60 text-amber-800 dark:text-amber-300 hover:bg-amber-400/15">
                 <Flame className="w-4 h-4 mr-2" />
-                Tìm kèo giao lưu
+                {t('ctaMatches')}
               </Button>
             </Link>
           </div>
@@ -235,19 +219,19 @@ export default async function Home() {
       <section className="py-20 border-t border-border/60 bg-muted/20">
         <div className="max-w-6xl mx-auto px-4">
           <Reveal className="text-center mb-12 space-y-2">
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground">Mọi thứ trong một nơi</h2>
-            <p className="text-sm text-muted-foreground">Từ lúc chọn sân đến lúc rủ bạn bè ra chơi.</p>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground">{t('featuresTitle')}</h2>
+            <p className="text-sm text-muted-foreground">{t('featuresSubtitle')}</p>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
-              <Reveal key={f.title} index={i}>
+              <Reveal key={f.key} index={i}>
                 <div className="card-lift h-full p-7 rounded-2xl border border-border bg-card shadow-sm space-y-4 hover:border-emerald-500/40">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${f.tone}`}>
                     <f.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                  <h3 className="font-bold text-lg text-foreground">{t(`features.${f.key}.title`)}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{t(`features.${f.key}.desc`)}</p>
                 </div>
               </Reveal>
             ))}
@@ -259,20 +243,20 @@ export default async function Home() {
       <section className="py-20 border-t border-border/60">
         <div className="max-w-5xl mx-auto px-4">
           <Reveal className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground">Bốn bước là có sân</h2>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-foreground">{t('stepsTitle')}</h2>
           </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {STEPS.map((step, i) => (
-              <Reveal key={step.n} index={i}>
+              <Reveal key={step} index={i}>
                 <div className="card-lift h-full p-6 rounded-2xl border border-border bg-card relative overflow-hidden">
                   <span
                     className="absolute -top-1 right-3 text-6xl font-extrabold text-emerald-500/15 leading-none"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
-                    {step.n}
+                    {step.padStart(2, '0')}
                   </span>
-                  <h3 className="font-bold text-lg text-foreground relative">{step.t}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed relative">{step.d}</p>
+                  <h3 className="font-bold text-lg text-foreground relative">{t(`steps.${step}.title`)}</h3>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed relative">{t(`steps.${step}.desc`)}</p>
                 </div>
               </Reveal>
             ))}
@@ -282,7 +266,7 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        <p>© 2026 SportArena - Nền tảng Đặt sân & Ghép kèo Thể thao Real-time.</p>
+        <p>{t('footer')}</p>
       </footer>
     </div>
   )

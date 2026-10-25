@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { MatchMessage } from '@/types/database'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { tr } from '@/lib/localize-error'
 
 export async function getMatchMessages(matchId: string): Promise<MatchMessage[]> {
   const supabase = await createClient()
@@ -34,21 +35,21 @@ export async function getMatchMessages(matchId: string): Promise<MatchMessage[]>
 
 export async function sendMatchMessage(matchId: string, content: string) {
   if (!content || !content.trim()) {
-    return { error: 'Nội dung tin nhắn không được để trống' }
+    return { error: await tr('Nội dung tin nhắn không được để trống') }
   }
   if (content.trim().length > 1000) {
-    return { error: 'Tin nhắn tối đa 1000 ký tự' }
+    return { error: await tr('Tin nhắn tối đa 1000 ký tự') }
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Vui lòng đăng nhập để gửi tin nhắn' }
+    return { error: await tr('Vui lòng đăng nhập để gửi tin nhắn') }
   }
 
   const limited = await enforceRateLimit('chat', user.id)
-  if (limited) return { error: limited }
+  if (limited) return { error: await tr(limited) }
   const { data, error } = await supabase
     .from('match_messages')
     .insert({
@@ -74,9 +75,9 @@ export async function sendMatchMessage(matchId: string, content: string) {
     console.error('Error sending message:', error)
     // 42501 = bị RLS từ chối: không phải chủ kèo / thành viên đã duyệt
     if (error.code === '42501') {
-      return { error: 'Chỉ chủ kèo và thành viên đã được duyệt mới nhắn tin được' }
+      return { error: await tr('Chỉ chủ kèo và thành viên đã được duyệt mới nhắn tin được') }
     }
-    return { error: 'Không thể gửi tin nhắn' }
+    return { error: await tr('Không thể gửi tin nhắn') }
   }
 
   return { success: true, message: data }

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { validateProfile, type ProfileInput } from '@/lib/profile'
+import { tr } from '@/lib/localize-error'
 
 /**
  * Cập nhật hồ sơ của chính mình. Quyền ghi theo cột do database quyết định (chỉ full_name, phone_number,
@@ -11,10 +12,10 @@ import { validateProfile, type ProfileInput } from '@/lib/profile'
 export async function updateProfile(input: ProfileInput): Promise<{ error?: string; success?: boolean }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vui lòng đăng nhập' }
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
   const parsed = validateProfile(input)
-  if (!parsed.ok) return { error: parsed.error }
+  if (!parsed.ok) return { error: await tr(parsed.error) }
 
   const { error } = await supabase
     .from('profiles')
@@ -27,7 +28,7 @@ export async function updateProfile(input: ProfileInput): Promise<{ error?: stri
 
   if (error) {
     console.error('updateProfile lỗi', error)
-    return { error: 'Không thể lưu hồ sơ. Vui lòng thử lại.' }
+    return { error: await tr('Không thể lưu hồ sơ. Vui lòng thử lại.') }
   }
 
   revalidatePath('/', 'layout')

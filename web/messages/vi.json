@@ -1,0 +1,652 @@
+{
+  "language": {
+    "switchTo": "Chuyển sang {language}",
+    "vi": "tiếng Việt",
+    "en": "tiếng Anh"
+  },
+  "header": {
+    "homeLabel": "SportArena, về trang chủ",
+    "explore": "Khám Phá Sân",
+    "matches": "Kèo Giao Lưu",
+    "myBookings": "Lịch Đặt Của Tôi",
+    "support": "Hỗ Trợ",
+    "ownerPortal": "Cổng Chủ Sân",
+    "adminPage": "Trang quản trị",
+    "adminShort": "Quản trị",
+    "myProfile": "Hồ sơ của tôi",
+    "playerFallback": "Người chơi",
+    "roleAdmin": "Quản trị",
+    "roleOwner": "Chủ sân",
+    "rolePlayer": "Người chơi",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "register": "Đăng ký"
+  },
+  "theme": {
+    "toDark": "Chuyển sang giao diện tối",
+    "toLight": "Chuyển sang giao diện sáng"
+  },
+  "meta": {
+    "title": "SportArena - Đặt sân & Ghép kèo thể thao",
+    "description": "Đặt sân chống trùng lịch, đặt cọc qua VietQR và ghép kèo giao lưu thể thao theo thời gian thực.",
+    "siteName": "SportArena"
+  },
+  "home": {
+    "nav": {
+      "explore": "Khám Phá Sân",
+      "matches": "Kèo Giao Lưu",
+      "bookings": "Lịch Đặt"
+    },
+    "userFallback": "Người dùng",
+    "registerAccount": "Đăng ký tài khoản",
+    "badge": "Đặt sân & ghép kèo theo thời gian thực",
+    "heroLine1": "Đặt sân thật nhanh,",
+    "heroLine2": "ra sân thật vui.",
+    "heroText": "Chọn giờ tự do, không lo trùng lịch. Cọc bằng mã VietQR, rủ thêm người chơi vào kèo và nhận thông báo ngay khi có người xin tham gia.",
+    "ctaExplore": "Khám phá sân thể thao",
+    "ctaMatches": "Tìm kèo giao lưu",
+    "featuresTitle": "Mọi thứ trong một nơi",
+    "featuresSubtitle": "Từ lúc chọn sân đến lúc rủ bạn bè ra chơi.",
+    "features": {
+      "calendar": {
+        "title": "Lịch đặt không bao giờ trùng",
+        "desc": "Hệ thống khóa khung giờ ngay khi có người giữ chỗ và tự nhả sau 15 phút nếu chưa cọc."
+      },
+      "qr": {
+        "title": "Cọc nhanh bằng VietQR",
+        "desc": "Mỗi đơn có một mã QR riêng. Chuyển khoản xong, trạng thái cập nhật tức thì, không cần tải lại trang."
+      },
+      "match": {
+        "title": "Ghép kèo, chia tiền sân",
+        "desc": "Mở kèo ngay lúc đặt sân, chọn trình độ, chia đều tiền hoặc bao trọn. Chủ kèo duyệt từng người."
+      }
+    },
+    "stepsTitle": "Bốn bước là có sân",
+    "steps": {
+      "1": {
+        "title": "Chọn sân",
+        "desc": "Lọc theo môn và khu vực, xem giá theo khung giờ."
+      },
+      "2": {
+        "title": "Chọn giờ",
+        "desc": "Bấm các ô trống trên lịch, hệ thống tự tính giá và tiền cọc."
+      },
+      "3": {
+        "title": "Quét QR cọc",
+        "desc": "Có 15 phút để chuyển khoản, đồng hồ đếm ngược ngay trên màn hình."
+      },
+      "4": {
+        "title": "Rủ bạn chơi",
+        "desc": "Mở kèo, duyệt người tham gia và trò chuyện trực tiếp."
+      }
+    },
+    "footer": "© 2026 SportArena - Nền tảng Đặt sân & Ghép kèo Thể thao Real-time."
+  },
+  "auth": {
+    "login": {
+      "title": "Đăng nhập hệ thống",
+      "subtitle": "Nền tảng Quản lý sân thể thao & Ghép kèo Real-time",
+      "emailPlaceholder": "chu-san@example.com",
+      "forgot": "Quên mật khẩu?",
+      "processing": "Đang xử lý...",
+      "submit": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "signUpNow": "Đăng ký ngay",
+      "metaTitle": "Đăng nhập - Đặt Sân & Ghép Kèo",
+      "metaDescription": "Đăng nhập vào hệ thống quản lý sân thể thao và ghép kèo"
+    },
+    "register": {
+      "title": "Đăng ký tài khoản",
+      "subtitle": "Chọn vai trò của bạn để trải nghiệm tính năng tối ưu nhất",
+      "roleQuestion": "Bạn tham gia với tư cách là?",
+      "ownerTitle": "Chủ Sân / Quản Lý",
+      "ownerHint": "Tạo sân & nhận cọc",
+      "playerTitle": "Người Chơi",
+      "playerHint": "Tìm sân & ghép kèo",
+      "fullName": "Họ và tên",
+      "fullNamePlaceholder": "Nguyễn Văn A",
+      "phone": "Số điện thoại",
+      "password": "Mật khẩu (tối thiểu 8 ký tự)",
+      "creating": "Đang khởi tạo tài khoản...",
+      "submitOwner": "Đăng ký tài khoản Chủ Sân",
+      "submitPlayer": "Đăng ký tài khoản Người Chơi",
+      "haveAccount": "Đã có tài khoản?",
+      "logInHere": "Đăng nhập tại đây",
+      "metaTitle": "Đăng ký tài khoản - Đặt Sân & Ghép Kèo",
+      "metaDescription": "Đăng ký tài khoản Người chơi hoặc Chủ sân để bắt đầu"
+    },
+    "email": "Email",
+    "passwordLabel": "Mật khẩu"
+  },
+  "common": {
+    "sports": {
+      "football": "Bóng đá",
+      "badminton": "Cầu lông",
+      "pickleball": "Pickleball",
+      "tennis": "Tennis",
+      "basketball": "Bóng rổ",
+      "all": "Tất cả môn"
+    },
+    "skills": {
+      "all": {
+        "short": "Mọi trình độ",
+        "long": "Mọi trình độ (Giao lưu)"
+      },
+      "beginner": {
+        "short": "Mới chơi",
+        "long": "Mới chơi / Nhập môn"
+      },
+      "intermediate": {
+        "short": "Trung bình",
+        "long": "Trung bình / Khá"
+      },
+      "advanced": {
+        "short": "Bán chuyên",
+        "long": "Bán chuyên / Giỏi"
+      },
+      "filterAll": "Tất cả trình độ"
+    },
+    "costTypes": {
+      "all": "Tất cả chi phí",
+      "split": "Chia đều",
+      "host_covers": "Chủ bao trọn (0đ)"
+    },
+    "playerSkills": {
+      "beginner": "Mới chơi",
+      "intermediate": "Trung bình",
+      "advanced": "Khá",
+      "pro": "Chuyên nghiệp",
+      "unknown": "Chưa cập nhật"
+    },
+    "pricePerHour": "{price} đ/h",
+    "close": "Đóng",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "loading": "Đang tải dữ liệu...",
+    "back": "Quay lại"
+  },
+  "clubs": {
+    "metaTitle": "Khám phá sân thể thao",
+    "metaTitlePage": "Khám phá sân thể thao - Trang {page}",
+    "metaDescription": "Tìm cụm sân bóng đá, cầu lông, pickleball, tennis, bóng rổ gần bạn, xem lịch trống và đặt cọc nhanh qua VietQR.",
+    "badge": "Đặt sân trực tiếp & Khóa sân tức thì",
+    "heading": "Khám Phá Sân Thể Thao",
+    "subheading": "Tìm cụm sân gần bạn nhất, kiểm tra lịch trống và thanh toán cọc nhanh chóng qua VietQR PayOS.",
+    "found": "Tìm thấy {count} cụm sân",
+    "pageOf": " · trang {page}/{pages}",
+    "emptyTitle": "Không tìm thấy sân phù hợp",
+    "emptyText": "Vui lòng thử chọn môn thể thao khác hoặc xóa từ khóa tìm kiếm để xem thêm nhiều sân hơn.",
+    "viewAll": "Xem tất cả cụm sân",
+    "amenities": "Tiện ích:",
+    "priceFrom": "Giá từ",
+    "bookNow": "Đặt Sân Ngay",
+    "filters": {
+      "allDistricts": "Tất cả khu vực",
+      "searchPlaceholder": "Tìm theo tên sân, đường phố hoặc quận..."
+    },
+    "pagination": {
+      "label": "Phân trang danh sách sân",
+      "prev": "Trang trước",
+      "next": "Trang sau",
+      "page": "Trang {page}"
+    },
+    "detail": {
+      "notFound": "Không tìm thấy cụm sân",
+      "backToList": "Quay lại danh sách cụm sân",
+      "active": "Cụm Sân Hoạt Động",
+      "openingHours": "Giờ mở cửa: {open} - {close}",
+      "defaultDescription": "Cơ sở thể thao hiện đại, mặt sân đạt chuẩn thi đấu và hệ thống chiếu sáng LED cao cấp.",
+      "locationTitle": "Vị trí & chỉ đường",
+      "notPinned": "Chủ sân chưa ghim vị trí chính xác nên bản đồ tìm theo địa chỉ và có thể lệch một chút.",
+      "mapTitle": "Bản đồ vị trí {name}",
+      "pickerTitle": "Chọn Giờ Đặt Sân Trực Tuyến",
+      "pickerSubtitle": "Chọn sân con, chọn ngày và khung giờ bạn muốn chơi. Hệ thống sẽ tự động tính giá và tạo đơn cọc.",
+      "cancelPolicy": "Chính sách hủy:",
+      "manualTransferNote": " Cụm sân nhận cọc bằng chuyển khoản, chủ sân sẽ xác nhận đơn thủ công.",
+      "noPayments": "Cụm sân này chưa kết nối thanh toán online nên chưa nhận đặt sân trên SportArena. Vui lòng quay lại sau hoặc liên hệ trực tiếp với chủ sân."
+    }
+  },
+  "booking": {
+    "picker": {
+      "noCourts": "Cơ sở này hiện chưa có sân con nào hoạt động.",
+      "chooseSlot": "Vui lòng chọn khung giờ muốn đặt",
+      "defaultMatchTitle": "Kèo {court} ({date})",
+      "stepCourt": "1. Chọn sân con",
+      "stepDate": "2. Chọn ngày chơi",
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "dateLabel": "Ngày chơi",
+      "stepHour": "3. Chọn giờ bắt đầu",
+      "available": "Còn trống",
+      "full": "Đã kín",
+      "slotBooked": "{label}, đã kín",
+      "duration": "Thời lượng chơi",
+      "hours": "{count} tiếng"
+    },
+    "match": {
+      "title": "Mở Ghép Kèo Giao Lưu",
+      "subtitle": "Tuyển thêm người chơi chung",
+      "on": "Đang Bật",
+      "tapToEnable": "Bấm để bật",
+      "postTitle": "Tiêu đề bài đăng ghép kèo",
+      "titlePlaceholder": "Ví dụ: Tuyển {count} bạn giao lưu vui vẻ",
+      "totalPlayers": "Tổng số người cần",
+      "playersOption": "{count} người ({slots} slot trống)",
+      "skill": "Trình độ yêu cầu",
+      "costTitle": "Hình thức chia tiền sân",
+      "split": "Chia đều tiền",
+      "hostCovers": "Chủ bao trọn (0đ)",
+      "perPersonHint": "Gợi ý mỗi người đóng:",
+      "perPerson": "{price} đ/người"
+    },
+    "summary": {
+      "title": "Tóm Tắt Đặt Sân",
+      "subtitle": "Giữ chỗ tự động 15 phút qua VietQR PayOS",
+      "court": "Sân đã chọn:",
+      "date": "Ngày chơi:",
+      "time": "Khung giờ:",
+      "noTime": "Chưa chọn giờ",
+      "peak": "Áp dụng giá Giờ Vàng / Cao Điểm",
+      "noteLabel": "Ghi chú cho chủ sân (tùy chọn)",
+      "notePlaceholder": "Ví dụ: Cần mượn thêm áo pitch...",
+      "pricePerHour": "Đơn giá theo giờ:",
+      "total": "Tổng tiền sân:",
+      "deposit": "Tiền cọc giữ chỗ ({percent}%):",
+      "holding": "Đang giữ chỗ...",
+      "confirm": "Xác Nhận Giữ Chỗ 15 Phút",
+      "holdNote": "Sân được giữ tạm 15 phút chờ quét mã QR PayOS"
+    }
+  },
+  "maps": {
+    "directions": "Chỉ đường",
+    "opensNewTab": " (mở Google Maps trong tab mới)",
+    "viewOnGoogle": "Xem trên Google Maps",
+    "newTab": " (tab mới)",
+    "noLocation": "Chưa có thông tin vị trí để hiển thị bản đồ."
+  },
+  "reviews": {
+    "loginToast": "Vui lòng đăng nhập để gửi đánh giá",
+    "loginAction": "Đăng nhập",
+    "thanks": "Cảm ơn bạn đã gửi đánh giá cho cụm sân!",
+    "title": "Đánh Giá & Trải Nghiệm Sân Bãi",
+    "subtitle": "Nhận xét thực tế từ các vận động viên và người chơi đã từng trải nghiệm",
+    "score": "Điểm Uy Tín",
+    "basedOn": "Dựa trên {count} đánh giá",
+    "formTitle": "Gửi Đánh Giá Của Bạn",
+    "satisfaction": "Mức độ hài lòng của bạn:",
+    "commentLabel": "Lời nhận xét (chất lượng mặt sân, đèn, tiện ích...):",
+    "commentPlaceholder": "Ví dụ: Sân đẹp, mặt thảm êm, ánh sáng đèn led không bị chói mắt...",
+    "commentLoginPlaceholder": "Vui lòng đăng nhập để viết nhận xét...",
+    "sending": "Đang gửi...",
+    "submit": "Gửi Đánh Giá",
+    "emptyTitle": "Chưa có đánh giá nào cho cụm sân này",
+    "emptyText": "Hãy là người đầu tiên để lại đánh giá giúp anh em thể thao nhé!",
+    "anonymous": "Người chơi ẩn danh"
+  },
+  "payment": {
+    "success": {
+      "title": "Đặt Sân & Giữ Chỗ Thành Công!",
+      "text": "Tiền cọc của bạn đã được xác thực qua hệ thống. Lịch sân đã được khóa chính thức."
+    },
+    "venue": "Cụm sân:",
+    "court": "Sân con:",
+    "time": "Thời gian:",
+    "depositPaid": "Tiền cọc đã thanh toán:",
+    "viewMyBookings": "Xem Lịch Đặt Của Tôi",
+    "bookAgain": "Tiếp Tục Đặt Sân",
+    "cancelled": {
+      "title": "Đơn Đã Được Hủy",
+      "expired": "Đã Hết Thời Gian Giữ Chỗ",
+      "text": "Đơn giữ chỗ đã quá hạn hoặc đã bị hủy. Sân đã được giải phóng để người khác có thể đặt.",
+      "rebook": "Tìm & Đặt Lại Khung Giờ Khác"
+    },
+    "qr": {
+      "title": "Quét Mã VietQR Đặt Cọc",
+      "subtitle": "Mở ứng dụng ngân hàng bất kỳ để quét mã cọc",
+      "alt": "Mã VietQR đặt cọc",
+      "failed": "Không tải được mã QR. Vui lòng tải lại trang hoặc đặt lại khung giờ."
+    },
+    "amountDue": "Số tiền cọc cần chuyển:",
+    "bank": "Ngân hàng:",
+    "accountNumber": "Số tài khoản:",
+    "copyAccount": "Copy STK",
+    "accountName": "Chủ tài khoản:",
+    "transferContent": "Nội dung chuyển khoản:",
+    "copyContent": "Copy nội dung",
+    "simulating": "Đang giả lập...",
+    "simulate": "[DEV] Giả lập đã chuyển khoản",
+    "simulateError": "Không thể giả lập thanh toán, vui lòng thử lại",
+    "claimed": "Đã báo cho chủ sân. Chủ sân sẽ đối chiếu sao kê và xác nhận đơn; trang này tự cập nhật khi được xác nhận.",
+    "claimSending": "Đang gửi...",
+    "claim": "Tôi đã chuyển khoản",
+    "claimError": "Không thể gửi thông báo, vui lòng thử lại",
+    "liveManual": "Chủ sân xác nhận thủ công — trang tự chuyển khi đơn được xác nhận",
+    "liveAuto": "Kênh Realtime đang hoạt động — Hệ thống tự động chuyển trang khi nhận tiền",
+    "cancelling": "Đang hủy...",
+    "cancelHold": "Hủy đơn giữ chỗ này",
+    "cancelDialog": {
+      "title": "Hủy đơn giữ chỗ này?",
+      "text": "Đơn chưa cọc nên không mất khoản nào. Khung giờ sẽ được nhả ra cho người khác.",
+      "confirm": "Hủy đơn",
+      "keep": "Giữ lại"
+    },
+    "details": {
+      "title": "Chi Tiết Lịch Đặt",
+      "sport": "Môn chơi:",
+      "date": "Ngày chơi:",
+      "slot": "Khung giờ:",
+      "total": "Tổng tiền sân:",
+      "deposit": "Tiền cọc giữ chỗ:",
+      "remaining": "Còn lại thanh toán tại sân:"
+    },
+    "policy": {
+      "title": "Chính Sách Giữ Chỗ",
+      "manual": "Sân được bảo lưu 60 phút, và được kéo dài thêm khi bạn báo đã chuyển khoản để chủ sân kịp đối chiếu. Quá hạn mà chưa xác nhận, hệ thống sẽ tự động hủy đơn và mở sân cho người khác.",
+      "auto": "Sân được bảo lưu trong 15 phút. Nếu trong khoảng thời gian này giao dịch cọc không hoàn tất, hệ thống sẽ tự động hủy đơn và mở sân cho người chơi khác."
+    }
+  },
+  "myBookings": {
+    "metaTitle": "Lịch đặt của tôi",
+    "heading": "Lịch Đặt Sân & Kèo Giao Lưu",
+    "subheading": "Theo dõi tình trạng đơn đặt sân, thông tin cọc và quản lý các kèo thể thao bạn tham gia.",
+    "detailMetaTitle": "Chi tiết đơn đặt sân",
+    "tabBookings": "Sân Tôi Đã Đặt ({count})",
+    "tabMatches": "Kèo Tôi Tham Gia ({count})",
+    "emptyBookingsTitle": "Bạn chưa có lịch đặt sân nào",
+    "emptyBookingsText": "Hãy khám phá các cụm sân thể thao gần bạn và đặt chỗ ngay hôm nay!",
+    "exploreNow": "Khám Phá Sân Ngay",
+    "defaultCourt": "Sân tiêu chuẩn",
+    "defaultClub": "Cụm sân",
+    "status": {
+      "confirmed": "Đã Cọc Khóa Sân",
+      "pending": "Chờ Cọc",
+      "cancelled": "Đã Hủy"
+    },
+    "matchOpen": "Đang Mở Ghép Kèo ({current}/{required})",
+    "deposit": "Tiền cọc",
+    "manageMatch": "Quản Lý Kèo",
+    "openMatch": "Mở Ghép Kèo",
+    "cancelBooking": "Hủy Đơn",
+    "cancelling": "Đang hủy...",
+    "scanDeposit": "Quét Mã Cọc",
+    "viewDetails": "Xem Chi Tiết",
+    "cancelDialog": {
+      "title": "Hủy đơn đặt sân này?",
+      "confirm": "Hủy đơn",
+      "keep": "Giữ lại"
+    },
+    "cancelledRefund": "Đã hủy đơn. Chủ sân sẽ hoàn {amount} cho bạn.",
+    "cancelled": "Đã hủy đơn đặt sân.",
+    "emptyMatchesTitle": "Bạn chưa tham gia kèo thể thao nào",
+    "emptyMatchesText": "Xem ngay danh sách các kèo giao lưu đang tuyển người để cùng rèn luyện thể thao!",
+    "exploreMatches": "Khám Phá Kèo Giao Lưu",
+    "part": {
+      "accepted": "✓ Đã Được Duyệt",
+      "pending": "⏳ Chờ Chủ Kèo Duyệt",
+      "rejected": "Đã Bị Từ Chối"
+    },
+    "message": "Lời nhắn: “{message}”",
+    "cost": "Chi phí",
+    "free": "Miễn phí",
+    "matchDetails": "Chi Tiết Kèo",
+    "courtFallback": "Sân"
+  },
+  "matches": {
+    "metaTitle": "Kèo giao lưu thể thao",
+    "metaDescription": "Tìm kèo giao lưu pickleball, cầu lông, bóng đá, tennis, bóng rổ còn thiếu người hoặc mở kèo để rủ thêm bạn chơi cùng.",
+    "notFound": "Không tìm thấy kèo",
+    "detailMetaDescription": "Tham gia kèo \"{title}\" trên SportArena: xem giờ chơi, trình độ và xin vào kèo.",
+    "hero": {
+      "badge": "Cộng Đồng Ghép Kèo Thể Thao",
+      "title": "Giao Lưu Thể Thao, Tìm Bạn Chơi Cùng Mọi Lúc Mọi Nơi",
+      "text": "Thiếu 1 slot cầu lông? Cần đối tác pickleball đôi hay lập đội bóng đá giao lưu? Tham gia ngay các kèo đang mở hoặc tự tạo kèo riêng cho sân bạn đã đặt!",
+      "openFromMine": "Mở Kèo Từ Sân Của Tôi",
+      "bookNew": "Đặt Sân Mới & Ghép Kèo"
+    },
+    "listTitle": "Các Kèo Đang Tuyển Người ({count})",
+    "live": "Cập nhật trực tiếp thời gian thực",
+    "emptyTitle": "Không tìm thấy kèo phù hợp",
+    "emptyText": "Chưa có ai mở ghép kèo phù hợp với bộ lọc hiện tại. Bạn có thể là người đầu tiên tạo kèo giao lưu!",
+    "openNow": "Mở Ghép Kèo Ngay",
+    "filters": {
+      "search": "Tìm theo tiêu đề kèo, khu vực hoặc tên sân..."
+    },
+    "card": {
+      "timeTbd": "Thời gian thỏa thuận",
+      "full": "Đã đủ người",
+      "slotsLeft": "Còn {count} chỗ trống",
+      "courtFallback": "Sân",
+      "cityFallback": "TP.HCM",
+      "host": "Chủ kèo",
+      "userFallback": "Người dùng",
+      "cost": "Chi phí tham gia",
+      "free": "Miễn phí (Chủ bao)",
+      "perPerson": "{price} đ/người",
+      "view": "Xem Kèo"
+    },
+    "detail": {
+      "back": "Quay lại danh sách kèo",
+      "joinSent": "Đã gửi yêu cầu tham gia",
+      "joinSentHint": "Chủ kèo sẽ duyệt và báo cho bạn.",
+      "approved": "Đã duyệt thành viên",
+      "declined": "Đã từ chối yêu cầu",
+      "leave": {
+        "title": "Rời khỏi kèo này?",
+        "text": "Bạn sẽ mất chỗ trong kèo và phải xin tham gia lại nếu muốn quay lại.",
+        "confirm": "Rời kèo",
+        "stay": "Ở lại"
+      },
+      "left": "Đã rời khỏi kèo",
+      "cancel": {
+        "title": "Hủy kèo này?",
+        "text": "Các thành viên đã được duyệt sẽ nhận thông báo kèo bị hủy. Thao tác này không hoàn tác được.",
+        "confirm": "Hủy kèo",
+        "keep": "Giữ lại"
+      },
+      "cancelled": "Đã hủy kèo",
+      "chatMembersOnly": "Phòng chat dành cho thành viên",
+      "chatMembersHint": "Hãy gửi yêu cầu tham gia. Khi chủ kèo duyệt, bạn sẽ vào được phòng chat của kèo này."
+    },
+    "banner": {
+      "cancelled": "Đã hủy kèo",
+      "time": "Thời Gian Thi Đấu",
+      "timeTbd": "Thỏa thuận",
+      "place": "Địa Điểm & Sân Con",
+      "venueFallback": "Cụm Sân Thể Thao",
+      "courtFallback": "Sân tiêu chuẩn",
+      "areaFallback": "Hồ Chí Minh"
+    },
+    "join": {
+      "title": "Gửi Yêu Cầu Tham Gia Kèo",
+      "subtitle": "Gửi lời nhắn cho chủ kèo về trình độ của bạn hoặc lời chào giao lưu.",
+      "messageLabel": "Lời nhắn gửi chủ kèo (tùy chọn)",
+      "messagePlaceholder": "Ví dụ: Mình đánh cầu được 1 năm, cho mình xin 1 slot nhé...",
+      "rulesTitle": "Quy định giao lưu:",
+      "rule1": "• Có mặt đúng giờ đã hẹn tại cụm sân.",
+      "rule2": "• Mang trang phục thể thao và vợt/giày phù hợp.",
+      "sending": "Đang gửi...",
+      "submit": "Gửi Yêu Cầu"
+    },
+    "chat": {
+      "loginToast": "Vui lòng đăng nhập để tham gia trò chuyện",
+      "loginAction": "Đăng nhập",
+      "title": "Phòng Chat Giao Lưu",
+      "subtitle": "Thảo luận trực tiếp cùng các thành viên",
+      "live": "Live Realtime",
+      "empty": "Chưa có tin nhắn nào",
+      "emptyHint": "Hãy gửi tin nhắn đầu tiên để chào hỏi anh em trong kèo nhé!",
+      "playerFallback": "Người chơi",
+      "placeholder": "Nhập tin nhắn thảo luận cùng anh em...",
+      "placeholderLogin": "Đăng nhập để tham gia chat...",
+      "send": "Gửi"
+    },
+    "roster": {
+      "title": "Danh Sách Thành Viên ({current}/{required})",
+      "subtitle": "Chủ kèo và các bạn đã được duyệt tham gia",
+      "count": "{current} / {required} người",
+      "hostTitle": "Chủ phòng",
+      "hostFallback": "Chủ kèo",
+      "hostBadge": "Chủ Kèo",
+      "organizer": "Người tổ chức",
+      "leader": "Leader",
+      "noMembers": "Chưa có thành viên nào được duyệt. Hãy là người đầu tiên tham gia!",
+      "memberFallback": "Người tham gia",
+      "approvedBadge": "Đã Duyệt",
+      "pendingTitle": "Yêu Cầu Đang Chờ Duyệt ({count})",
+      "noPending": "Hiện không có yêu cầu nào đang chờ xử lý.",
+      "applicant": "Ứng viên",
+      "message": "Lời nhắn: “{message}”",
+      "accept": "Chấp Nhận",
+      "reject": "Từ Chối"
+    },
+    "panel": {
+      "title": "Chi Phí & Tham Gia",
+      "costMode": "Hình thức chia tiền sân:",
+      "hostCovers": "Chủ sân bao trọn (0đ)",
+      "split": "Chia đều theo số người",
+      "perPerson": "Số tiền mỗi người:",
+      "free": "Miễn phí",
+      "loginToJoin": "Đăng Nhập Để Tham Gia",
+      "youAreHost": "Bạn là chủ tạo kèo này",
+      "cancelMatch": "Hủy Kèo Ghép",
+      "pending": "Yêu cầu của bạn đang chờ chủ kèo duyệt",
+      "accepted": "Bạn đã là thành viên chính thức của kèo!",
+      "rejected": "Yêu cầu tham gia của bạn đã bị từ chối bởi chủ kèo",
+      "leave": "Rời khỏi kèo này",
+      "full": "Kèo Đã Đủ Số Lượng",
+      "cancelledNote": "Kèo Này Đã Bị Hủy",
+      "join": "Xin Tham Gia Kèo Này",
+      "footer": "Chủ kèo sẽ liên hệ và duyệt bạn vào nhóm thi đấu"
+    },
+    "create": {
+      "title": "Mở Ghép Kèo Cho Sân Đã Đặt",
+      "subtitle": "{club} ({court}) • Tổng tiền sân: {price}",
+      "defaultTitle": "Tuyển người chơi tại {court} - {club}",
+      "needTitle": "Vui lòng nhập tiêu đề kèo",
+      "postTitle": "Tiêu đề bài đăng kèo",
+      "titlePlaceholder": "Ví dụ: Cần 2 bạn giao lưu cầu lông vui vẻ...",
+      "description": "Mô tả thêm / Ghi chú (tùy chọn)",
+      "descriptionPlaceholder": "Ví dụ: Trình độ trung bình, mang vợt theo...",
+      "creating": "Đang tạo...",
+      "submit": "Tạo & Mở Ghép Kèo",
+      "splitCourt": "Chia đều tiền sân"
+    }
+  },
+  "profile": {
+    "metaTitle": "Hồ sơ của tôi",
+    "heading": "Hồ sơ của tôi",
+    "viewPublic": "Xem hồ sơ công khai",
+    "cardTitle": "Thông tin cá nhân",
+    "cardDescription": "Tên, ảnh đại diện và trình độ hiển thị ở các kèo bạn tạo hoặc tham gia.",
+    "avatar": "Ảnh đại diện",
+    "avatarUpdated": "Đã cập nhật ảnh đại diện",
+    "avatarRemoved": "Đã gỡ ảnh đại diện",
+    "saved": "Đã lưu hồ sơ",
+    "fullName": "Họ và tên",
+    "phone": "Số điện thoại",
+    "phoneHint": "Chỉ chủ sân nơi bạn đặt sân mới thấy số này, để liên hệ khi cần.",
+    "skill": "Trình độ",
+    "skillHint": "Hiển thị công khai để người khác ghép kèo cho phù hợp.",
+    "save": "Lưu hồ sơ",
+    "player": {
+      "notFound": "Không tìm thấy người chơi",
+      "metaTitle": "{name} - Hồ sơ người chơi",
+      "fallback": "Người chơi",
+      "edit": "Chỉnh sửa hồ sơ",
+      "played": "Lần đã chơi",
+      "created": "Kèo đã tạo",
+      "joined": "Kèo đã tham gia",
+      "openMatches": "Kèo đang mở",
+      "noOpenMatches": "Hiện chưa có kèo nào đang mở.",
+      "playersCount": "{current}/{required} người"
+    }
+  },
+  "notifications": {
+    "title": "Thông Báo",
+    "tooltip": "Thông báo",
+    "newCount": "{count} mới",
+    "markAll": "Đọc tất cả",
+    "empty": "Bạn chưa có thông báo nào",
+    "emptyHint": "Các tin tức về đơn đặt và kèo sẽ hiển thị tại đây",
+    "viewDetails": "Xem chi tiết",
+    "justNow": "Vừa xong",
+    "minutesAgo": "{count} phút trước",
+    "hoursAgo": "{count} giờ trước",
+    "daysAgo": "{count} ngày trước"
+  },
+  "images": {
+    "maxImages": "Tối đa {max} ảnh",
+    "uploadFailed": "Không tải được {name}: {message}",
+    "addMore": "Chỉ thêm được {room} ảnh nữa (tối đa {max})",
+    "alt": "Ảnh {index}",
+    "cover": "Ảnh bìa",
+    "setCover": "Đặt làm ảnh bìa",
+    "remove": "Gỡ ảnh",
+    "uploading": "Đang tải lên...",
+    "add": "Thêm ảnh",
+    "chooseLabel": "Chọn ảnh để tải lên",
+    "hint": "JPG, PNG hoặc WebP, tối đa {size} MB mỗi ảnh. {count}/{max} ảnh."
+  },
+  "support": {
+    "categories": {
+      "payment": "Thanh toán, tiền cọc",
+      "booking": "Đặt sân, lịch đặt",
+      "technical": "Lỗi kỹ thuật",
+      "account": "Tài khoản",
+      "other": "Khác"
+    },
+    "status": {
+      "open": "Đang chờ hỗ trợ",
+      "answered": "Đã được trả lời",
+      "resolved": "Đã giải quyết",
+      "closed": "Đã đóng"
+    },
+    "list": {
+      "metaTitle": "Hỗ trợ",
+      "heading": "Hỗ trợ",
+      "subtitle": "Gửi yêu cầu cho quản trị SportArena và theo dõi câu trả lời tại đây.",
+      "newRequest": "Gửi yêu cầu mới",
+      "empty": "Bạn chưa gửi yêu cầu hỗ trợ nào."
+    },
+    "new": {
+      "metaTitle": "Gửi yêu cầu hỗ trợ",
+      "back": "Yêu cầu của tôi",
+      "heading": "Gửi yêu cầu hỗ trợ",
+      "subtitle": "Mô tả càng cụ thể, chúng tôi càng xử lý nhanh."
+    },
+    "detail": {
+      "metaTitle": "Yêu cầu hỗ trợ",
+      "meta": "{category} · Gửi ngày {date}"
+    },
+    "form": {
+      "category": "Vấn đề thuộc nhóm",
+      "club": "Liên quan tới cụm sân (không bắt buộc)",
+      "noClub": "Không chọn",
+      "subject": "Tiêu đề",
+      "subjectPlaceholder": "Ví dụ: Đã chuyển khoản nhưng đơn chưa được xác nhận",
+      "body": "Mô tả chi tiết",
+      "bodyPlaceholder": "Bạn gặp vấn đề gì, ở sân nào, vào lúc nào? Nếu liên quan đến thanh toán, hãy ghi số tiền và thời điểm chuyển khoản.",
+      "submit": "Gửi yêu cầu",
+      "failed": "Không gửi được yêu cầu",
+      "sent": "Đã gửi yêu cầu hỗ trợ",
+      "sentHint": "Chúng tôi sẽ trả lời ngay khi có thể."
+    },
+    "thread": {
+      "markedResolved": "Đã đánh dấu giải quyết",
+      "resolved": "Đã giải quyết",
+      "closedToast": "Đã đóng yêu cầu",
+      "close": "Đóng yêu cầu",
+      "reopenedToast": "Đã mở lại yêu cầu",
+      "reopen": "Mở lại",
+      "log": "Nội dung trao đổi",
+      "staffFallback": "Hỗ trợ SportArena",
+      "userFallback": "Người dùng",
+      "closedNote": "Yêu cầu này đã đóng. Nếu bạn cần thêm hỗ trợ, hãy tạo yêu cầu mới.",
+      "replyLabel": "Nội dung trả lời",
+      "placeholderAdmin": "Nhập câu trả lời cho người dùng...",
+      "placeholderUser": "Nhập tin nhắn cho bộ phận hỗ trợ...",
+      "send": "Gửi"
+    }
+  }
+}

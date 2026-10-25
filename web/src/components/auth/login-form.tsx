@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { login } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 
 import { LogoMark } from '@/components/brand/logo'
 export function LoginForm() {
+  const t = useTranslations('auth')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -33,10 +35,10 @@ export function LoginForm() {
       <CardHeader className="space-y-2 text-center pb-6">
         <LogoMark size={56} className="mx-auto drop-shadow-sm" decorative={false} />
         <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-          Đăng nhập hệ thống
+          {t('login.title')}
         </CardTitle>
         <CardDescription className="text-muted-foreground text-sm">
-          Nền tảng Quản lý sân thể thao & Ghép kèo Real-time
+          {t('login.subtitle')}
         </CardDescription>
       </CardHeader>
 
@@ -50,12 +52,12 @@ export function LoginForm() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="chu-san@example.com"
+              placeholder={t('login.emailPlaceholder')}
               required
               className="h-10 focus-visible:ring-emerald-500"
             />
@@ -63,12 +65,12 @@ export function LoginForm() {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password">{t('passwordLabel')}</Label>
               <Link
                 href="#"
                 className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
               >
-                Quên mật khẩu?
+                {t('login.forgot')}
               </Link>
             </div>
             <Input
@@ -91,23 +93,23 @@ export function LoginForm() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Đang xử lý...
+                {t('login.processing')}
               </>
             ) : (
               <>
-                Đăng nhập
+                {t('login.submit')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            Chưa có tài khoản?{' '}
+            {t('login.noAccount')}{' '}
             <Link
               href="/register"
               className="font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
             >
-              Đăng ký ngay
+              {t('login.signUpNow')}
             </Link>
           </p>
         </CardFooter>

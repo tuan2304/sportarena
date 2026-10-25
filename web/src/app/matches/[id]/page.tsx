@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
@@ -14,11 +15,12 @@ interface MatchDetailPageProps {
 
 export async function generateMetadata({ params }: MatchDetailPageProps): Promise<Metadata> {
   const { id } = await params
+  const t = await getTranslations('matches')
   const supabase = await getSupabase()
   const { data: match } = await supabase.from('matches').select('title, description').eq('id', id).maybeSingle()
-  if (!match) return { title: 'Không tìm thấy kèo', robots: { index: false } }
+  if (!match) return { title: t('notFound'), robots: { index: false } }
 
-  const description = truncateDescription(match.description || `Tham gia kèo "${match.title}" trên SportArena: xem giờ chơi, trình độ và xin vào kèo.`)
+  const description = truncateDescription(match.description || t('detailMetaDescription', { title: match.title }))
   return {
     title: match.title,
     description,

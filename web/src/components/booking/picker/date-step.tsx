@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { CalendarDays } from 'lucide-react'
@@ -11,13 +12,14 @@ interface DateStepProps {
 }
 
 export function DateStep({ selectedDate, todayKey, onChange }: DateStepProps) {
+  const t = useTranslations('booking.picker')
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-bold text-foreground">2. Chọn ngày chơi</Label>
+        <Label className="text-sm font-bold text-foreground">{t('stepDate')}</Label>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => onChange(todayKey)} className="h-7 text-xs cursor-pointer">
-            Hôm nay
+            {t('today')}
           </Button>
           <Button
             size="sm"
@@ -25,7 +27,7 @@ export function DateStep({ selectedDate, todayKey, onChange }: DateStepProps) {
             onClick={() => onChange(addDaysToDateKey(todayKey, 1))}
             className="h-7 text-xs cursor-pointer"
           >
-            Ngày mai
+            {t('tomorrow')}
           </Button>
         </div>
       </div>
@@ -34,7 +36,7 @@ export function DateStep({ selectedDate, todayKey, onChange }: DateStepProps) {
         <CalendarDays className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" aria-hidden />
         <input
           type="date"
-          aria-label="Ngày chơi"
+          aria-label={t('dateLabel')}
           value={selectedDate}
           min={todayKey}
           onChange={(e) => e.target.value && onChange(e.target.value)}

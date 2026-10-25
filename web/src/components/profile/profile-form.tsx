@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +22,8 @@ interface ProfileFormProps {
 
 export function ProfileForm({ userId, initial }: ProfileFormProps) {
   const router = useRouter()
+  const t = useTranslations('profile')
+  const labels = useLabels()
   const [pending, startTransition] = useTransition()
   const [form, setForm] = useState({ fullName: initial.fullName, phone: initial.phone, skillLevel: initial.skillLevel })
   const [avatar, setAvatarUrl] = useState<string[]>(initial.avatarUrl ? [initial.avatarUrl] : [])
@@ -40,7 +44,7 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
       toast.error(res.error)
       return
     }
-    toast.success(urls.length ? 'Đã cập nhật ảnh đại diện' : 'Đã gỡ ảnh đại diện')
+    toast.success(urls.length ? t('avatarUpdated') : t('avatarRemoved'))
     router.refresh()
   }
 
@@ -53,7 +57,7 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
         setError(res.error)
         return
       }
-      toast.success('Đã lưu hồ sơ')
+      toast.success(t('saved'))
       router.refresh()
     })
   }
@@ -61,7 +65,7 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
   return (
     <form onSubmit={handleSave} className="space-y-6" autoComplete="on">
       <div className="space-y-2">
-        <Label className="text-xs font-semibold">Ảnh đại diện</Label>
+        <Label className="text-xs font-semibold">{t('avatar')}</Label>
         <div className="max-w-[220px]">
           <ImageUploader
             bucket="avatars"
@@ -84,18 +88,18 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="fullName" className="text-xs font-semibold">Họ và tên</Label>
+          <Label htmlFor="fullName" className="text-xs font-semibold">{t('fullName')}</Label>
           <Input id="fullName" name="name" value={form.fullName} onChange={set('fullName')} required minLength={2} maxLength={60} autoComplete="name" />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="phone" className="text-xs font-semibold">Số điện thoại</Label>
+          <Label htmlFor="phone" className="text-xs font-semibold">{t('phone')}</Label>
           <Input id="phone" name="tel" type="tel" inputMode="tel" value={form.phone} onChange={set('phone')} placeholder="0912345678" autoComplete="tel" />
-          <p className="text-xs text-muted-foreground">Chỉ chủ sân nơi bạn đặt sân mới thấy số này, để liên hệ khi cần.</p>
+          <p className="text-xs text-muted-foreground">{t('phoneHint')}</p>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="skill" className="text-xs font-semibold">Trình độ</Label>
+          <Label htmlFor="skill" className="text-xs font-semibold">{t('skill')}</Label>
           <select
             id="skill"
             value={form.skillLevel}
@@ -103,16 +107,16 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
             className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs cursor-pointer"
           >
             {SKILL_LEVELS.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
+              <option key={s.id} value={s.id}>{labels.playerSkill(s.id)}</option>
             ))}
           </select>
-          <p className="text-xs text-muted-foreground">Hiển thị công khai để người khác ghép kèo cho phù hợp.</p>
+          <p className="text-xs text-muted-foreground">{t('skillHint')}</p>
         </div>
       </div>
 
       <Button type="submit" disabled={pending} className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
         {pending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
-        Lưu hồ sơ
+        {t('save')}
       </Button>
     </form>
   )

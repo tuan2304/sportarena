@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { ImagePlus, Loader2, Star, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { imagePath, publicImageUrl, validateImageFile, type ImageBucket } from '@/lib/image-upload'
 
@@ -25,6 +26,7 @@ interface ImageUploaderProps {
  * nơi gọi bấm lưu.
  */
 export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, allowCover = false, disabled }: ImageUploaderProps) {
+  const t = useTranslations('images')
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
@@ -32,7 +34,7 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
     if (!files || files.length === 0) return
     const room = max - value.length
     if (room <= 0) {
-      toast.error(`Tối đa ${max} ảnh`)
+      toast.error(t('maxImages', { max }))
       return
     }
 
@@ -54,7 +56,7 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
         upsert: false,
       })
       if (error) {
-        toast.error(`Không tải được ${file.name}: ${error.message}`)
+        toast.error(t('uploadFailed', { name: file.name, message: error.message }))
         continue
       }
       added.push(publicImageUrl(bucket, path, supabaseUrl))
@@ -62,7 +64,7 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
     setUploading(false)
     if (inputRef.current) inputRef.current.value = ''
     if (added.length > 0) onChange([...value, ...added])
-    if (files.length > room) toast.info(`Chỉ thêm được ${room} ảnh nữa (tối đa ${max})`)
+    if (files.length > room) toast.info(t('addMore', { room, max }))
   }
 
   function remove(url: string) {
@@ -79,9 +81,9 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
         {value.map((url, index) => (
           <li key={url} className="relative aspect-video rounded-lg overflow-hidden border border-border bg-muted group">
             {/* eslint-disable-next-line @next/next/no-img-element -- bản xem trước ảnh vừa tải lên, chưa cần tối ưu */}
-            <img src={url} alt={`Ảnh ${index + 1}`} className="absolute inset-0 w-full h-full object-cover" />
+            <img src={url} alt={t('alt', { index: index + 1 })} className="absolute inset-0 w-full h-full object-cover" />
             {index === 0 && allowCover && (
-              <span className="absolute top-1.5 left-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-700 text-white">Ảnh bìa</span>
+              <span className="absolute top-1.5 left-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-700 text-white">{t('cover')}</span>
             )}
             <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
               {allowCover && index !== 0 && (
@@ -90,8 +92,8 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
                   onClick={() => makeCover(url)}
                   disabled={disabled || uploading}
                   className="h-7 w-7 rounded-md bg-white/90 text-slate-800 flex items-center justify-center cursor-pointer disabled:opacity-50"
-                  title="Đặt làm ảnh bìa"
-                  aria-label="Đặt làm ảnh bìa"
+                  title={t('setCover')}
+                  aria-label={t('setCover')}
                 >
                   <Star className="w-3.5 h-3.5" aria-hidden />
                 </button>
@@ -101,8 +103,8 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
                 onClick={() => remove(url)}
                 disabled={disabled || uploading}
                 className="h-7 w-7 rounded-md bg-white/90 text-red-700 flex items-center justify-center cursor-pointer disabled:opacity-50"
-                title="Gỡ ảnh"
-                aria-label="Gỡ ảnh"
+                title={t('remove')}
+                aria-label={t('remove')}
               >
                 <X className="w-3.5 h-3.5" aria-hidden />
               </button>
@@ -119,7 +121,7 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
               className="aspect-video w-full rounded-lg border-2 border-dashed border-border text-muted-foreground hover:border-emerald-500/50 hover:text-emerald-700 dark:hover:text-emerald-400 flex flex-col items-center justify-center gap-1 text-xs font-semibold cursor-pointer disabled:opacity-50"
             >
               {uploading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden /> : <ImagePlus className="w-5 h-5" aria-hidden />}
-              {uploading ? 'Đang tải lên...' : 'Thêm ảnh'}
+              {uploading ? t('uploading') : t('add')}
             </button>
           </li>
         )}
@@ -131,11 +133,11 @@ export function ImageUploader({ bucket, folder, value, onChange, max, maxBytes, 
         accept="image/jpeg,image/png,image/webp"
         multiple={max > 1}
         className="sr-only"
-        aria-label="Chọn ảnh để tải lên"
+        aria-label={t('chooseLabel')}
         onChange={(e) => handleFiles(e.target.files)}
       />
       <p className="text-xs text-muted-foreground">
-        JPG, PNG hoặc WebP, tối đa {Math.round(maxBytes / 1024 / 1024)} MB mỗi ảnh. {value.length}/{max} ảnh.
+        {t('hint', { size: Math.round(maxBytes / 1024 / 1024), count: value.length, max })}
       </p>
     </div>
   )

@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 // Chỉ project Supabase của mình (xem src/lib/image-hosts.ts); thiếu biến thì bỏ mẫu này thay vì mở rộng
 function supabaseHostname(): string | null {
@@ -38,4 +41,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

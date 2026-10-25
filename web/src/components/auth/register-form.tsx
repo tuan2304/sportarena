@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { register } from '@/app/actions/auth'
 import { UserRole } from '@/types/database'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import { ArrowRight, Loader2, AlertCircle, Building2, User } from 'lucide-react'
 
 import { LogoMark } from '@/components/brand/logo'
 export function RegisterForm() {
+  const t = useTranslations('auth')
   const [role, setRole] = useState<UserRole>('owner')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -37,10 +39,10 @@ export function RegisterForm() {
       <CardHeader className="space-y-2 text-center pb-6">
         <LogoMark size={56} className="mx-auto drop-shadow-sm" decorative={false} />
         <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-          Đăng ký tài khoản
+          {t('register.title')}
         </CardTitle>
         <CardDescription className="text-muted-foreground text-sm">
-          Chọn vai trò của bạn để trải nghiệm tính năng tối ưu nhất
+          {t('register.subtitle')}
         </CardDescription>
       </CardHeader>
 
@@ -55,7 +57,7 @@ export function RegisterForm() {
 
           {/* Role selector cards */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">Bạn tham gia với tư cách là?</Label>
+            <Label className="text-sm font-semibold">{t('register.roleQuestion')}</Label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -70,8 +72,8 @@ export function RegisterForm() {
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold">Chủ Sân / Quản Lý</div>
-                  <div className="text-xs text-muted-foreground">Tạo sân & nhận cọc</div>
+                  <div className="text-sm font-bold">{t('register.ownerTitle')}</div>
+                  <div className="text-xs text-muted-foreground">{t('register.ownerHint')}</div>
                 </div>
               </button>
 
@@ -88,19 +90,19 @@ export function RegisterForm() {
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold">Người Chơi</div>
-                  <div className="text-xs text-muted-foreground">Tìm sân & ghép kèo</div>
+                  <div className="text-sm font-bold">{t('register.playerTitle')}</div>
+                  <div className="text-xs text-muted-foreground">{t('register.playerHint')}</div>
                 </div>
               </button>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="fullName">Họ và tên</Label>
+            <Label htmlFor="fullName">{t('register.fullName')}</Label>
             <Input
               id="fullName"
               name="fullName"
-              placeholder="Nguyễn Văn A"
+              placeholder={t('register.fullNamePlaceholder')}
               required
               className="h-10 focus-visible:ring-emerald-500"
             />
@@ -108,7 +110,7 @@ export function RegisterForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 name="email"
@@ -120,7 +122,7 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="phoneNumber">Số điện thoại</Label>
+              <Label htmlFor="phoneNumber">{t('register.phone')}</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -132,7 +134,7 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">Mật khẩu (tối thiểu 8 ký tự)</Label>
+            <Label htmlFor="password">{t('register.password')}</Label>
             <Input
               id="password"
               name="password"
@@ -154,23 +156,23 @@ export function RegisterForm() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Đang khởi tạo tài khoản...
+                {t('register.creating')}
               </>
             ) : (
               <>
-                Đăng ký tài khoản {role === 'owner' ? 'Chủ Sân' : 'Người Chơi'}
+                {role === 'owner' ? t('register.submitOwner') : t('register.submitPlayer')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
             )}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            Đã có tài khoản?{' '}
+            {t('register.haveAccount')}{' '}
             <Link
               href="/login"
               className="font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
             >
-              Đăng nhập tại đây
+              {t('register.logInHere')}
             </Link>
           </p>
         </CardFooter>

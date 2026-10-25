@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { clubsHref, pageItems, type ClubListParams } from '@/lib/club-search'
 
@@ -15,6 +16,7 @@ const active = 'border-emerald-700 bg-emerald-700 text-white shadow-xs'
 const disabled = 'border-border/60 bg-muted/30 text-muted-foreground/60 pointer-events-none'
 
 export function ClubPagination({ page, totalPages, filters }: ClubPaginationProps) {
+  const t = useTranslations('clubs.pagination')
   if (totalPages <= 1) return null
 
   const href = (p: number) => clubsHref({ ...filters, page: p })
@@ -22,11 +24,11 @@ export function ClubPagination({ page, totalPages, filters }: ClubPaginationProp
   const hasNext = page < totalPages
 
   return (
-    <nav aria-label="Phân trang danh sách sân" className="flex flex-wrap items-center justify-center gap-2 pt-2">
+    <nav aria-label={t('label')} className="flex flex-wrap items-center justify-center gap-2 pt-2">
       <Link
         href={href(page - 1)}
         rel="prev"
-        aria-label="Trang trước"
+        aria-label={t('prev')}
         aria-disabled={!hasPrev}
         tabIndex={hasPrev ? undefined : -1}
         className={`${base} ${hasPrev ? idle : disabled}`}
@@ -43,7 +45,7 @@ export function ClubPagination({ page, totalPages, filters }: ClubPaginationProp
           <Link
             key={item}
             href={href(item)}
-            aria-label={`Trang ${item}`}
+            aria-label={t('page', { page: item })}
             aria-current={item === page ? 'page' : undefined}
             className={`${base} ${item === page ? active : idle}`}
           >
@@ -55,7 +57,7 @@ export function ClubPagination({ page, totalPages, filters }: ClubPaginationProp
       <Link
         href={href(page + 1)}
         rel="next"
-        aria-label="Trang sau"
+        aria-label={t('next')}
         aria-disabled={!hasNext}
         tabIndex={hasNext ? undefined : -1}
         className={`${base} ${hasNext ? idle : disabled}`}

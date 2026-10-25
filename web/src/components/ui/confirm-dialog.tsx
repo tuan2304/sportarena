@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangle, HelpCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -31,6 +32,7 @@ export function useConfirm(): ConfirmFn {
 }
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
+  const t = useTranslations('common')
   const [open, setOpen] = useState(false)
   // Giữ nội dung cuối cùng để hộp thoại không bị trống trong lúc đóng
   const [options, setOptions] = useState<ConfirmOptions>({ title: '' })
@@ -76,7 +78,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           {/* Nút Hủy đứng trước để là nút được focus đầu tiên: an toàn hơn cho thao tác xóa */}
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => settle(false)} className="cursor-pointer">
-              {options.cancelText ?? 'Hủy'}
+              {options.cancelText ?? t('cancel')}
             </Button>
             <Button
               type="button"
@@ -85,7 +87,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 destructive ? 'bg-red-700 hover:bg-red-800' : 'bg-emerald-700 hover:bg-emerald-800'
               }`}
             >
-              {options.confirmText ?? 'Xác nhận'}
+              {options.confirmText ?? t('confirm')}
             </Button>
           </div>
         </DialogContent>

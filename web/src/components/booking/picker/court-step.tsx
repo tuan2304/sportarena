@@ -1,6 +1,7 @@
 import { Label } from '@/components/ui/label'
+import { useTranslations } from 'next-intl'
+import { useLabels } from '@/i18n/labels'
 import { formatNumber } from '@/lib/format'
-import { sportLabel } from '@/lib/constants'
 import type { CourtData } from './types'
 
 interface CourtStepProps {
@@ -10,9 +11,11 @@ interface CourtStepProps {
 }
 
 export function CourtStep({ courts, selectedCourtId, onSelect }: CourtStepProps) {
+  const t = useTranslations('booking.picker')
+  const labels = useLabels()
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-bold text-foreground">1. Chọn sân con</Label>
+      <Label className="text-sm font-bold text-foreground">{t('stepCourt')}</Label>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         {courts.map((court) => {
           const isSelected = court.id === selectedCourtId
@@ -30,7 +33,7 @@ export function CourtStep({ courts, selectedCourtId, onSelect }: CourtStepProps)
             >
               <div className="text-sm">{court.name}</div>
               <div className="text-xs opacity-80 font-normal">
-                {sportLabel(court.sport_type)} • {formatNumber(court.base_price_per_hour)} đ/h
+                {labels.sport(court.sport_type)} • {formatNumber(court.base_price_per_hour)} đ/h
               </div>
             </button>
           )

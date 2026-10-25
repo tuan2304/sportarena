@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { simulateDepositPayment, cancelExpiredBooking } from '@/app/actions/booking'
 import { cancelBooking, claimManualTransfer } from '@/app/actions/cancellation'
@@ -88,6 +89,8 @@ export function BookingPaymentView({
   const [claiming, setClaiming] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const confirm = useConfirm()
+  const t = useTranslations('payment')
+  const lang = useLocale() === 'en' ? 'en' : 'vi'
   const isManual = payment?.metadata?.channel === 'manual'
 
   // 1. Tính toán thời gian đếm ngược 15 phút
@@ -173,7 +176,7 @@ export function BookingPaymentView({
   const bankName = bankNameFromBin(bank?.bin)
   const refundNote =
     booking.refund_status && booking.refund_amount
-      ? refundStatusLabel(booking.refund_status, booking.refund_amount, formatVnd)
+      ? refundStatusLabel(booking.refund_status, booking.refund_amount, formatVnd, lang)
       : null
 
   function copyText(text: string, type: string) {
@@ -194,7 +197,7 @@ export function BookingPaymentView({
         setCurrentStatus('confirmed')
       }
     } catch {
-      setError('Không thể giả lập thanh toán, vui lòng thử lại')
+      setError(t('simulateError'))
     } finally {
       setConfirming(false)
     }
@@ -214,7 +217,7 @@ export function BookingPaymentView({
       const { data } = await createClient().from('bookings').select('expires_at').eq('id', booking.id).maybeSingle()
       if (data?.expires_at) setTimeLeft(Math.max(0, Math.floor((new Date(data.expires_at).getTime() - Date.now()) / 1000)))
     } catch {
-      setError('Không thể gửi thông báo, vui lòng thử lại')
+      setError(t('claimError'))
     } finally {
       setClaiming(false)
     }
@@ -222,10 +225,10 @@ export function BookingPaymentView({
 
   async function handleCancel() {
     const ok = await confirm({
-      title: 'Hủy đơn giữ chỗ này?',
-      description: 'Đơn chưa cọc nên không mất khoản nào. Khung giờ sẽ được nhả ra cho người khác.',
-      confirmText: 'Hủy đơn',
-      cancelText: 'Giữ lại',
+      title: t('cancelDialog.title'),
+      description: t('cancelDialog.text'),
+      confirmText: t('cancelDialog.confirm'),
+      cancelText: t('cancelDialog.keep'),
       destructive: true,
     })
     if (!ok) return
@@ -245,24 +248,24 @@ export function BookingPaymentView({
           <div className="w-16 h-16 rounded-full bg-white/20 text-white flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black tracking-tight">Đặt Sân & Giữ Chỗ Thành Công!</h2>
+          <h2 className="text-2xl font-black tracking-tight">{t('success.title')}</h2>
           <p className="text-xs text-white/80 max-w-sm mx-auto">
-            Tiền cọc của bạn đã được xác thực qua hệ thống. Lịch sân đã được khóa chính thức.
+            {t('success.text')}
           </p>
         </div>
 
         <CardContent className="p-6 space-y-4 text-xs">
           <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Cụm sân:</span>
+              <span className="text-muted-foreground">{t('venue')}</span>
               <span className="font-bold text-foreground">{club.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Sân con:</span>
+              <span className="text-muted-foreground">{t('court')}</span>
               <span className="font-semibold text-foreground">{court.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Thời gian:</span>
+              <span className="text-muted-foreground">{t('time')}</span>
               <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                 {formatTime(booking.start_time)} -{' '}
                 {formatTime(booking.end_time)} (
@@ -270,7 +273,7 @@ export function BookingPaymentView({
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-border">
-              <span className="text-muted-foreground">Tiền cọc đã thanh toán:</span>
+              <span className="text-muted-foreground">{t('depositPaid')}</span>
               <span className="font-bold text-emerald-700 dark:text-emerald-400 text-sm">
                 {formatVnd(depositAmount)}
               </span>
@@ -284,12 +287,12 @@ export function BookingPaymentView({
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Link href="/my-bookings" className="flex-1">
               <Button variant="outline" className="w-full cursor-pointer">
-                Xem Lịch Đặt Của Tôi
+                {t('viewMyBookings')}
               </Button>
             </Link>
             <Link href="/clubs" className="flex-1">
               <Button className="w-full bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer">
-                Tiếp Tục Đặt Sân <ArrowRight className="w-4 h-4 ml-1.5" />
+                {t('bookAgain')} <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </Link>
           </div>
@@ -304,15 +307,15 @@ export function BookingPaymentView({
       <Card className="max-w-md mx-auto border-red-500/30 p-8 text-center space-y-4">
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto" />
         <h2 className="text-xl font-bold text-foreground">
-          {currentStatus === 'cancelled' && timeLeft > 0 ? 'Đơn Đã Được Hủy' : 'Đã Hết Thời Gian Giữ Chỗ'}
+          {currentStatus === 'cancelled' && timeLeft > 0 ? t('cancelled.title') : t('cancelled.expired')}
         </h2>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Đơn giữ chỗ đã quá hạn hoặc đã bị hủy. Sân đã được giải phóng để người khác có thể đặt.
+          {t('cancelled.text')}
         </p>
         {refundNote && <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">{refundNote}</p>}
         <Link href="/clubs">
           <Button className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer font-bold">
-            Tìm & Đặt Lại Khung Giờ Khác
+            {t('cancelled.rebook')}
           </Button>
         </Link>
       </Card>
@@ -331,9 +334,9 @@ export function BookingPaymentView({
                 <QrCode className="w-5 h-5" />
               </div>
               <div>
-                <CardTitle className="text-base font-bold">Quét Mã VietQR Đặt Cọc</CardTitle>
+                <CardTitle className="text-base font-bold">{t('qr.title')}</CardTitle>
                 <CardDescription className="text-xs">
-                  Mở ứng dụng ngân hàng bất kỳ để quét mã cọc
+                  {t('qr.subtitle')}
                 </CardDescription>
               </div>
             </div>
@@ -353,18 +356,18 @@ export function BookingPaymentView({
               // eslint-disable-next-line @next/next/no-img-element -- ảnh QR động từ img.vietqr.io, cần giữ nguyên độ nét
               <img
                 src={qrUrl}
-                alt="Mã VietQR đặt cọc"
+                alt={t('qr.alt')}
                 className="w-56 h-56 object-contain"
               />
             ) : (
               <div className="w-56 h-56 flex items-center justify-center text-xs text-muted-foreground text-center p-4">
-                Không tải được mã QR. Vui lòng tải lại trang hoặc đặt lại khung giờ.
+                {t('qr.failed')}
               </div>
             )}
           </div>
 
           <div className="text-center space-y-1">
-            <div className="text-xs text-muted-foreground">Số tiền cọc cần chuyển:</div>
+            <div className="text-xs text-muted-foreground">{t('amountDue')}</div>
             <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
               {formatVnd(depositAmount)}
             </div>
@@ -374,21 +377,21 @@ export function BookingPaymentView({
           <div className="w-full space-y-2 text-xs pt-2 border-t border-border/60">
             {bankName && (
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40">
-                <span className="text-muted-foreground">Ngân hàng:</span>
+                <span className="text-muted-foreground">{t('bank')}</span>
                 <span className="font-bold text-foreground">{bankName}</span>
               </div>
             )}
 
             {bank?.account_number && (
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40">
-                <span className="text-muted-foreground">Số tài khoản:</span>
+                <span className="text-muted-foreground">{t('accountNumber')}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-foreground">{bank.account_number}</span>
                   <button
                     type="button"
                     onClick={() => copyText(bank.account_number!, 'account')}
                     className="text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
-                    title="Copy STK"
+                    title={t('copyAccount')}
                   >
                     {copied === 'account' ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
@@ -398,20 +401,20 @@ export function BookingPaymentView({
 
             {bank?.account_name && (
               <div className="flex items-center justify-between p-2 rounded-lg bg-muted/40">
-                <span className="text-muted-foreground">Chủ tài khoản:</span>
+                <span className="text-muted-foreground">{t('accountName')}</span>
                 <span className="font-semibold text-foreground">{bank.account_name}</span>
               </div>
             )}
 
             <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <span className="text-emerald-800 dark:text-emerald-300 font-semibold">Nội dung chuyển khoản:</span>
+              <span className="text-emerald-800 dark:text-emerald-300 font-semibold">{t('transferContent')}</span>
               <div className="flex items-center gap-2">
                 <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{transferContent}</span>
                 <button
                   type="button"
                   onClick={() => copyText(transferContent, 'content')}
                   className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 cursor-pointer"
-                  title="Copy nội dung"
+                  title={t('copyContent')}
                 >
                   {copied === 'content' ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
@@ -432,10 +435,10 @@ export function BookingPaymentView({
                 {confirming ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang giả lập...
+                    {t('simulating')}
                   </>
                 ) : (
-                  '[DEV] Giả lập đã chuyển khoản'
+                  t('simulate')
                 )}
               </Button>
               {error && <p role="alert" className="text-xs text-red-700 dark:text-red-400 text-center">{error}</p>}
@@ -445,7 +448,7 @@ export function BookingPaymentView({
           {isManual && (
             claimed ? (
               <p role="status" className="text-xs text-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 p-3 leading-relaxed">
-                Đã báo cho chủ sân. Chủ sân sẽ đối chiếu sao kê và xác nhận đơn; trang này tự cập nhật khi được xác nhận.
+                {t('claimed')}
               </p>
             ) : (
               <Button
@@ -457,10 +460,10 @@ export function BookingPaymentView({
                 {claiming ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Đang gửi...
+                    {t('claimSending')}
                   </>
                 ) : (
-                  'Tôi đã chuyển khoản'
+                  t('claim')
                 )}
               </Button>
             )
@@ -471,8 +474,8 @@ export function BookingPaymentView({
           <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             {isManual
-              ? 'Chủ sân xác nhận thủ công — trang tự chuyển khi đơn được xác nhận'
-              : 'Kênh Realtime đang hoạt động — Hệ thống tự động chuyển trang khi nhận tiền'}
+              ? t('liveManual')
+              : t('liveAuto')}
           </p>
 
           <button
@@ -481,7 +484,7 @@ export function BookingPaymentView({
             onClick={handleCancel}
             className="text-xs text-center text-muted-foreground underline underline-offset-2 hover:text-red-700 dark:hover:text-red-400 cursor-pointer disabled:opacity-50"
           >
-            {cancelling ? 'Đang hủy...' : 'Hủy đơn giữ chỗ này'}
+            {cancelling ? t('cancelling') : t('cancelHold')}
           </button>
         </CardFooter>
       </Card>
@@ -490,7 +493,7 @@ export function BookingPaymentView({
       <div className="md:col-span-2 space-y-4">
         <Card className="border-border shadow-sm">
           <CardHeader className="pb-3 border-b border-border/60">
-            <CardTitle className="text-sm font-bold">Chi Tiết Lịch Đặt</CardTitle>
+            <CardTitle className="text-sm font-bold">{t('details.title')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">
             <div className="space-y-1">
@@ -500,21 +503,21 @@ export function BookingPaymentView({
 
             <div className="pt-2 border-t border-border/60 space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Sân con:</span>
+                <span className="text-muted-foreground">{t('court')}</span>
                 <span className="font-bold text-foreground">{court.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Môn chơi:</span>
+                <span className="text-muted-foreground">{t('details.sport')}</span>
                 <span className="font-semibold text-foreground capitalize">{court.sport_type}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Ngày chơi:</span>
+                <span className="text-muted-foreground">{t('details.date')}</span>
                 <span className="font-semibold text-foreground">
                   {formatDate(booking.start_time)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Khung giờ:</span>
+                <span className="text-muted-foreground">{t('details.slot')}</span>
                 <span className="font-bold text-emerald-700 dark:text-emerald-400">
                   {formatTime(booking.start_time)} -{' '}
                   {formatTime(booking.end_time)}
@@ -524,15 +527,15 @@ export function BookingPaymentView({
 
             <div className="pt-2 border-t border-border/60 space-y-1.5">
               <div className="flex justify-between text-muted-foreground">
-                <span>Tổng tiền sân:</span>
+                <span>{t('details.total')}</span>
                 <span>{formatVnd(booking.total_price)}</span>
               </div>
               <div className="flex justify-between font-bold text-emerald-700 dark:text-emerald-400 text-sm">
-                <span>Tiền cọc giữ chỗ:</span>
+                <span>{t('details.deposit')}</span>
                 <span>{formatVnd(depositAmount)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground text-xs">
-                <span>Còn lại thanh toán tại sân:</span>
+                <span>{t('details.remaining')}</span>
                 <span>{formatVnd(Number(booking.total_price) - depositAmount)}</span>
               </div>
             </div>
@@ -541,12 +544,12 @@ export function BookingPaymentView({
 
         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-muted-foreground space-y-2">
           <div className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4" /> Chính Sách Giữ Chỗ
+            <ShieldCheck className="w-4 h-4" /> {t('policy.title')}
           </div>
           <p className="leading-relaxed">
             {isManual
-              ? 'Sân được bảo lưu 60 phút, và được kéo dài thêm khi bạn báo đã chuyển khoản để chủ sân kịp đối chiếu. Quá hạn mà chưa xác nhận, hệ thống sẽ tự động hủy đơn và mở sân cho người khác.'
-              : 'Sân được bảo lưu trong 15 phút. Nếu trong khoảng thời gian này giao dịch cọc không hoàn tất, hệ thống sẽ tự động hủy đơn và mở sân cho người chơi khác.'}
+              ? t('policy.manual')
+              : t('policy.auto')}
           </p>
         </div>
       </div>

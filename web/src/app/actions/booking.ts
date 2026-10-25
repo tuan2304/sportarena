@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isPaymentSimulationEnabled } from '@/lib/payos'
 import { settlePayment } from '@/lib/payments'
 import { createBookingForUser, revalidateBookingPages, type CreateBookingResult, type MatchConfig } from '@/lib/booking-service'
+import { tr, trResult } from '@/lib/localize-error'
 
 export type { CreateBookingResult, MatchConfig }
 
@@ -20,10 +21,10 @@ export async function createBooking(
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Vui lòng đăng nhập để tiến hành đặt sân' }
+    return { error: await tr('Vui lòng đăng nhập để tiến hành đặt sân') }
   }
 
-  return createBookingForUser(supabase, user, courtId, startTimeISO, endTimeISO, note, matchConfig)
+  return trResult(await createBookingForUser(supabase, user, courtId, startTimeISO, endTimeISO, note, matchConfig))
 }
 
 /**
@@ -33,7 +34,7 @@ export async function createBooking(
 export async function cancelExpiredBooking(bookingId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vui lòng đăng nhập' }
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
   const { data: booking } = await supabase
     .from('bookings')
@@ -42,14 +43,14 @@ export async function cancelExpiredBooking(bookingId: string) {
     .maybeSingle()
 
   if (!booking || booking.user_id !== user.id) {
-    return { error: 'Không tìm thấy đơn đặt sân' }
+    return { error: await tr('Không tìm thấy đơn đặt sân') }
   }
 
   const admin = createAdminClient()
   const { error } = await admin.rpc('expire_pending_bookings')
   if (error) {
     console.error('cancelExpiredBooking lỗi', error)
-    return { error: 'Không thể cập nhật trạng thái đơn' }
+    return { error: await tr('Không thể cập nhật trạng thái đơn') }
   }
 
   revalidatePath(`/bookings/${bookingId}`)
@@ -63,12 +64,12 @@ export async function cancelExpiredBooking(bookingId: string) {
  */
 export async function simulateDepositPayment(bookingId: string) {
   if (!isPaymentSimulationEnabled()) {
-    return { error: 'Tính năng giả lập thanh toán không khả dụng' }
+    return { error: await tr('Tính năng giả lập thanh toán không khả dụng') }
   }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Vui lòng đăng nhập' }
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
   const admin = createAdminClient()
   const { data: payment } = await admin
@@ -80,14 +81,14 @@ export async function simulateDepositPayment(bookingId: string) {
     .maybeSingle()
 
   if (!payment || payment.user_id !== user.id) {
-    return { error: 'Không tìm thấy giao dịch của bạn' }
+    return { error: await tr('Không tìm thấy giao dịch của bạn') }
   }
   // Chỉ giả lập cho giao dịch được tạo ở chế độ giả lập, không bao giờ cho giao dịch PayOS thật
   if ((payment.metadata as { simulated?: boolean } | null)?.simulated !== true) {
-    return { error: 'Giao dịch này là giao dịch thật, không thể giả lập' }
+    return { error: await tr('Giao dịch này là giao dịch thật, không thể giả lập') }
   }
 
   const result = await settlePayment({ orderCode: Number(payment.order_code), reference: `SIM_${Date.now()}` })
-  if (!result.ok) return { error: result.error }
+  if (!result.ok) return { error: await tr(result.error) }
   return { success: true }
 }
