@@ -217,6 +217,18 @@
       "next": "Trang sau",
       "page": "Trang {page}"
     },
+    "overlay": {
+      "open": "Xem chi tiết {name}",
+      "photos": "Ảnh cụm sân",
+      "photo": "Xem ảnh {index}",
+      "courts": "Các sân con ({count})",
+      "noCourts": "Cụm sân này chưa có sân con nào đang hoạt động.",
+      "standardSurface": "Tiêu chuẩn",
+      "deposit": "Cọc {percent}%",
+      "perHour": "{price} đ/giờ",
+      "close": "Đóng",
+      "viewAndBook": "Xem lịch & đặt sân"
+    },
     "detail": {
       "notFound": "Không tìm thấy cụm sân",
       "backToList": "Quay lại danh sách cụm sân",

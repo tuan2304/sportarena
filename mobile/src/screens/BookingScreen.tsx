@@ -54,8 +54,12 @@ export default function BookingScreen({ route, navigation }: any) {
   const [requiredPlayers, setRequiredPlayers] = useState(4)
   const [matchSkill, setMatchSkill] = useState<(typeof MATCH_SKILLS)[number]>('all')
   const [hostCovers, setHostCovers] = useState(false)
-  // Mốc "bây giờ" lấy một lần mỗi lần mở màn hình, đủ để ẩn các giờ đã qua của hôm nay
-  const [nowMs] = useState(() => Date.now())
+  // Mốc "bây giờ" cập nhật mỗi 30 giây để ô giờ vừa tới tự bị gạch khi màn hình đang mở
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let cancelled = false

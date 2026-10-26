@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import { MainHeader } from '@/components/layout/main-header'
 import { ClubFilters } from '@/components/clubs/club-filters'
 import { ClubPagination } from '@/components/clubs/club-pagination'
+import { ClubCardOverlay, type ClubOverlayData } from '@/components/clubs/club-card-overlay'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { RemoteImage } from '@/components/ui/remote-image'
@@ -59,14 +60,25 @@ type ClubRow = {
   id: string
   name: string
   address: string
+  ward: string | null
   district: string | null
+  city: string | null
+  description: string | null
   latitude: number | null
   longitude: number | null
   open_time: string
   close_time: string
   images: string[] | null
   amenities: string[] | null
-  courts: Array<{ sport_type: string; base_price_per_hour: number }> | null
+  courts: Array<{
+    id: string
+    name: string
+    sport_type: string
+    surface_type: string | null
+    base_price_per_hour: number
+    deposit_percentage: number
+    is_active: boolean | null
+  }> | null
 }
 
 export default async function ClubsPage({ searchParams }: ClubsPageProps) {
@@ -164,9 +176,9 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClubs.map((club, cardIndex) => {
-                const courts = club.courts || []
-                const sports = Array.from(new Set(courts.map((c: { sport_type: string }) => c.sport_type)))
-                const prices = courts.map((c: { base_price_per_hour: number }) => Number(c.base_price_per_hour))
+                const courts = (club.courts || []).filter((c) => c.is_active !== false)
+                const sports = Array.from(new Set(courts.map((c) => c.sport_type)))
+                const prices = courts.map((c) => Number(c.base_price_per_hour))
                 const minPrice = prices.length > 0 ? Math.min(...prices) : 0
 
                 const imageSrc =
@@ -174,9 +186,30 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                     ? club.images[0]
                     : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=800'
 
+                const overlay: ClubOverlayData = {
+                  id: club.id,
+                  name: club.name,
+                  address: fullAddress(club),
+                  openTime: club.open_time?.slice(0, 5) ?? '',
+                  closeTime: club.close_time?.slice(0, 5) ?? '',
+                  images: club.images ?? [],
+                  amenities: club.amenities ?? [],
+                  description: club.description,
+                  place: { lat: club.latitude, lng: club.longitude, name: club.name, address: fullAddress(club) },
+                  courts: courts.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                    sportLabel: labels.sport(c.sport_type),
+                    surface: c.surface_type,
+                    price: Number(c.base_price_per_hour),
+                    depositPercentage: Number(c.deposit_percentage),
+                  })),
+                }
+
                 return (
-                  <Card
+                  <ClubCardOverlay
                     key={club.id}
+                    club={overlay}
                     className="card-lift animate-fade-up stagger border-border shadow-sm hover:border-emerald-500/40 overflow-hidden flex flex-col justify-between group"
                     style={{ '--i': cardIndex } as CSSProperties}
                   >
@@ -252,7 +285,7 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
                         </Button>
                       </Link>
                     </div>
-                  </Card>
+                  </ClubCardOverlay>
                 )
               })}
             </div>

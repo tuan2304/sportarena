@@ -291,3 +291,7 @@
     - Web: mỗi thẻ sân ở bước "Chọn sân con" có nút **Chi tiết** mở hộp thoại ([court-detail-dialog.tsx](web/src/components/booking/picker/court-detail-dialog.tsx)): môn, mặt sân, giờ mở cửa, tiền cọc (kèm số tiền ví dụ), bảng giá (giá cơ bản + từng khung giờ, ngày áp dụng), chính sách hủy, nút "Chọn sân này". Bấm vào chính thẻ sân vẫn chỉ là chọn sân để đặt (không mở hộp thoại để khỏi cản luồng đặt).
     - Mobile: chạm thẻ sân trong chi tiết cụm sân mở bảng trượt từ dưới lên (`CourtDetailSheet`) với cùng nội dung và nút "Chọn giờ đặt"; nút đặt sẵn trên thẻ vẫn đi thẳng tới màn đặt.
     - Test: 4 ca Playwright (vi + en) cho hộp thoại; mock Supabase thêm một khung giá "Giờ vàng". Mobile chỉ qua typecheck.
+- **2026-10-26 (Overlay chi tiết cụm sân + gạch giờ đã qua):**
+    - Web: bấm vào thẻ cụm sân ở `/clubs` mở overlay ([club-card-overlay.tsx](web/src/components/clubs/club-card-overlay.tsx)): thư viện ảnh, địa chỉ, giờ mở cửa, mô tả, tiện ích, danh sách sân con (môn, mặt sân, cọc, giá/giờ), chỉ đường, nút "Xem lịch & đặt sân". Liên kết trong thẻ (Đặt Sân Ngay, Chỉ đường) vẫn đi thẳng; bàn phím dùng nút ẩn hiện khi focus. Danh sách cũng bỏ qua sân đã tắt khi tính giá "từ".
+    - `isHourPast` (web + `mobile/src/shared`) tính theo giờ **bắt đầu**: qua 14:00 thì ô 14:00 bị gạch dù chưa ai đặt. Mốc "bây giờ" tự cập nhật mỗi 30 giây (web và mobile), giờ đang chọn mà trôi qua thì tự bỏ chọn trên web.
+    - Test: `club-overlay.spec.ts` (6 ca), `past-slots.spec.ts` (2 ca, cố định đồng hồ 14:30 VN), `booking-slots.test.ts`. Mobile chỉ qua typecheck.

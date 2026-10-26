@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { createBooking } from '@/app/actions/booking'
@@ -27,13 +27,19 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
   const router = useRouter()
   const t = useTranslations('booking.picker')
 
-  // Mốc "bây giờ" lấy một lần khi mở trang để biết hôm nay và giờ nào đã qua
-  const [nowMs] = useState(() => Date.now())
+  // Mốc "bây giờ" cập nhật mỗi 30 giây để ô giờ vừa tới tự bị gạch khi trang đang mở
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => clearInterval(timer)
+  }, [])
   const todayKey = vnDateKey(nowMs)
 
   const [selectedCourtId, setSelectedCourtId] = useState<string>(courts[0]?.id || '')
   const [selectedDate, setSelectedDate] = useState<string>(todayKey)
-  const [startHour, setStartHour] = useState<number | null>(null)
+  const [pickedHour, setStartHour] = useState<number | null>(null)
+  // Giờ đã chọn mà trôi qua trong lúc đang xem thì coi như bỏ chọn
+  const startHour = pickedHour !== null && isHourPast(selectedDate, pickedHour, nowMs) ? null : pickedHour
   const [duration, setDuration] = useState<number>(1)
   const [note, setNote] = useState('')
   const [matchDraft, setMatchDraft] = useState<MatchDraft>(INITIAL_MATCH_DRAFT)

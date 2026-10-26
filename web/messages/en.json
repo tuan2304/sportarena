@@ -217,6 +217,18 @@
       "next": "Next page",
       "page": "Page {page}"
     },
+    "overlay": {
+      "open": "View details of {name}",
+      "photos": "Venue photos",
+      "photo": "Show photo {index}",
+      "courts": "Courts ({count})",
+      "noCourts": "This venue has no active courts yet.",
+      "standardSurface": "Standard",
+      "deposit": "{percent}% deposit",
+      "perHour": "{price} VND/hour",
+      "close": "Close",
+      "viewAndBook": "View schedule & book"
+    },
     "detail": {
       "notFound": "Venue not found",
       "backToList": "Back to venue list",

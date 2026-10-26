@@ -68,11 +68,16 @@ describe('overlapsBusy', () => {
 })
 
 describe('isHourPast', () => {
-  it('ô giờ đã kết thúc thì coi là qua, ô đang diễn ra thì chưa', () => {
+  it('ô giờ đã bắt đầu thì coi là qua (kể cả đang diễn ra), ô chưa tới giờ thì chưa', () => {
     const now = vnDateTime(DATE, 10, 30).getTime()
     expect(isHourPast(DATE, 9, now)).toBe(true)
-    expect(isHourPast(DATE, 10, now)).toBe(false)
+    expect(isHourPast(DATE, 10, now)).toBe(true)
     expect(isHourPast(DATE, 11, now)).toBe(false)
+  })
+
+  it('đúng 14:00 thì ô 14:00 bị gạch, 13:59 thì còn', () => {
+    expect(isHourPast(DATE, 14, vnDateTime(DATE, 14, 0).getTime())).toBe(true)
+    expect(isHourPast(DATE, 14, vnDateTime(DATE, 13, 59).getTime())).toBe(false)
   })
 })
 

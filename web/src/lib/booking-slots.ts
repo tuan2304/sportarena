@@ -31,9 +31,9 @@ export function isHourBooked(busy: BusySlot[], courtId: string, dateKey: string,
   return overlapsBusy(busy, courtId, vnDateTime(dateKey, hour), vnDateTime(dateKey, hour + 1))
 }
 
-/** Giờ bắt đầu đã trôi qua (chỉ áp dụng khi chọn hôm nay). */
+/** Giờ bắt đầu đã trôi qua: qua 14:00 thì ô 14:00 bị gạch dù chưa ai đặt (chỉ áp dụng khi chọn hôm nay). */
 export function isHourPast(dateKey: string, hour: number, nowMs: number): boolean {
-  return vnDateTime(dateKey, hour + 1).getTime() <= nowMs
+  return vnDateTime(dateKey, hour).getTime() <= nowMs
 }
 
 export const DURATION_OPTIONS = [1, 1.5, 2, 2.5, 3] as const
