@@ -14,6 +14,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { SPORT_IDS } from '@/lib/constants'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { Logo } from '@/components/brand/logo'
+import { HeroBackground } from '@/components/home/hero-background'
 const FEATURES = [
   { key: 'calendar', icon: CalendarCheck, tone: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
   { key: 'qr', icon: QrCode, tone: 'bg-teal-500/10 text-teal-700 dark:text-teal-400' },
@@ -150,9 +151,7 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32 flex-1 flex flex-col justify-center">
         {/* Nền: lưới mờ + các đốm sáng trôi chậm */}
-        <div className="absolute inset-0 bg-grid pointer-events-none" />
-        <div className="absolute top-10 left-[12%] w-[420px] h-[420px] bg-emerald-500/20 rounded-full blur-[110px] pointer-events-none animate-float" />
-        <div className="absolute bottom-0 right-[8%] w-[360px] h-[360px] bg-amber-400/20 rounded-full blur-[110px] pointer-events-none animate-float-slow" />
+        <HeroBackground />
 
         <div className="max-w-5xl mx-auto px-4 text-center relative z-10 space-y-7">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold shadow-xs animate-fade-up">

@@ -212,6 +212,34 @@
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
   }
+  /* Nền hero chạy theo con trỏ (--mx, --my từ -1 đến 1, do components/home/hero-background.tsx ghi) */
+  .hero-bg {
+    --mx: 0;
+    --my: 0;
+  }
+  .hero-bg-grid {
+    background-position: calc(var(--mx) * -26px) calc(var(--my) * -26px);
+  }
+  .hero-bg-spot {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background: radial-gradient(
+      380px circle at calc(50% + var(--mx) * 50%) calc(50% + var(--my) * 50%),
+      oklch(0.72 0.17 165 / 0.22),
+      transparent 70%
+    );
+  }
+  .hero-bg[data-active="true"] .hero-bg-spot {
+    opacity: 1;
+  }
+  .hero-bg-blob-a {
+    transform: translate3d(calc(var(--mx) * 70px), calc(var(--my) * 50px), 0);
+    will-change: transform;
+  }
+  .hero-bg-blob-b {
+    transform: translate3d(calc(var(--mx) * -90px), calc(var(--my) * -60px), 0);
+    will-change: transform;
+  }
   /* Skeleton đang tải */
   .skeleton {
     background: linear-gradient(
