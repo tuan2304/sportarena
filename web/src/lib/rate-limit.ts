@@ -17,6 +17,11 @@ export const RATE_RULES = {
   loginByIp: { max: 30, windowSec: 300 },
   loginByEmail: { max: 8, windowSec: 300 },
   registerByIp: { max: 10, windowSec: 3600 },
+  // Quên mật khẩu: mỗi lần gửi là một email thật, vừa tốn hạn mức gửi thư vừa dễ bị lợi dụng để spam hộp thư người khác
+  forgotByIp: { max: 5, windowSec: 3600 },
+  forgotByEmail: { max: 3, windowSec: 3600 },
+  resetSessionByIp: { max: 20, windowSec: 600 },
+  passwordUpdate: { max: 10, windowSec: 600 },
   booking: { max: 10, windowSec: 600 },
   chat: { max: 30, windowSec: 60 },
   ticket: { max: 5, windowSec: 3600 },

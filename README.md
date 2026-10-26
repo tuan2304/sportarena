@@ -63,6 +63,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Bảo mật nhiều lớp.** Mọi bảng bật Row Level Security, người dùng không có quyền ghi trực tiếp vào bảng nghiệp vụ, mọi thao tác ghi đi qua Server Action có kiểm tra quyền. Các quy tắc đó có bộ test SQL riêng chạy trong Docker.
 - **Realtime.** Lịch đặt, kèo, chat, thông báo và ticket cập nhật qua Supabase Realtime.
 - **Múi giờ Việt Nam nhất quán.** Hiển thị và thống kê đều tính theo giờ Việt Nam, kể cả khi máy chủ chạy UTC.
+- **Quên mật khẩu.** Người dùng nhận thư có liên kết đặt lại (cả web lẫn app mobile). Liên kết mở được trên máy khác, chỉ đổi được mật khẩu trong vòng một giờ, và đổi xong thì các thiết bị khác bị đăng xuất. Có giới hạn số thư theo IP và email, và phản hồi không tiết lộ email nào đã đăng ký.
 - **Kiểm thử và CI.** Hơn 150 test Vitest cho logic nghiệp vụ, bộ test RLS bằng SQL, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (đăng nhập 3 vai trò, phân quyền, giao diện hai ngôn ngữ, kiểm tra CSP có nonce), thêm một bộ Playwright chạy luồng ghi dữ liệu (đặt sân, xác nhận, hủy, hoàn cọc, kèo, ảnh) trên Supabase thật trong Docker, và kiểm tra mobile ở mỗi lần push.
 
 ## Công nghệ

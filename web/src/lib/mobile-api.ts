@@ -2,6 +2,8 @@
  * Phần thuần túy của API cho ứng dụng mobile: tách token khỏi header và kiểm tra thân yêu cầu.
  * Mobile gọi API này vì ghi vào bảng đặt sân bị khóa với người dùng, mọi thao tác ghi phải qua server.
  */
+import { parseResetEmail } from '@/lib/password-reset'
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export const MAX_BODY_BYTES = 4 * 1024
@@ -328,4 +330,11 @@ export function parseImagesBody(body: unknown): ParsedBody<{ images: string[] }>
     return { ok: false, error: 'Danh sách ảnh không hợp lệ' }
   }
   return { ok: true, value: { images: images as string[] } }
+}
+
+/** Thân yêu cầu gửi thư đặt lại mật khẩu từ app (chưa đăng nhập nên không có token). */
+export function parseForgotPasswordBody(body: unknown): ParsedBody<{ email: string }> {
+  if (!isPlainObject(body)) return { ok: false, error: 'Dữ liệu gửi lên không hợp lệ' }
+  const email = parseResetEmail(body.email)
+  return email ? { ok: true, value: { email } } : { ok: false, error: 'Vui lòng nhập email hợp lệ' }
 }

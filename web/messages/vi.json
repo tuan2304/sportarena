@@ -115,6 +115,32 @@
       "metaTitle": "Đăng ký tài khoản - Đặt Sân & Ghép Kèo",
       "metaDescription": "Đăng ký tài khoản Người chơi hoặc Chủ sân để bắt đầu"
     },
+    "forgot": {
+      "title": "Quên mật khẩu",
+      "subtitle": "Nhập email đã đăng ký, chúng tôi sẽ gửi liên kết để bạn đặt mật khẩu mới.",
+      "submit": "Gửi liên kết đặt lại",
+      "sending": "Đang gửi...",
+      "sentTitle": "Kiểm tra email của bạn",
+      "sentText": "Nếu {email} đã đăng ký, một liên kết đặt lại mật khẩu vừa được gửi tới. Liên kết chỉ có hiệu lực trong thời gian ngắn; hãy kiểm tra cả thư rác.",
+      "sendAgain": "Gửi lại hoặc dùng email khác",
+      "backToLogin": "Quay lại đăng nhập",
+      "metaTitle": "Quên mật khẩu - Đặt Sân & Ghép Kèo",
+      "metaDescription": "Nhận liên kết đặt lại mật khẩu qua email"
+    },
+    "reset": {
+      "title": "Đặt mật khẩu mới",
+      "subtitle": "Chọn mật khẩu mới cho tài khoản của bạn (tối thiểu 8 ký tự).",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Nhập lại mật khẩu mới",
+      "submit": "Đổi mật khẩu",
+      "saving": "Đang lưu...",
+      "checking": "Đang kiểm tra liên kết...",
+      "invalidTitle": "Liên kết không dùng được",
+      "invalidText": "Liên kết đặt lại mật khẩu đã hết hạn, đã được dùng hoặc không hợp lệ. Hãy yêu cầu một liên kết mới.",
+      "requestNew": "Yêu cầu liên kết mới",
+      "metaTitle": "Đặt mật khẩu mới - Đặt Sân & Ghép Kèo",
+      "metaDescription": "Đặt mật khẩu mới cho tài khoản của bạn"
+    },
     "email": "Email",
     "passwordLabel": "Mật khẩu"
   },

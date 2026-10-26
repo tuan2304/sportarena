@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
+import { apiPostPublic } from '../lib/api'
 
 const MIN_PASSWORD = 8 // khớp với web (actions/auth.ts)
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -11,10 +12,13 @@ interface AuthFormProps {
   onSignedIn: () => void
 }
 
-/** Đăng nhập / đăng ký bằng email và mật khẩu. Tài khoản đăng ký ở app luôn là người chơi; chủ sân đăng ký trên web. */
+/**
+ * Đăng nhập / đăng ký bằng email và mật khẩu, và quên mật khẩu (gửi thư qua API của máy chủ; liên kết trong thư mở trang
+ * đặt lại của web ngay trên trình duyệt điện thoại). Tài khoản đăng ký ở app luôn là người chơi; chủ sân đăng ký trên web.
+ */
 export default function AuthForm({ onSignedIn }: AuthFormProps) {
   const { t } = useI18n()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,11 +26,25 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   const isRegister = mode === 'register'
+  const isForgot = mode === 'forgot'
+
+  async function sendResetLink(mail: string) {
+    setBusy(true)
+    try {
+      const res = await apiPostPublic<{ success: boolean }>('/api/mobile/auth/forgot-password', { email: mail })
+      if (!res.ok) return setError(res.error)
+      Alert.alert(t('auth.forgotSentTitle'), t('auth.forgotSentText', { email: mail }))
+      setMode('login')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function submit() {
     setError(null)
     const mail = email.trim().toLowerCase()
     if (!EMAIL.test(mail)) return setError(t('auth.invalidEmail'))
+    if (isForgot) return sendResetLink(mail)
     if (!password) return setError(t('auth.needPassword'))
     if (isRegister) {
       if (fullName.trim().length < 2) return setError(t('auth.nameShort'))
@@ -61,8 +79,8 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{isRegister ? t('auth.createTitle') : t('auth.loginTitle')}</Text>
-      <Text style={styles.sub}>{t('auth.subtitle')}</Text>
+      <Text style={styles.title}>{isForgot ? t('auth.forgotTitle') : isRegister ? t('auth.createTitle') : t('auth.loginTitle')}</Text>
+      <Text style={styles.sub}>{isForgot ? t('auth.forgotSub') : t('auth.subtitle')}</Text>
 
       {isRegister && (
         <TextInput
@@ -88,18 +106,33 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
         autoComplete="email"
         textContentType="emailAddress"
       />
-      <TextInput
-        style={styles.input}
-        placeholder={isRegister ? t('auth.passwordPlaceholderNew', { min: MIN_PASSWORD }) : t('auth.passwordPlaceholder')}
-        placeholderTextColor={colors.textMuted}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoComplete={isRegister ? 'new-password' : 'current-password'}
-        textContentType={isRegister ? 'newPassword' : 'password'}
-        onSubmitEditing={submit}
-      />
+      {!isForgot && (
+        <TextInput
+          style={styles.input}
+          placeholder={isRegister ? t('auth.passwordPlaceholderNew', { min: MIN_PASSWORD }) : t('auth.passwordPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoCapitalize="none"
+          autoComplete={isRegister ? 'new-password' : 'current-password'}
+          textContentType={isRegister ? 'newPassword' : 'password'}
+          onSubmitEditing={submit}
+        />
+      )}
+
+      {mode === 'login' && (
+        <TouchableOpacity
+          onPress={() => {
+            setMode('forgot')
+            setError(null)
+          }}
+          style={styles.forgot}
+          accessibilityRole="button"
+        >
+          <Text style={styles.switchText}>{t('auth.forgot')}</Text>
+        </TouchableOpacity>
+      )}
 
       {error && (
         <Text style={styles.error} accessibilityRole="alert">
@@ -108,17 +141,17 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
       )}
 
       <TouchableOpacity style={[styles.btn, busy && styles.btnDisabled]} onPress={submit} disabled={busy} accessibilityRole="button">
-        {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{isRegister ? t('auth.register') : t('auth.loginTitle')}</Text>}
+        {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{isForgot ? t('auth.sendLink') : isRegister ? t('auth.register') : t('auth.loginTitle')}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => {
-          setMode(isRegister ? 'login' : 'register')
+          setMode(isRegister || isForgot ? 'login' : 'register')
           setError(null)
         }}
         style={styles.switch}
       >
-        <Text style={styles.switchText}>{isRegister ? t('auth.switchToLogin') : t('auth.switchToRegister')}</Text>
+        <Text style={styles.switchText}>{isForgot ? t('auth.backToLogin') : isRegister ? t('auth.switchToLogin') : t('auth.switchToRegister')}</Text>
       </TouchableOpacity>
     </View>
   )
@@ -143,5 +176,6 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.5 },
   btnText: { color: colors.white, fontWeight: '800', fontSize: 15 },
   switch: { minHeight: 40, justifyContent: 'center', alignItems: 'center' },
+  forgot: { minHeight: 36, justifyContent: 'center', alignSelf: 'flex-end' },
   switchText: { color: colors.primary, fontWeight: '700', fontSize: 13 },
 })

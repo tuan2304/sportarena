@@ -123,6 +123,9 @@ const rpcs = {
   get_booking_contacts: () => [],
 }
 
+const recoverRequests = []
+const passwordUpdates = []
+
 function send(res, status, body, extra = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json', ...extra })
   res.end(JSON.stringify(body))
@@ -131,9 +134,9 @@ function send(res, status, body, extra = {}) {
 const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url')
 
 /** JWT HS256 giả (chữ ký không kiểm tra): supabase-js với khóa đối xứng sẽ hỏi lại /auth/v1/user để xác thực. */
-function makeToken(user) {
+function makeToken(user, amr) {
   const now = Math.floor(Date.now() / 1000)
-  const payload = { sub: user.id, email: user.email, role: 'authenticated', aud: 'authenticated', session_id: user.id, iat: now, exp: now + 3600 }
+  const payload = { sub: user.id, email: user.email, role: 'authenticated', aud: 'authenticated', session_id: user.id, iat: now, exp: now + 3600, ...(amr ? { amr } : {}) }
   return `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64(payload)}.mock-signature`
 }
 
@@ -196,7 +199,28 @@ const server = createServer(async (req, res) => {
   }
   if (path === '/auth/v1/user') {
     const user = userFromToken(req)
-    return user ? send(res, 200, authUser(user)) : send(res, 401, { msg: 'Auth session missing', code: 401 })
+    if (!user) return send(res, 401, { msg: 'Auth session missing', code: 401 })
+    // updateUser (đặt mật khẩu mới): ghi nhận để kiểm thử đọc lại qua /__password-updates
+    if (req.method === 'PUT') {
+      const { password } = await readBody(req)
+      passwordUpdates.push({ userId: user.id, password })
+      return send(res, 200, authUser(user))
+    }
+    return send(res, 200, authUser(user))
+  }
+  // Quên mật khẩu: ghi nhận yêu cầu gửi thư; không gửi thư thật
+  if (path === '/auth/v1/recover') {
+    const { email } = await readBody(req)
+    recoverRequests.push({ email, redirectTo: url.searchParams.get('redirect_to') })
+    return send(res, 200, {})
+  }
+  if (path === '/__recover-requests') return send(res, 200, recoverRequests)
+  if (path === '/__password-updates') return send(res, 200, passwordUpdates)
+  // Phiên khôi phục giả, như phiên Supabase cấp khi bấm liên kết trong thư (amr có phương thức recovery)
+  if (path === '/__recovery-session') {
+    const user = Object.values(USERS).find((u) => u.id === url.searchParams.get('user') || u.email === url.searchParams.get('email'))
+    if (!user) return send(res, 404, {})
+    return send(res, 200, { access_token: makeToken(user, [{ method: 'otp', timestamp: Math.floor(Date.now() / 1000) }]), refresh_token: `refresh-${user.id}` })
   }
   if (path.startsWith('/auth/v1/logout')) return send(res, 204, {})
   if (path.startsWith('/auth/v1/')) return send(res, 401, { msg: 'Auth session missing', code: 401 })

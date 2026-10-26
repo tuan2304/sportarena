@@ -71,7 +71,14 @@
     "passwordPlaceholderNew": "Mật khẩu (tối thiểu {min} ký tự)",
     "register": "Đăng ký",
     "switchToLogin": "Đã có tài khoản? Đăng nhập",
-    "switchToRegister": "Chưa có tài khoản? Đăng ký"
+    "switchToRegister": "Chưa có tài khoản? Đăng ký",
+    "forgot": "Quên mật khẩu?",
+    "forgotTitle": "Quên mật khẩu",
+    "forgotSub": "Nhập email đã đăng ký, chúng tôi sẽ gửi liên kết để bạn đặt mật khẩu mới.",
+    "sendLink": "Gửi liên kết đặt lại",
+    "forgotSentTitle": "Kiểm tra email",
+    "forgotSentText": "Nếu {email} đã đăng ký, chúng tôi vừa gửi liên kết đặt lại mật khẩu. Hãy mở thư, đặt mật khẩu mới rồi quay lại đây đăng nhập. Nhớ xem cả thư rác.",
+    "backToLogin": "Quay lại đăng nhập"
   },
   "profile": {
     "saveFailed": "Không thể lưu",

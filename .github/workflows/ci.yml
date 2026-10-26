@@ -73,7 +73,8 @@ jobs:
         with:
           version: latest
       # Supabase cục bộ trong Docker: áp toàn bộ migration, có Auth, REST và Storage thật (bỏ các dịch vụ không cần để khởi động nhanh)
-      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,postgres-meta,supavisor
+      # (mailpit/inbucket được giữ lại: ca quên mật khẩu cần dịch vụ gửi thư để GoTrue không báo lỗi)
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,postgres-meta,supavisor
       - run: npm ci
         working-directory: web
       - run: npm run e2e:install

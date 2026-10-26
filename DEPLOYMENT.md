@@ -244,6 +244,19 @@ Khách thấy bản đồ nhúng ở trang cụm sân, nút **Chỉ đường** 
 5. **Tài khoản mẫu:** các tài khoản seed (`@sportarena.vn`) chỉ dành cho môi trường dev. **Xóa hoặc đổi mật khẩu** trước khi mở cho người dùng thật, và dùng một project Supabase riêng cho production.
 6. **Mobile:** tạo `mobile/.env` từ `mobile/.env.example`. Ứng dụng không có tài khoản mẫu hay nút đăng nhập nhanh; người dùng đăng nhập hoặc đăng ký ở tab Cá Nhân.
 
+## 🔑 Quên mật khẩu
+
+Trang `/forgot-password` gửi thư đặt lại, liên kết trong thư đưa về `/reset-password` (không cần migration). Cần cấu hình trên Supabase Dashboard, nếu không thư không đến hoặc liên kết bị từ chối:
+
+1. **Authentication → URL Configuration → Redirect URLs:** thêm đúng `https://<tên-miền-của-bạn>/reset-password` (địa chỉ này là `NEXT_PUBLIC_APP_URL` + `/reset-password`). Thiếu mục này Supabase chuyển người dùng về Site URL thay vì trang đặt lại, và trang báo "Liên kết không dùng được".
+2. **Gửi thư:** SMTP mặc định của Supabase chỉ cho vài thư mỗi giờ và chỉ gửi tới thành viên của tổ chức. Với người dùng thật hãy cấu hình SMTP riêng (Authentication → Emails → SMTP Settings) rồi nâng giới hạn thư ở Authentication → Rate Limits.
+3. **Mật khẩu tối thiểu:** web và app bắt buộc 8 ký tự; nên đặt *Minimum password length* của Supabase bằng 8 (Authentication → Sign In / Providers) để API gọi thẳng cũng bị chặn.
+4. **Mẫu thư (tùy chọn):** mẫu *Reset Password* mặc định dùng `{{ .ConfirmationURL }}` là đủ. Bản mẫu tiếng Việt hay Anh sửa ở Authentication → Emails.
+
+Cách hoạt động: liên kết mang phiên khôi phục ở phần sau dấu `#` nên mở thư trên máy khác vẫn dùng được. Trang đặt lại chỉ nhận phiên vừa tạo từ liên kết (trong vòng 1 giờ) để đổi mật khẩu, và đổi xong thì các thiết bị khác bị đăng xuất. Mỗi IP chỉ yêu cầu 5 thư mỗi giờ và mỗi email 3 thư mỗi giờ. Trên app mobile, nút "Quên mật khẩu?" gọi `POST /api/mobile/auth/forgot-password` rồi liên kết trong thư mở trang web trên trình duyệt điện thoại.
+
+Thử cục bộ: `supabase start` đã kèm hộp thư thử Inbucket (mặc định http://127.0.0.1:54324), đọc thư ở đó. Bộ `npm run e2e:real` kiểm tra luồng này với GoTrue thật.
+
 ## 🔔 Thông báo đẩy, CSP và kiểm thử đầu-cuối
 
 ### Thứ tự triển khai

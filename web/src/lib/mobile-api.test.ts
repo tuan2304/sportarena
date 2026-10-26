@@ -6,6 +6,7 @@ import {
   parseCreateBookingBody,
   parseCreateClubBody,
   parseCreateCourtBody,
+  parseForgotPasswordBody,
   parseImagesBody,
   parseLocationBody,
   parseOwnerStatusBody,
@@ -235,6 +236,18 @@ describe('parseLocationBody', () => {
   it('từ chối thiếu một nửa, sai kiểu hoặc không có', () => {
     for (const bad of [{}, { latitude: 10 }, { latitude: 10, longitude: null }, { latitude: '10', longitude: '106' }, null]) {
       expect(parseLocationBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
+  })
+})
+
+describe('parseForgotPasswordBody', () => {
+  it('chuẩn hóa email hợp lệ', () => {
+    expect(parseForgotPasswordBody({ email: ' A@B.com ' })).toEqual({ ok: true, value: { email: 'a@b.com' } })
+  })
+
+  it('từ chối email sai hoặc thân không phải object', () => {
+    for (const bad of [{}, { email: 'abc' }, { email: 5 }, null, [], 'a@b.com']) {
+      expect(parseForgotPasswordBody(bad).ok, JSON.stringify(bad)).toBe(false)
     }
   })
 })

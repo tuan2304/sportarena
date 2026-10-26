@@ -67,7 +67,7 @@ export function LoginForm() {
             <div className="flex items-center justify-between">
               <Label htmlFor="password">{t('passwordLabel')}</Label>
               <Link
-                href="#"
+                href="/forgot-password"
                 className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
               >
                 {t('login.forgot')}

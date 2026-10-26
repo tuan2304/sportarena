@@ -18,6 +18,7 @@ export interface TestUser {
   id: string
   email: string
   token: string
+  refreshToken: string
 }
 
 /** Tạo tài khoản đã xác thực email qua API quản trị của GoTrue, rồi đăng nhập lấy access token. */
@@ -37,8 +38,8 @@ export async function createUser(label: string, role: 'player' | 'owner', fullNa
     body: JSON.stringify({ email, password: PASSWORD }),
   })
   if (!login.ok) throw new Error(`Không đăng nhập được ${label}: ${login.status} ${await login.text()}`)
-  const { access_token } = (await login.json()) as { access_token: string }
-  return { id, email, token: access_token }
+  const { access_token, refresh_token } = (await login.json()) as { access_token: string; refresh_token: string }
+  return { id, email, token: access_token, refreshToken: refresh_token }
 }
 
 /** Gọi REST của database bằng service_role (bỏ qua RLS) để dựng dữ liệu và kiểm tra kết quả. */

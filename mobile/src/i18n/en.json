@@ -71,7 +71,14 @@
     "passwordPlaceholderNew": "Password (at least {min} characters)",
     "register": "Sign up",
     "switchToLogin": "Already have an account? Log in",
-    "switchToRegister": "Don't have an account? Sign up"
+    "switchToRegister": "Don't have an account? Sign up",
+    "forgot": "Forgot password?",
+    "forgotTitle": "Forgot password",
+    "forgotSub": "Enter the email you registered with and we will send you a link to set a new password.",
+    "sendLink": "Send reset link",
+    "forgotSentTitle": "Check your email",
+    "forgotSentText": "If {email} is registered, we just sent a password reset link. Open the email, set a new password, then come back here to log in. Check your spam folder too.",
+    "backToLogin": "Back to log in"
   },
   "profile": {
     "saveFailed": "Could not save",

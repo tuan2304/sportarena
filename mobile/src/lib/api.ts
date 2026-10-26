@@ -15,6 +15,11 @@ export function apiPost<T>(path: string, body?: unknown): Promise<ApiResult<T>> 
   return request<T>('POST', path, body)
 }
 
+/** Gọi API không cần đăng nhập (vd. quên mật khẩu): không gửi token. */
+export function apiPostPublic<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
+  return request<T>('POST', path, body, false)
+}
+
 export function apiPut<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
   return request<T>('PUT', path, body)
 }
@@ -27,13 +32,17 @@ export function apiDelete<T>(path: string): Promise<ApiResult<T>> {
   return request<T>('DELETE', path)
 }
 
-async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<ApiResult<T>> {
+async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown, authenticated = true): Promise<ApiResult<T>> {
   if (!API_URL) {
     return { ok: false, status: 0, error: translate('api.noServer') }
   }
 
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return { ok: false, status: 401, error: translate('api.loginRequired') }
+  let token: string | null = null
+  if (authenticated) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return { ok: false, status: 401, error: translate('api.loginRequired') }
+    token = session.access_token
+  }
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -44,7 +53,7 @@ async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: str
         'Content-Type': 'application/json',
         // Máy chủ dịch thông báo lỗi theo ngôn ngữ này
         'Accept-Language': currentLang(),
-        Authorization: `Bearer ${session.access_token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       ...(method === 'DELETE' ? {} : { body: JSON.stringify(body ?? {}) }),
       signal: controller.signal,

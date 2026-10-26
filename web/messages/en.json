@@ -115,6 +115,32 @@
       "metaTitle": "Sign up - Court Booking & Matchmaking",
       "metaDescription": "Create a Player or Venue Owner account to get started"
     },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "Enter the email you registered with and we will send you a link to set a new password.",
+      "submit": "Send reset link",
+      "sending": "Sending...",
+      "sentTitle": "Check your email",
+      "sentText": "If {email} is registered, a password reset link has just been sent to it. The link is only valid for a short time; check your spam folder too.",
+      "sendAgain": "Send again or use another email",
+      "backToLogin": "Back to log in",
+      "metaTitle": "Forgot password - Court Booking & Matchmaking",
+      "metaDescription": "Get a password reset link by email"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account (at least 8 characters).",
+      "newPassword": "New password",
+      "confirmPassword": "Repeat the new password",
+      "submit": "Change password",
+      "saving": "Saving...",
+      "checking": "Checking the link...",
+      "invalidTitle": "This link cannot be used",
+      "invalidText": "The password reset link has expired, was already used, or is not valid. Please request a new one.",
+      "requestNew": "Request a new link",
+      "metaTitle": "Set a new password - Court Booking & Matchmaking",
+      "metaDescription": "Set a new password for your account"
+    },
     "email": "Email",
     "passwordLabel": "Password"
   },
