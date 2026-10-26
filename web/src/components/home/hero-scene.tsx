@@ -2,19 +2,20 @@
 
 import { useEffect, useRef } from 'react'
 import type * as THREE from 'three'
+import { stepBodies, type Body } from '@/lib/ball-physics'
 
 type Kind = 'soccer' | 'basketball' | 'tennis' | 'pickleball' | 'volleyball' | 'shuttlecock'
 
-/** Vị trí chuẩn hóa: x, y theo nửa bề rộng/cao khung nhìn (-1..1), z là độ sâu (âm = xa), s là cỡ. */
-const LAYOUT: Array<{ kind: Kind; x: number; y: number; z: number; s: number; spin: number }> = [
-  { kind: 'soccer', x: -0.82, y: 0.42, z: 0, s: 1.15, spin: 0.35 },
-  { kind: 'basketball', x: 0.84, y: 0.55, z: -1.5, s: 1.3, spin: -0.3 },
-  { kind: 'tennis', x: -0.66, y: -0.62, z: 1.2, s: 0.55, spin: 0.6 },
-  { kind: 'pickleball', x: 0.68, y: -0.62, z: 0.4, s: 0.7, spin: -0.5 },
-  { kind: 'volleyball', x: -0.56, y: 0.86, z: -2, s: 0.8, spin: 0.25 },
-  { kind: 'shuttlecock', x: 0.9, y: -0.1, z: -1, s: 0.8, spin: 0.45 },
-  { kind: 'tennis', x: 0.5, y: 0.88, z: -4, s: 0.5, spin: -0.4 },
-  { kind: 'pickleball', x: -0.96, y: -0.08, z: -2.5, s: 0.55, spin: 0.5 },
+/** Vị trí xuất phát chuẩn hóa: x, y theo nửa bề rộng/cao khung nhìn (-1..1), s là cỡ. Mọi quả cùng một mặt phẳng để va chạm trông đúng. */
+const LAYOUT: Array<{ kind: Kind; x: number; y: number; s: number; spin: number }> = [
+  { kind: 'soccer', x: -0.82, y: 0.42, s: 1.15, spin: 0.35 },
+  { kind: 'basketball', x: 0.84, y: 0.55, s: 1.3, spin: -0.3 },
+  { kind: 'tennis', x: -0.66, y: -0.62, s: 0.55, spin: 0.6 },
+  { kind: 'pickleball', x: 0.68, y: -0.62, s: 0.7, spin: -0.5 },
+  { kind: 'volleyball', x: -0.56, y: 0.86, s: 0.8, spin: 0.25 },
+  { kind: 'shuttlecock', x: 0.9, y: -0.1, s: 0.8, spin: 0.45 },
+  { kind: 'tennis', x: 0.5, y: 0.88, s: 0.5, spin: -0.4 },
+  { kind: 'pickleball', x: -0.96, y: -0.08, s: 0.55, spin: 0.5 },
 ]
 
 const TAU = Math.PI * 2
@@ -118,7 +119,7 @@ function ballTexture(kind: Exclude<Kind, 'shuttlecock'>): HTMLCanvasElement {
 
 /**
  * Cảnh 3D các quả bóng thể thao nảy qua lại trong khung hero ngay khi mở trang (không cần chuột): bay thẳng,
- * chạm mép thì bật lại và lăn theo hướng bay, camera đung đưa nhẹ để có chiều sâu.
+ * chạm mép hoặc chạm nhau thì bật ra (vật lý ở lib/ball-physics.ts), lăn theo hướng bay, camera đung đưa nhẹ.
  * Three.js nạp động (không vào bundle đầu), tự dừng khi hero khuất khỏi màn hình hoặc tab ẩn.
  * Không có WebGL thì im lặng bỏ qua: nền CSS phía dưới vẫn hiển thị.
  */
@@ -210,17 +211,16 @@ export function HeroScene() {
           object = new THREE.Mesh(sphereGeo, mat)
         }
         scene.add(object)
-        // Vị trí và vận tốc chuẩn hóa theo khung nhìn tại độ sâu của quả bóng (-1..1); bật lại khi chạm mép
-        const angle = index * 2.4 + 0.5
-        const speed = 0.16 + (index % 3) * 0.05
+        // Trạng thái vật lý (đơn vị thế giới); khởi tạo ở khung hình đầu khi đã biết kích thước khung nhìn
+        const body: Body = { x: 0, y: 0, vx: 0, vy: 0, r: 1, mass: 1 }
         return {
           spec,
           object,
           phase: index * 1.7,
-          nx: spec.x,
-          ny: spec.y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed * 0.8,
+          body,
+          angle: index * 2.4 + 0.5,
+          speed: 0.2 + (index % 3) * 0.06, // đơn vị: "unit" mỗi giây
+          ready: false,
         }
       })
 
@@ -255,34 +255,54 @@ export function HeroScene() {
 
         const u = unit()
         for (const item of items) {
-          const { spec, object, phase } = item
+          const { spec, body } = item
           const size = spec.s * u * 0.12
-          // Khung nhìn tại độ sâu của quả bóng (xa camera thì rộng hơn); chừa lề bằng bán kính để chạm mép là bật
-          const zScale = (camera.position.z - spec.z) / camera.position.z
-          const limitX = Math.max(halfW * zScale - size * 1.2, 0.1)
-          const limitY = Math.max(halfH * zScale - size * 1.2, 0.1)
-          item.nx += item.vx * dt * (halfW / limitX)
-          item.ny += item.vy * dt * (halfH / limitY)
-          if (item.nx > 1) { item.nx = 1; item.vx = -Math.abs(item.vx) }
-          if (item.nx < -1) { item.nx = -1; item.vx = Math.abs(item.vx) }
-          if (item.ny > 1) { item.ny = 1; item.vy = -Math.abs(item.vy) }
-          if (item.ny < -1) { item.ny = -1; item.vy = Math.abs(item.vy) }
+          body.r = size * (spec.kind === 'shuttlecock' ? 0.9 : 1.05)
+          body.mass = body.r * body.r
+          if (!item.ready) {
+            body.x = spec.x * halfW * 0.9
+            body.y = spec.y * halfH * 0.85
+            body.vx = Math.cos(item.angle) * item.speed * u
+            body.vy = Math.sin(item.angle) * item.speed * u * 0.8
+            item.ready = true
+          }
+        }
+        // Bật tường + va chạm đàn hồi giữa các quả (quả to nặng hơn nên ít bị đẩy hơn)
+        const hits = stepBodies(
+          items.map((item) => item.body),
+          dt,
+          halfW,
+          halfH
+        )
+        if (hits > 0) canvas.dataset.hits = String(Number(canvas.dataset.hits ?? 0) + hits)
 
-          object.position.set(item.nx * limitX, item.ny * limitY, spec.z)
-          object.scale.setScalar(size)
-          // Lăn theo hướng đang bay: quay nhanh hơn khi bật vào tường
-          const roll = Math.hypot(item.vx, item.vy) * 6
+        for (const item of items) {
+          const { spec, object, phase, body } = item
+          // Giữ nhịp: sau nhiều va chạm không để quả nào chậm hẳn lại hay nhanh quá mức
+          const target = item.speed * u
+          const speedNow = Math.hypot(body.vx, body.vy)
+          if (speedNow > 1e-6 && (speedNow < target * 0.6 || speedNow > target * 1.8)) {
+            const k = (speedNow < target * 0.6 ? target * 0.6 : target * 1.8) / speedNow
+            body.vx *= k
+            body.vy *= k
+          }
+
+          object.position.set(body.x, body.y, 0)
+          object.scale.setScalar(spec.s * u * 0.12)
+          // Lăn theo hướng đang bay: đổi chiều quay ngay khi bị va chạm hay bật tường
+          const roll = (speedNow / Math.max(body.r, 0.01)) * 0.8
           if (spec.kind === 'shuttlecock') {
             object.rotation.y = t * spec.spin * 1.5
             object.rotation.z = 0.5 + Math.sin(t * 0.7 + phase) * 0.35
           } else {
-            object.rotation.y += (item.vx > 0 ? 1 : -1) * roll * dt
-            object.rotation.x += (item.vy > 0 ? -1 : 1) * roll * dt * 0.7
+            object.rotation.y += (body.vx > 0 ? 1 : -1) * roll * dt * Math.abs(body.vx / (speedNow || 1))
+            object.rotation.x += (body.vy > 0 ? -1 : 1) * roll * dt * Math.abs(body.vy / (speedNow || 1))
           }
         }
         renderer.render(scene, camera)
       }
 
+      canvas.dataset.hits = '0'
       canvas.dataset.ready = 'true'
 
       let raf = 0

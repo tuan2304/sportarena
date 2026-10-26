@@ -52,6 +52,16 @@ test.describe('Cảnh 3D các quả bóng ở hero', () => {
     expect(Buffer.compare(a, b)).not.toBe(0)
   })
 
+  test('các quả bóng va vào nhau và bật ra (đếm va chạm tăng dần, không đi xuyên qua)', async ({ page }) => {
+    test.setTimeout(90_000)
+    await page.goto('/')
+    const canvas = page.locator('.hero-scene canvas')
+    await expect(canvas).toHaveAttribute('data-ready', 'true', { timeout: 15_000 })
+    await expect
+      .poll(async () => Number(await canvas.getAttribute('data-hits')), { timeout: 60_000, intervals: [1000] })
+      .toBeGreaterThan(0)
+  })
+
   test('giảm chuyển động thì chỉ vẽ một khung tĩnh', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
