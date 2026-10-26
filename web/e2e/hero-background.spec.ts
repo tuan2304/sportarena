@@ -1,36 +1,25 @@
 import { expect, test } from '@playwright/test'
 
-test.describe('Nền hero chạy theo con trỏ', () => {
-  test('di chuột sang phải/xuống dưới thì biến --mx, --my dương, đốm sáng dịch chỗ theo', async ({ page }) => {
+test.describe('Nền hero tự chuyển động khi mở trang', () => {
+  test('không cần di chuột: biến --mx/--my tự đổi theo thời gian và đốm sáng dịch chỗ', async ({ page }) => {
     await page.goto('/')
     const bg = page.locator('.hero-bg')
-    const hero = page.locator('section').filter({ has: bg }).first()
-    const box = (await hero.boundingBox())!
-
-    await page.mouse.move(box.x + box.width * 0.9, 650)
-    await expect.poll(async () => Number(await bg.evaluate((el) => el.style.getPropertyValue('--mx') || '0')), { timeout: 20_000 }).toBeGreaterThan(0.3)
-    expect(Number(await bg.evaluate((el) => el.style.getPropertyValue('--my')))).toBeGreaterThan(0.2)
-    await expect(bg).toHaveAttribute('data-active', 'true')
-
-    // Đốm sáng thật sự bị dịch chỗ so với lúc con trỏ ở giữa
-    const blob = page.locator('.hero-bg-blob-a')
     const mx = async () => Number(await bg.evaluate((el) => el.style.getPropertyValue('--mx') || '0'))
-    await expect.poll(mx, { timeout: 20_000 }).toBeGreaterThan(0.75) // chờ trượt xong (đích là 0,8)
-    const right = (await blob.boundingBox())!.x
+    const blob = page.locator('.hero-bg-blob-a')
 
-    await page.mouse.move(box.x + box.width * 0.1, box.y + 40)
-    await expect.poll(mx, { timeout: 20_000 }).toBeLessThan(-0.75)
-    expect((await blob.boundingBox())!.x).toBeLessThan(right - 100)
+    await expect.poll(async () => (await bg.evaluate((el) => el.style.getPropertyValue('--mx'))) !== '', { timeout: 20_000 }).toBe(true)
+    const first = await mx()
+    const firstX = (await blob.boundingBox())!.x
+    // Chu kỳ ~18 giây nên sau vài giây giá trị phải khác rõ rệt
+    await expect.poll(async () => Math.abs((await mx()) - first), { timeout: 20_000 }).toBeGreaterThan(0.15)
+    expect(Math.abs((await blob.boundingBox())!.x - firstX)).toBeGreaterThan(10)
   })
 
   test('người dùng giảm chuyển động thì nền đứng yên', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
     const bg = page.locator('.hero-bg')
-    const box = (await page.locator('section').filter({ has: bg }).first().boundingBox())!
-    await page.mouse.move(box.x + box.width * 0.9, 650)
-    await page.waitForTimeout(400)
-    await expect(bg).toHaveAttribute('data-active', 'false')
+    await page.waitForTimeout(1500)
     expect(await bg.evaluate((el) => el.style.getPropertyValue('--mx'))).toBe('')
   })
 })
@@ -52,9 +41,25 @@ test.describe('Cảnh 3D các quả bóng ở hero', () => {
     expect(errors).toEqual([])
   })
 
+  test('các quả bóng tự nảy qua lại: hình trên canvas đổi theo thời gian, không cần chuột', async ({ page }) => {
+    await page.goto('/')
+    const canvas = page.locator('.hero-scene canvas')
+    await expect(canvas).toHaveAttribute('data-ready', 'true', { timeout: 15_000 })
+    // Nếu bóng đứng yên thì hai ảnh chụp canvas giống hệt nhau
+    const a = await canvas.screenshot()
+    await page.waitForTimeout(2500)
+    const b = await canvas.screenshot()
+    expect(Buffer.compare(a, b)).not.toBe(0)
+  })
+
   test('giảm chuyển động thì chỉ vẽ một khung tĩnh', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
-    await expect(page.locator('.hero-scene canvas')).toHaveAttribute('data-ready', 'true', { timeout: 15_000 })
+    const canvas = page.locator('.hero-scene canvas')
+    await expect(canvas).toHaveAttribute('data-ready', 'true', { timeout: 15_000 })
+    const a = await canvas.screenshot()
+    await page.waitForTimeout(1500)
+    const b = await canvas.screenshot()
+    expect(Buffer.compare(a, b)).toBe(0)
   })
 })

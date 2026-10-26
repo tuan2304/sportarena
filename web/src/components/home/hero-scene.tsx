@@ -117,7 +117,8 @@ function ballTexture(kind: Exclude<Kind, 'shuttlecock'>): HTMLCanvasElement {
 }
 
 /**
- * Cảnh 3D các quả bóng thể thao lơ lửng, xoay chậm và nghiêng theo con trỏ (thị sai theo độ sâu).
+ * Cảnh 3D các quả bóng thể thao nảy qua lại trong khung hero ngay khi mở trang (không cần chuột): bay thẳng,
+ * chạm mép thì bật lại và lăn theo hướng bay, camera đung đưa nhẹ để có chiều sâu.
  * Three.js nạp động (không vào bundle đầu), tự dừng khi hero khuất khỏi màn hình hoặc tab ẩn.
  * Không có WebGL thì im lặng bỏ qua: nền CSS phía dưới vẫn hiển thị.
  */
@@ -209,7 +210,18 @@ export function HeroScene() {
           object = new THREE.Mesh(sphereGeo, mat)
         }
         scene.add(object)
-        return { spec, object, phase: index * 1.7 }
+        // Vị trí và vận tốc chuẩn hóa theo khung nhìn tại độ sâu của quả bóng (-1..1); bật lại khi chạm mép
+        const angle = index * 2.4 + 0.5
+        const speed = 0.16 + (index % 3) * 0.05
+        return {
+          spec,
+          object,
+          phase: index * 1.7,
+          nx: spec.x,
+          ny: spec.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed * 0.8,
+        }
       })
 
       let width = 1
@@ -230,51 +242,42 @@ export function HeroScene() {
       const resizeObserver = new ResizeObserver(place)
       resizeObserver.observe(wrap)
 
-      // Con trỏ chuẩn hóa -1..1, mượt dần về đích
-      let targetX = 0
-      let targetY = 0
-      let curX = 0
-      let curY = 0
-      const onMove = (e: PointerEvent) => {
-        const rect = hero.getBoundingClientRect()
-        targetX = Math.max(-1, Math.min(1, ((e.clientX - rect.left) / rect.width) * 2 - 1))
-        targetY = Math.max(-1, Math.min(1, ((e.clientY - rect.top) / rect.height) * 2 - 1))
-      }
-      const onLeave = () => {
-        targetX = 0
-        targetY = 0
-      }
-      if (!reducedMotion) {
-        hero.addEventListener('pointermove', onMove as EventListener)
-        hero.addEventListener('pointerleave', onLeave)
-      }
-
       const unit = () => Math.min(halfW, halfH * 1.6)
+      let lastTime = 0
       const frame = (time: number) => {
         const t = time / 1000
-        curX += (targetX - curX) * 0.06
-        curY += (targetY - curY) * 0.06
-        camera.position.x = curX * 1.4
-        camera.position.y = -curY * 0.9
+        const dt = lastTime ? Math.min(t - lastTime, 0.05) : 0
+        lastTime = t
+        // Camera đung đưa rất nhẹ để cảnh có chiều sâu (không phụ thuộc con trỏ)
+        camera.position.x = Math.sin(t * 0.35) * 0.9
+        camera.position.y = Math.cos(t * 0.27) * 0.6
         camera.lookAt(0, 0, 0)
 
         const u = unit()
-        for (const { spec, object, phase } of items) {
-          // Gần camera (z lớn) dịch nhiều hơn khi chuột đi, tạo cảm giác chiều sâu
-          const depth = 1 + spec.z * 0.12
-          object.position.set(
-            spec.x * halfW * 0.92 + Math.sin(t * 0.5 + phase) * 0.18 * u + curX * depth * 0.6,
-            spec.y * halfH * 0.85 + Math.sin(t * 0.8 + phase) * 0.28 * u - curY * depth * 0.4,
-            spec.z
-          )
+        for (const item of items) {
+          const { spec, object, phase } = item
           const size = spec.s * u * 0.12
+          // Khung nhìn tại độ sâu của quả bóng (xa camera thì rộng hơn); chừa lề bằng bán kính để chạm mép là bật
+          const zScale = (camera.position.z - spec.z) / camera.position.z
+          const limitX = Math.max(halfW * zScale - size * 1.2, 0.1)
+          const limitY = Math.max(halfH * zScale - size * 1.2, 0.1)
+          item.nx += item.vx * dt * (halfW / limitX)
+          item.ny += item.vy * dt * (halfH / limitY)
+          if (item.nx > 1) { item.nx = 1; item.vx = -Math.abs(item.vx) }
+          if (item.nx < -1) { item.nx = -1; item.vx = Math.abs(item.vx) }
+          if (item.ny > 1) { item.ny = 1; item.vy = -Math.abs(item.vy) }
+          if (item.ny < -1) { item.ny = -1; item.vy = Math.abs(item.vy) }
+
+          object.position.set(item.nx * limitX, item.ny * limitY, spec.z)
           object.scale.setScalar(size)
+          // Lăn theo hướng đang bay: quay nhanh hơn khi bật vào tường
+          const roll = Math.hypot(item.vx, item.vy) * 6
           if (spec.kind === 'shuttlecock') {
-            object.rotation.y = t * spec.spin
-            object.rotation.z = 0.5 + Math.sin(t * 0.7 + phase) * 0.25
+            object.rotation.y = t * spec.spin * 1.5
+            object.rotation.z = 0.5 + Math.sin(t * 0.7 + phase) * 0.35
           } else {
-            object.rotation.y = t * spec.spin + curX * 0.8
-            object.rotation.x = Math.sin(t * 0.3 + phase) * 0.5 + curY * 0.6
+            object.rotation.y += (item.vx > 0 ? 1 : -1) * roll * dt
+            object.rotation.x += (item.vy > 0 ? -1 : 1) * roll * dt * 0.7
           }
         }
         renderer.render(scene, camera)
@@ -311,8 +314,6 @@ export function HeroScene() {
         observer.disconnect()
         resizeObserver.disconnect()
         document.removeEventListener('visibilitychange', onVisibility)
-        hero.removeEventListener('pointermove', onMove as EventListener)
-        hero.removeEventListener('pointerleave', onLeave)
         for (const d of disposables) d.dispose()
         renderer.dispose()
         renderer.forceContextLoss()

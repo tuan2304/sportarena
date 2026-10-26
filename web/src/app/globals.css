@@ -212,13 +212,13 @@
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
   }
-  /* Nền hero chạy theo con trỏ (--mx, --my từ -1 đến 1, do components/home/hero-background.tsx ghi) */
+  /* Nền hero tự chuyển động (--mx, --my từ -1 đến 1 theo thời gian, do components/home/hero-background.tsx ghi) */
   .hero-bg {
     --mx: 0;
     --my: 0;
     perspective: 900px;
   }
-  /* Lưới nghiêng 3D theo con trỏ, đồng thời trôi theo để thấy rõ chiều sâu */
+  /* Lưới nghiêng 3D đung đưa, đồng thời trôi để thấy rõ chiều sâu */
   .hero-bg-grid {
     transform: scale(1.25) rotateX(calc(var(--my) * -14deg)) rotateY(calc(var(--mx) * 16deg));
     background-position: calc(var(--mx) * -40px) calc(var(--my) * -40px);
@@ -228,16 +228,11 @@
     will-change: transform;
   }
   .hero-bg-spot {
-    opacity: 0;
-    transition: opacity 0.5s ease;
     background: radial-gradient(
       420px circle at calc(50% + var(--mx) * 50%) calc(50% + var(--my) * 50%),
       oklch(0.72 0.17 165 / 0.4),
       transparent 70%
     );
-  }
-  .hero-bg[data-active="true"] .hero-bg-spot {
-    opacity: 1;
   }
   .hero-bg-blob-a {
     transform: translate3d(calc(var(--mx) * 180px), calc(var(--my) * 120px), 60px);
