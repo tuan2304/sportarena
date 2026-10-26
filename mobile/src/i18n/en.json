@@ -149,7 +149,19 @@
     "basePrice": "Base price",
     "pickTime": "Pick a Time",
     "filterPickleball": "🏓 Pickleball",
-    "filterTennis": "🎾 Tennis"
+    "filterTennis": "🎾 Tennis",
+    "detailHint": "Tap for details",
+    "detailOf": "View details of {court}",
+    "detailHours": "Opening hours",
+    "detailDeposit": "Booking deposit",
+    "detailDepositValue": "{percent}% deposit of the price (about {amount} for 1 hour at the base price).",
+    "detailPricing": "Prices",
+    "detailBaseHint": "Applies to hours outside the price slots below",
+    "detailNoRules": "This court has no separate price slots",
+    "detailSlot": "Price slot",
+    "detailEveryDay": "Every day",
+    "detailPolicy": "Cancellation policy:",
+    "detailClose": "Close"
   },
   "booking": {
     "loginTitle": "Not logged in",

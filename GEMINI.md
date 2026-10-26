@@ -287,3 +287,7 @@
     - Chống lạm dụng: giới hạn `forgotByIp` 5/giờ, `forgotByEmail` 3/giờ, luôn trả cùng kết quả dù email có tồn tại hay không. Mobile: chế độ "quên mật khẩu" trong AuthForm, `apiPostPublic`.
     - Test: unit (password-reset, parseForgotPasswordBody), Playwright mock (`e2e/password-reset.spec.ts`, vi + en), và `e2e-real/password-reset.spec.ts` với GoTrue thật (liên kết khôi phục → đổi mật khẩu → mật khẩu cũ hết hiệu lực, refresh token cũ bị thu hồi). `supabase/config.toml` thêm `/reset-password` vào redirect URLs; CI giữ dịch vụ thư.
     - Cần làm trên Supabase thật: thêm `https://<tên miền>/reset-password` vào Redirect URLs, cấu hình SMTP (xem DEPLOYMENT.md). Chưa kiểm tra trên thiết bị: chỉ typecheck mobile.
+- **2026-10-26 (Chi tiết sân dạng hộp thoại):**
+    - Web: mỗi thẻ sân ở bước "Chọn sân con" có nút **Chi tiết** mở hộp thoại ([court-detail-dialog.tsx](web/src/components/booking/picker/court-detail-dialog.tsx)): môn, mặt sân, giờ mở cửa, tiền cọc (kèm số tiền ví dụ), bảng giá (giá cơ bản + từng khung giờ, ngày áp dụng), chính sách hủy, nút "Chọn sân này". Bấm vào chính thẻ sân vẫn chỉ là chọn sân để đặt (không mở hộp thoại để khỏi cản luồng đặt).
+    - Mobile: chạm thẻ sân trong chi tiết cụm sân mở bảng trượt từ dưới lên (`CourtDetailSheet`) với cùng nội dung và nút "Chọn giờ đặt"; nút đặt sẵn trên thẻ vẫn đi thẳng tới màn đặt.
+    - Test: 4 ca Playwright (vi + en) cho hộp thoại; mock Supabase thêm một khung giá "Giờ vàng". Mobile chỉ qua typecheck.

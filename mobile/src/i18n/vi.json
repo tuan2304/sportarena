@@ -149,7 +149,19 @@
     "basePrice": "Giá cơ bản",
     "pickTime": "Chọn Giờ Đặt",
     "filterPickleball": "🏓 Pickleball",
-    "filterTennis": "🎾 Tennis"
+    "filterTennis": "🎾 Tennis",
+    "detailHint": "Chạm để xem chi tiết",
+    "detailOf": "Xem chi tiết {court}",
+    "detailHours": "Giờ mở cửa",
+    "detailDeposit": "Tiền cọc giữ chỗ",
+    "detailDepositValue": "Cọc {percent}% giá thuê (khoảng {amount} cho 1 giờ giá cơ bản).",
+    "detailPricing": "Bảng giá",
+    "detailBaseHint": "Áp dụng cho giờ không nằm trong khung giá bên dưới",
+    "detailNoRules": "Sân này chưa có khung giá riêng",
+    "detailSlot": "Khung giá",
+    "detailEveryDay": "Mọi ngày",
+    "detailPolicy": "Chính sách hủy:",
+    "detailClose": "Đóng"
   },
   "booking": {
     "loginTitle": "Chưa đăng nhập",

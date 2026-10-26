@@ -18,10 +18,12 @@ interface TimeSlotPickerProps {
   existingBookings: BusySlot[]
   clubOpenTime: string
   clubCloseTime: string
+  /** Chính sách hủy của cụm sân (đã dịch), hiện trong chi tiết sân */
+  cancelPolicy?: string
 }
 
 /** Luồng chọn sân → ngày → giờ → thời lượng, kèm tùy chọn mở ghép kèo. Mọi mốc giờ tính theo giờ Việt Nam. */
-export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubCloseTime }: TimeSlotPickerProps) {
+export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubCloseTime, cancelPolicy }: TimeSlotPickerProps) {
   const router = useRouter()
   const t = useTranslations('booking.picker')
 
@@ -129,6 +131,9 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
           courts={courts}
           selectedCourtId={selectedCourtId}
           onSelect={(courtId) => changeSelection({ courtId })}
+          clubOpenTime={clubOpenTime}
+          clubCloseTime={clubCloseTime}
+          cancelPolicy={cancelPolicy}
         />
 
         <DateStep

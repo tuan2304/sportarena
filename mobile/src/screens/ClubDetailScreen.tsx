@@ -1,4 +1,4 @@
-import { useI18n } from '../i18n'
+import { useI18n, type MessageKey } from '../i18n'
 import React, { useState, useEffect } from 'react'
 import {
   View,
@@ -9,11 +9,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
 } from 'react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { Club, Court } from '../types'
 import { openDirections } from '../lib/maps'
+import { formatVnd, weekdayShort } from '../lib/format'
+import { describePolicy } from '../shared/cancellation'
 import {
   MapPin,
   Clock,
@@ -26,12 +30,15 @@ import {
   ChevronLeft,
   Calendar,
   Navigation,
+  ChevronRight,
+  X,
 } from 'lucide-react-native'
 
 export default function ClubDetailScreen({ route, navigation }: any) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const { clubId } = route.params
   const [club, setClub] = useState<Club | null>(null)
+  const [detail, setDetail] = useState<Court | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -167,7 +174,14 @@ export default function ClubDetailScreen({ route, navigation }: any) {
 
           <View style={styles.courtsList}>
             {club.courts?.map((court) => (
-              <View key={court.id} style={styles.courtCard}>
+              <TouchableOpacity
+                key={court.id}
+                style={styles.courtCard}
+                activeOpacity={0.85}
+                onPress={() => setDetail(court)}
+                accessibilityRole="button"
+                accessibilityLabel={t('clubs.detailOf', { court: court.name })}
+              >
                 <View style={styles.courtCardHeader}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.courtName}>{court.name}</Text>
@@ -197,16 +211,133 @@ export default function ClubDetailScreen({ route, navigation }: any) {
                     <Text style={styles.bookBtnText}>{t('clubs.pickTime')}</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+
+                <View style={styles.detailHint}>
+                  <Text style={styles.detailHintText}>{t('clubs.detailHint')}</Text>
+                  <ChevronRight size={14} color={colors.textMuted} />
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
       </ScrollView>
+
+      <CourtDetailSheet
+        court={detail}
+        club={club}
+        onClose={() => setDetail(null)}
+        onBook={(court) => {
+          setDetail(null)
+          handleBookCourt(court)
+        }}
+        lang={lang}
+      />
     </View>
   )
 }
 
+/** Hộp thoại trượt từ dưới lên: chi tiết một sân con (thông tin, tiền cọc, bảng giá theo khung giờ, chính sách hủy). */
+function CourtDetailSheet({ court, club, onClose, onBook, lang }: { court: Court | null; club: Club; onClose: () => void; onBook: (court: Court) => void; lang: 'vi' | 'en' }) {
+  const { t } = useI18n()
+  const rules = [...(court?.court_pricing_rules ?? [])].sort((a, b) => a.start_time.localeCompare(b.start_time))
+  const depositSample = court ? Math.round((Number(court.base_price_per_hour) * court.deposit_percentage) / 100) : 0
+
+  return (
+    <Modal visible={court !== null} animationType="slide" transparent onRequestClose={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('clubs.detailClose')} />
+      {court && (
+        <View style={styles.sheet}>
+          <View style={styles.sheetHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sheetTitle}>{court.name}</Text>
+              <Text style={styles.courtSurface}>
+                {t(`owner.sport.${court.sport_type}` as MessageKey)} • {court.surface_type || t('clubs.standard')}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.sheetClose} accessibilityRole="button" accessibilityLabel={t('clubs.detailClose')}>
+              <X size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
+            <View style={styles.factRow}>
+              <View style={styles.fact}>
+                <Text style={styles.factLabel}>{t('clubs.detailHours')}</Text>
+                <Text style={styles.factValue}>
+                  {club.open_time.slice(0, 5)} - {club.close_time.slice(0, 5)}
+                </Text>
+              </View>
+              <View style={styles.fact}>
+                <Text style={styles.factLabel}>{t('clubs.detailDeposit')}</Text>
+                <Text style={styles.factValue}>{court.deposit_percentage}%</Text>
+              </View>
+            </View>
+            <Text style={styles.hintText}>{t('clubs.detailDepositValue', { percent: court.deposit_percentage, amount: formatVnd(depositSample) })}</Text>
+
+            <Text style={styles.sectionTitle}>{t('clubs.detailPricing')}</Text>
+            <View style={styles.rulesBox}>
+              <View style={styles.ruleRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.ruleName}>{t('clubs.basePrice')}</Text>
+                  <Text style={styles.hintText}>{rules.length > 0 ? t('clubs.detailBaseHint') : t('clubs.detailNoRules')}</Text>
+                </View>
+                <Text style={styles.priceValue}>{t('common.perHour', { price: Number(court.base_price_per_hour).toLocaleString('vi-VN') })}</Text>
+              </View>
+              {rules.map((rule, index) => {
+                const days = [...new Set(rule.days_of_week ?? [])].sort()
+                return (
+                  <View key={rule.id ?? index} style={[styles.ruleRow, styles.ruleDivider]}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.ruleName}>{rule.name || t('clubs.detailSlot')}</Text>
+                      <Text style={styles.hintText}>
+                        {rule.start_time.slice(0, 5)} - {rule.end_time.slice(0, 5)} •{' '}
+                        {days.length === 0 || days.length >= 7 ? t('clubs.detailEveryDay') : days.map((d) => weekdayShort(d, lang)).join(', ')}
+                      </Text>
+                    </View>
+                    <Text style={styles.priceValue}>{t('common.perHour', { price: Number(rule.price_per_hour).toLocaleString('vi-VN') })}</Text>
+                  </View>
+                )
+              })}
+            </View>
+
+            <View style={styles.policyRow}>
+              <ShieldCheck size={16} color={colors.primary} />
+              <Text style={styles.hintText}>
+                <Text style={styles.ruleName}>{t('clubs.detailPolicy')} </Text>
+                {describePolicy(club.free_cancel_hours ?? 24, lang)}
+              </Text>
+            </View>
+          </ScrollView>
+
+          <TouchableOpacity style={styles.sheetBook} activeOpacity={0.85} onPress={() => onBook(court)} accessibilityRole="button">
+            <Calendar size={16} color={colors.white} />
+            <Text style={styles.bookBtnText}>{t('clubs.pickTime')}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </Modal>
+  )
+}
+
 const styles = StyleSheet.create({
+  detailHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 2 },
+  detailHintText: { color: colors.textMuted, fontSize: 11 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  sheet: { backgroundColor: colors.card, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 16, maxHeight: '85%', gap: 12 },
+  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  sheetTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '800' },
+  sheetClose: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginTop: -8, marginRight: -8 },
+  factRow: { flexDirection: 'row', gap: 10 },
+  fact: { flex: 1, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.cardBorder, padding: 12, gap: 2 },
+  factLabel: { color: colors.textMuted, fontSize: 11 },
+  factValue: { color: colors.textPrimary, fontSize: 15, fontWeight: '700' },
+  hintText: { color: colors.textSecondary, fontSize: 12, lineHeight: 17, flexShrink: 1 },
+  rulesBox: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.cardBorder },
+  ruleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+  ruleDivider: { borderTopWidth: 1, borderTopColor: colors.cardBorder },
+  ruleName: { color: colors.textPrimary, fontSize: 13, fontWeight: '700' },
+  policyRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  sheetBook: { minHeight: 48, borderRadius: 12, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   directionsBtn: {
     flexDirection: 'row',
     alignItems: 'center',

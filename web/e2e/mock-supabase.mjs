@@ -16,7 +16,9 @@ const court = {
   base_price_per_hour: 120000,
   deposit_percentage: 30,
   is_active: true,
-  court_pricing_rules: [],
+  court_pricing_rules: [
+    { id: '33333333-3333-4333-8333-333333333331', name: 'Giờ vàng', start_time: '17:00:00', end_time: '21:00:00', price_per_hour: 180000, days_of_week: [1, 2, 3, 4, 5] },
+  ],
 }
 
 const club = {

@@ -37,6 +37,8 @@ export interface Club {
 }
 
 export interface PricingRule {
+  id?: string
+  name?: string
   start_time: string
   end_time: string
   days_of_week: number[] | null

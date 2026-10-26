@@ -26,6 +26,11 @@ const WEEKDAYS = {
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 }
 
+/** Thứ trong tuần dạng ngắn (0 = Chủ nhật). */
+export function weekdayShort(day: number, lang: 'vi' | 'en' = 'vi'): string {
+  return WEEKDAYS[lang][((day % 7) + 7) % 7]
+}
+
 /** Nhãn ngắn cho ô chọn ngày: "T5 · 5/11". */
 export function dayChipLabel(dateKey: string, lang: 'vi' | 'en' = 'vi'): string {
   const [, m, d] = dateKey.split('-').map(Number)
