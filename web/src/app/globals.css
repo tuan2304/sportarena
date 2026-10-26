@@ -216,16 +216,23 @@
   .hero-bg {
     --mx: 0;
     --my: 0;
+    perspective: 900px;
   }
+  /* Lưới nghiêng 3D theo con trỏ, đồng thời trôi theo để thấy rõ chiều sâu */
   .hero-bg-grid {
-    background-position: calc(var(--mx) * -26px) calc(var(--my) * -26px);
+    transform: scale(1.25) rotateX(calc(var(--my) * -14deg)) rotateY(calc(var(--mx) * 16deg));
+    background-position: calc(var(--mx) * -40px) calc(var(--my) * -40px);
+    background-image:
+      linear-gradient(to right, oklch(0.5 0 0 / 0.14) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.5 0 0 / 0.14) 1px, transparent 1px);
+    will-change: transform;
   }
   .hero-bg-spot {
     opacity: 0;
     transition: opacity 0.5s ease;
     background: radial-gradient(
-      380px circle at calc(50% + var(--mx) * 50%) calc(50% + var(--my) * 50%),
-      oklch(0.72 0.17 165 / 0.22),
+      420px circle at calc(50% + var(--mx) * 50%) calc(50% + var(--my) * 50%),
+      oklch(0.72 0.17 165 / 0.4),
       transparent 70%
     );
   }
@@ -233,11 +240,11 @@
     opacity: 1;
   }
   .hero-bg-blob-a {
-    transform: translate3d(calc(var(--mx) * 70px), calc(var(--my) * 50px), 0);
+    transform: translate3d(calc(var(--mx) * 180px), calc(var(--my) * 120px), 60px);
     will-change: transform;
   }
   .hero-bg-blob-b {
-    transform: translate3d(calc(var(--mx) * -90px), calc(var(--my) * -60px), 0);
+    transform: translate3d(calc(var(--mx) * -220px), calc(var(--my) * -140px), -60px);
     will-change: transform;
   }
   /* Skeleton đang tải */

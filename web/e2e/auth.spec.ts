@@ -22,6 +22,13 @@ for (const lang of ['vi', 'en'] as const) {
       await expect(page.getByText(USERS.player.name).first()).toBeVisible()
     })
 
+    test('bấm avatar/tên ở trang chủ mở trang hồ sơ', async ({ page }) => {
+      await login(page, 'player', lang)
+      await page.goto('/')
+      await page.getByRole('link', { name: lang === 'en' ? 'My profile' : 'Hồ sơ của tôi' }).click()
+      await expect(page).toHaveURL(/\/profile$/)
+    })
+
     test('lịch đặt của tôi hiện đơn đã cọc đúng ngôn ngữ', async ({ page }) => {
       await login(page, 'player', lang)
       await page.goto('/my-bookings')

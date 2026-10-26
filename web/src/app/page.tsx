@@ -14,6 +14,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { SPORT_IDS } from '@/lib/constants'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { Logo } from '@/components/brand/logo'
+import { Avatar } from '@/components/profile/avatar'
 import { HeroBackground } from '@/components/home/hero-background'
 const FEATURES = [
   { key: 'calendar', icon: CalendarCheck, tone: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
@@ -33,7 +34,7 @@ export default async function Home() {
   if (user) {
     const { data } = await supabase
       .from('profiles')
-      .select('full_name, role')
+      .select('full_name, role, avatar_url')
       .eq('id', user.id)
       .single()
     profile = data
@@ -85,10 +86,12 @@ export default async function Home() {
               <div className="flex items-center gap-2 sm:gap-3">
                 <NotificationBell userId={user.id} />
 
-                <div className="flex items-center gap-2 pl-1">
-                  <div className="w-8 h-8 rounded-full bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
-                    {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
-                  </div>
+                <Link
+                  href="/profile"
+                  aria-label={th('myProfile')}
+                  className="flex items-center gap-2 pl-1 pr-1.5 py-0.5 rounded-full hover:bg-muted/60 transition-colors"
+                >
+                  <Avatar name={profile?.full_name} src={profile?.avatar_url} size={32} />
                   <div className="hidden sm:block text-left text-xs">
                     <div className="font-bold text-foreground truncate max-w-[120px]">
                       {profile?.full_name || t('userFallback')}
@@ -97,7 +100,7 @@ export default async function Home() {
                       {isAdmin ? th('roleAdmin') : isOwner ? th('roleOwner') : th('rolePlayer')}
                     </Badge>
                   </div>
-                </div>
+                </Link>
 
                 {isAdmin && (
                   <Link href="/admin">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { HeroScene } from './hero-scene'
 
 /**
  * Nền hero: lưới mờ, hai đốm sáng và một vệt sáng đi theo con trỏ.
@@ -16,7 +17,7 @@ export function HeroBackground() {
     const hero = root?.parentElement
     if (!root || !hero) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    if (!window.matchMedia('(pointer: fine)').matches) return
+    if (!window.matchMedia('(any-pointer: fine)').matches) return
 
     // Vị trí con trỏ chuẩn hóa về -1..1 (0 là giữa hero); cur đuổi theo target
     let targetX = 0
@@ -65,11 +66,12 @@ export function HeroBackground() {
       <div className="hero-bg-grid absolute inset-0 bg-grid" />
       <div className="hero-bg-spot absolute inset-0" />
       <div className="hero-bg-blob-a absolute top-10 left-[12%]">
-        <div className="w-[420px] h-[420px] bg-emerald-500/20 rounded-full blur-[110px] animate-float" />
+        <div className="w-[420px] h-[420px] bg-emerald-500/35 rounded-full blur-[90px] animate-float" />
       </div>
       <div className="hero-bg-blob-b absolute bottom-0 right-[8%]">
-        <div className="w-[360px] h-[360px] bg-amber-400/20 rounded-full blur-[110px] animate-float-slow" />
+        <div className="w-[360px] h-[360px] bg-amber-400/35 rounded-full blur-[90px] animate-float-slow" />
       </div>
+      <HeroScene />
     </div>
   )
 }

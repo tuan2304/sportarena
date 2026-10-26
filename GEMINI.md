@@ -297,3 +297,5 @@
     - Test: `club-overlay.spec.ts` (6 ca), `past-slots.spec.ts` (2 ca, cố định đồng hồ 14:30 VN), `booking-slots.test.ts`. Mobile chỉ qua typecheck.
 - **2026-10-26 (Nền trang chủ chạy theo con trỏ):**
     - [hero-background.tsx](web/src/components/home/hero-background.tsx): trong hero, lưới mờ và hai đốm sáng trượt lệch nhau (thị sai) theo con trỏ, thêm vệt sáng đi theo con trỏ. Mượt dần bằng rAF và ghi thẳng biến CSS `--mx/--my` nên không render lại React; style ở `globals.css` (`.hero-bg-*`). Tắt khi người dùng giảm chuyển động hoặc màn hình cảm ứng. Test `hero-background.spec.ts`.
+    - [hero-scene.tsx](web/src/components/home/hero-scene.tsx): cảnh **Three.js 3D** các quả bóng thể thao (bóng đá, bóng rổ, tennis, pickleball, bóng chuyền, cầu lông) lơ lửng, xoay, camera và từng quả lệch theo chuột (thị sai theo độ sâu). Texture vẽ bằng canvas nên không tải ảnh. `three` nạp động (không vào bundle đầu), dừng khi hero khuất/tab ẩn, giảm chuyển động thì vẽ một khung tĩnh, không có WebGL thì bỏ qua và giữ nền CSS. Bóng đặt hai bên để chừa giữa trang cho tiêu đề.
+    - Trang chủ: khối avatar + tên ở header là liên kết tới `/profile` (trước đó chỉ là `div`).
