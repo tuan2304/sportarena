@@ -263,6 +263,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
               clubOpenTime={club.open_time || '06:00:00'}
               clubCloseTime={club.close_time || '23:00:00'}
               cancelPolicy={describePolicy(club.free_cancel_hours, lang)}
+              serverNow={now.getTime()}
             />
           ) : (
             <div role="status" className="p-8 text-center border border-dashed rounded-xl text-sm text-muted-foreground">

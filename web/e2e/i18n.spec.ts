@@ -59,6 +59,7 @@ test.describe('Đa ngôn ngữ Việt - Anh', () => {
   })
 
   test('CSP vẫn đúng và không vi phạm khi dùng tiếng Anh', async ({ browser }) => {
+    test.setTimeout(90_000) // trang chủ có cảnh WebGL (vẽ bằng phần mềm trên CI) nên tải nặng hơn mức mặc định
     const context = await browser.newContext({ locale: 'en-US' })
     const page = await context.newPage()
     const problems: string[] = []

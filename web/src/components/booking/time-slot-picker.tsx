@@ -20,23 +20,36 @@ interface TimeSlotPickerProps {
   clubCloseTime: string
   /** Chính sách hủy của cụm sân (đã dịch), hiện trong chi tiết sân */
   cancelPolicy?: string
+  /**
+   * Mốc "bây giờ" do server chốt khi dựng trang. Server và trình duyệt cùng render từ giá trị này nên HTML khớp nhau
+   * (không lệch ô giờ ở ranh giới giờ); sau khi mount mới chuyển sang đồng hồ của trình duyệt.
+   */
+  serverNow: number
 }
 
 /** Luồng chọn sân → ngày → giờ → thời lượng, kèm tùy chọn mở ghép kèo. Mọi mốc giờ tính theo giờ Việt Nam. */
-export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubCloseTime, cancelPolicy }: TimeSlotPickerProps) {
+export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubCloseTime, cancelPolicy, serverNow }: TimeSlotPickerProps) {
   const router = useRouter()
   const t = useTranslations('booking.picker')
 
-  // Mốc "bây giờ" cập nhật mỗi 30 giây để ô giờ vừa tới tự bị gạch khi trang đang mở
-  const [nowMs, setNowMs] = useState(() => Date.now())
+  // Bắt đầu từ mốc của server (khớp HTML đã dựng), rồi theo đồng hồ trình duyệt và cập nhật mỗi 30 giây
+  // để ô giờ vừa tới tự bị gạch khi trang đang mở
+  const [nowMs, setNowMs] = useState(serverNow)
   useEffect(() => {
-    const timer = setInterval(() => setNowMs(Date.now()), 30_000)
-    return () => clearInterval(timer)
+    const tick = () => setNowMs(Date.now())
+    const first = setTimeout(tick, 0)
+    const timer = setInterval(tick, 30_000)
+    return () => {
+      clearTimeout(first)
+      clearInterval(timer)
+    }
   }, [])
   const todayKey = vnDateKey(nowMs)
 
   const [selectedCourtId, setSelectedCourtId] = useState<string>(courts[0]?.id || '')
-  const [selectedDate, setSelectedDate] = useState<string>(todayKey)
+  // Chưa chọn ngày thì luôn là hôm nay (tự sang ngày mới khi qua nửa đêm)
+  const [pickedDate, setSelectedDate] = useState<string | null>(null)
+  const selectedDate = pickedDate ?? todayKey
   const [pickedHour, setStartHour] = useState<number | null>(null)
   // Giờ đã chọn mà trôi qua trong lúc đang xem thì coi như bỏ chọn
   const startHour = pickedHour !== null && isHourPast(selectedDate, pickedHour, nowMs) ? null : pickedHour

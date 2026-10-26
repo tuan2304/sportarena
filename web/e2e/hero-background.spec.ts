@@ -10,9 +10,10 @@ test.describe('Nền hero tự chuyển động khi mở trang', () => {
     await expect.poll(async () => (await bg.evaluate((el) => el.style.getPropertyValue('--mx'))) !== '', { timeout: 20_000 }).toBe(true)
     const first = await mx()
     const firstX = (await blob.boundingBox())!.x
-    // Chu kỳ ~18 giây nên sau vài giây giá trị phải khác rõ rệt
+    // Chu kỳ ~18 giây nên sau vài giây giá trị phải khác rõ rệt; đọc vị trí đốm sáng trong cùng vòng poll
+    // để không lệch khung hình với biến CSS
     await expect.poll(async () => Math.abs((await mx()) - first), { timeout: 20_000 }).toBeGreaterThan(0.15)
-    expect(Math.abs((await blob.boundingBox())!.x - firstX)).toBeGreaterThan(10)
+    await expect.poll(async () => Math.abs((await blob.boundingBox())!.x - firstX), { timeout: 20_000 }).toBeGreaterThan(10)
   })
 
   test('người dùng giảm chuyển động thì nền đứng yên', async ({ page }) => {
