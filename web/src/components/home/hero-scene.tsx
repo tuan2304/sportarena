@@ -3,8 +3,9 @@
 import { useEffect, useRef } from 'react'
 import type * as THREE from 'three'
 import { stepBodies, type Body } from '@/lib/ball-physics'
+import { ballTexture, type BallKind } from '@/components/three/ball-texture'
 
-type Kind = 'soccer' | 'basketball' | 'tennis' | 'pickleball' | 'volleyball' | 'shuttlecock'
+type Kind = BallKind | 'shuttlecock'
 
 /** Vị trí xuất phát chuẩn hóa: x, y theo nửa bề rộng/cao khung nhìn (-1..1), s là cỡ. Mọi quả cùng một mặt phẳng để va chạm trông đúng. */
 const LAYOUT: Array<{ kind: Kind; x: number; y: number; s: number; spin: number }> = [
@@ -17,105 +18,6 @@ const LAYOUT: Array<{ kind: Kind; x: number; y: number; s: number; spin: number 
   { kind: 'tennis', x: 0.5, y: 0.88, s: 0.5, spin: -0.4 },
   { kind: 'pickleball', x: -0.96, y: -0.08, s: 0.55, spin: 0.5 },
 ]
-
-const TAU = Math.PI * 2
-
-/** Texture trải phẳng (equirectangular) vẽ bằng canvas cho từng loại bóng, không cần tải ảnh. */
-function ballTexture(kind: Exclude<Kind, 'shuttlecock'>): HTMLCanvasElement {
-  const W = 1024
-  const H = 512
-  const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
-  const g = canvas.getContext('2d')!
-
-  // Ellipse bù méo ở gần cực để chấm tròn trên mặt cầu vẫn tròn
-  const dot = (u: number, v: number, r: number, color: string) => {
-    const lat = (0.5 - v) * Math.PI
-    const stretch = 1 / Math.max(Math.cos(lat), 0.25)
-    g.fillStyle = color
-    g.beginPath()
-    g.ellipse(u * W, v * H, r * stretch, r, 0, 0, TAU)
-    g.fill()
-  }
-  const curve = (fn: (u: number) => number, color: string, width: number, shift = 0) => {
-    g.strokeStyle = color
-    g.lineWidth = width
-    g.beginPath()
-    for (let x = 0; x <= W; x += 4) {
-      const y = fn(((x / W) + shift) % 1) * H
-      if (x === 0) g.moveTo(x, y)
-      else g.lineTo(x, y)
-    }
-    g.stroke()
-  }
-
-  if (kind === 'soccer') {
-    g.fillStyle = '#f6f6f2'
-    g.fillRect(0, 0, W, H)
-    // 12 đỉnh của khối 20 mặt = vị trí 12 mảng ngũ giác đen
-    const phi = (1 + Math.sqrt(5)) / 2
-    const verts: Array<[number, number, number]> = []
-    for (const a of [-1, 1]) for (const b of [-phi, phi]) {
-      verts.push([0, a, b], [a, b, 0], [b, 0, a])
-    }
-    for (const [x, y, z] of verts) {
-      const len = Math.hypot(x, y, z)
-      const lat = Math.asin(y / len)
-      const lon = Math.atan2(z, x)
-      dot((lon / TAU + 0.5) % 1, 0.5 - lat / Math.PI, 30, '#17181c')
-    }
-  } else if (kind === 'basketball') {
-    g.fillStyle = '#e4691f'
-    g.fillRect(0, 0, W, H)
-    const line = '#23140b'
-    g.strokeStyle = line
-    g.lineWidth = 9
-    g.beginPath()
-    g.moveTo(0, H / 2)
-    g.lineTo(W, H / 2)
-    g.moveTo(0, 0)
-    g.lineTo(0, H)
-    g.moveTo(W / 2, 0)
-    g.lineTo(W / 2, H)
-    g.stroke()
-    curve((u) => 0.5 + 0.34 * Math.sin(u * TAU * 2), line, 8)
-    curve((u) => 0.5 - 0.34 * Math.sin(u * TAU * 2), line, 8)
-  } else if (kind === 'tennis') {
-    g.fillStyle = '#c9e23a'
-    g.fillRect(0, 0, W, H)
-    curve((u) => 0.5 + 0.3 * Math.sin(u * TAU), '#f7f9ec', 16)
-    curve((u) => 0.5 + 0.3 * Math.sin(u * TAU), '#f7f9ec', 16, 0.5)
-  } else if (kind === 'pickleball') {
-    g.fillStyle = '#f3d830'
-    g.fillRect(0, 0, W, H)
-    for (let row = 1; row < 11; row++) {
-      const v = row / 11
-      const count = 18
-      for (let i = 0; i < count; i++) {
-        dot((i + (row % 2 ? 0.5 : 0)) / count, v, 11, '#b8960d')
-      }
-    }
-  } else {
-    // volleyball: ba dải màu xen kẽ
-    const colors = ['#f6f1df', '#2f6fdd', '#f3c316']
-    const bands = 12
-    for (let i = 0; i < bands; i++) {
-      g.fillStyle = colors[i % 3]
-      g.fillRect((i / bands) * W, 0, W / bands + 1, H)
-    }
-    g.strokeStyle = 'rgba(20, 24, 40, 0.55)'
-    g.lineWidth = 5
-    for (let i = 0; i < bands; i++) {
-      g.beginPath()
-      g.moveTo((i / bands) * W, 0)
-      g.lineTo((i / bands) * W, H)
-      g.stroke()
-    }
-    curve((u) => 0.5 + 0.18 * Math.sin(u * TAU * 3), 'rgba(20, 24, 40, 0.55)', 5)
-  }
-  return canvas
-}
 
 /**
  * Cảnh 3D các quả bóng thể thao nảy qua lại trong khung hero ngay khi mở trang (không cần chuột): bay thẳng,
@@ -166,6 +68,8 @@ export function HeroScene() {
       const disposables: Array<{ dispose: () => void }> = []
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const compact = window.innerWidth < 700
+      // Điện thoại: bóng nhỏ hơn để không che chữ tiêu đề
+      const sizeK = compact ? 0.68 : 1
       const layout = compact ? LAYOUT.filter((_, i) => i < 6) : LAYOUT
 
       const textures = new Map<string, THREE.CanvasTexture>()
@@ -256,7 +160,7 @@ export function HeroScene() {
         const u = unit()
         for (const item of items) {
           const { spec, body } = item
-          const size = spec.s * u * 0.12
+          const size = spec.s * u * 0.12 * sizeK
           body.r = size * (spec.kind === 'shuttlecock' ? 0.9 : 1.05)
           body.mass = body.r * body.r
           if (!item.ready) {
@@ -288,7 +192,7 @@ export function HeroScene() {
           }
 
           object.position.set(body.x, body.y, 0)
-          object.scale.setScalar(spec.s * u * 0.12)
+          object.scale.setScalar(spec.s * u * 0.12 * sizeK)
           // Lăn theo hướng đang bay: đổi chiều quay ngay khi bị va chạm hay bật tường
           const roll = (speedNow / Math.max(body.r, 0.01)) * 0.8
           if (spec.kind === 'shuttlecock') {
