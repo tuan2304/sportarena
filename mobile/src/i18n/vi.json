@@ -337,7 +337,7 @@
       "pinHint": "Hãy đứng tại sân rồi chọn dùng vị trí hiện tại.",
       "pinUseCurrent": "Dùng vị trí hiện tại",
       "pinRemove": "Gỡ vị trí",
-      "hiddenNoPayment": "Chưa liên kết ngân hàng nên cụm sân chưa hiện cho khách. Mở trang web của chủ sân, mục Thanh toán để liên kết ngân hàng hoặc PayOS.",
+      "hiddenNoPayment": "Chưa liên kết ngân hàng nên cụm sân chưa hiện cho khách. Bấm \"Liên kết ngân hàng\" bên dưới để khách thanh toán cọc.",
       "locationPermission": "Cần cho phép truy cập vị trí để ghim sân lên bản đồ.",
       "locationFailed": "Không lấy được vị trí. Hãy bật GPS và thử lại.",
       "edit": "Sửa",
@@ -387,6 +387,20 @@
       "pickleball": "Pickleball",
       "tennis": "Tennis",
       "basketball": "Bóng rổ"
+    },
+    "bank": {
+      "link": "Liên kết ngân hàng",
+      "linked": "Ngân hàng: {bank}",
+      "title": "Ngân hàng nhận cọc của {club}",
+      "hint": "Khách quét mã VietQR của tài khoản này, bấm \"Tôi đã chuyển khoản\" và bạn đối chiếu sao kê rồi xác nhận đơn. Tiền về thẳng tài khoản của bạn. Có tài khoản thì cụm sân mới hiện cho khách.",
+      "bank": "Ngân hàng",
+      "number": "Số tài khoản",
+      "name": "Tên chủ tài khoản",
+      "saveEnable": "Lưu & bật",
+      "update": "Cập nhật tài khoản",
+      "remove": "Gỡ tài khoản",
+      "removeTitle": "Gỡ tài khoản nhận cọc của \"{club}\"?",
+      "removeText": "Các đơn đang chờ chuyển khoản vẫn giữ nguyên. Nếu không còn kênh thanh toán nào, cụm sân sẽ ẩn khỏi danh sách của khách."
     },
     "images": {
       "title": "Ảnh của {club}",

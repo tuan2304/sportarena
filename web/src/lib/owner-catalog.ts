@@ -5,6 +5,7 @@ import { getClubDeletionBlocker, getCourtDeletionBlocker } from '@/lib/deletion-
 import { ownImagePath, validateClubImages } from '@/lib/image-upload'
 import { isValidLatLng } from '@/lib/maps'
 import { validatePricingRule, type PricingRuleInput } from '@/lib/pricing-rule'
+import { validateBankAccount, type BankAccountInput } from '@/lib/vietqr'
 
 /**
  * Tạo cụm sân, sân con và khung giá của chủ sân. Dùng chung cho server action của web và API của app mobile.
@@ -263,6 +264,45 @@ export async function updateClubForOwner(supabase: Client, user: User, clubId: s
     console.error('updateClub lỗi', error)
     return { error: 'Không lưu được thông tin cụm sân. Vui lòng thử lại.' } as Failure
   }
+  return { success: true as const }
+}
+
+/**
+ * Lưu tài khoản ngân hàng nhận cọc (chuyển khoản VietQR) của cụm sân mình và bật cờ accepts_manual_transfer.
+ * Người dùng không có quyền ghi vào bảng và cờ này, nên ghi bằng `admin` (service_role) sau khi đã kiểm tra quyền sở hữu.
+ */
+export async function saveBankAccountForOwner(supabase: Client, admin: Client, user: User, clubId: string, input: BankAccountInput) {
+  const owned = await ownedClub(supabase, user, clubId)
+  if ('error' in owned) return owned
+
+  const parsed = validateBankAccount(input)
+  if (!parsed.ok) return { error: parsed.error } as Failure
+
+  const { error } = await admin.from('club_bank_accounts').upsert({
+    club_id: clubId,
+    bank_bin: parsed.value.bin,
+    account_number: parsed.value.accountNumber,
+    account_name: parsed.value.accountName,
+  })
+  if (error) {
+    console.error('saveBankAccount lỗi', error)
+    return { error: 'Không thể lưu tài khoản. Vui lòng thử lại.' } as Failure
+  }
+  await admin.from('clubs').update({ accepts_manual_transfer: true }).eq('id', clubId)
+  return { success: true as const }
+}
+
+/** Gỡ tài khoản nhận cọc và tắt cờ accepts_manual_transfer. Các đơn đang chờ chuyển khoản vẫn giữ nguyên. */
+export async function removeBankAccountForOwner(supabase: Client, admin: Client, user: User, clubId: string) {
+  const owned = await ownedClub(supabase, user, clubId)
+  if ('error' in owned) return owned
+
+  const { error } = await admin.from('club_bank_accounts').delete().eq('club_id', clubId)
+  if (error) {
+    console.error('removeBankAccount lỗi', error)
+    return { error: 'Không thể gỡ tài khoản. Vui lòng thử lại.' } as Failure
+  }
+  await admin.from('clubs').update({ accepts_manual_transfer: false }).eq('id', clubId)
   return { success: true as const }
 }
 

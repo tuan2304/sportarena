@@ -8,6 +8,8 @@ import {
   deleteClubForOwner,
   deleteCourtForOwner,
   deletePricingRuleForOwner,
+  removeBankAccountForOwner,
+  saveBankAccountForOwner,
   setClubImagesForOwner,
   updateClubForOwner,
   updateClubLocationForOwner,
@@ -24,10 +26,10 @@ type Tables = Record<string, Row[]>
  */
 function fakeClient(tables: Tables = {}, options: { failWith?: string } = {}) {
   const removedFiles: string[] = []
-  const store: Tables = { profiles: [], clubs: [], courts: [], court_pricing_rules: [], bookings: [], payments: [], subscription_payments: [], ...tables }
+  const store: Tables = { profiles: [], clubs: [], courts: [], court_pricing_rules: [], bookings: [], payments: [], subscription_payments: [], club_bank_accounts: [], ...tables }
 
   function builder(table: string) {
-    let op: 'select' | 'insert' | 'update' | 'delete' = 'select'
+    let op: 'select' | 'insert' | 'upsert' | 'update' | 'delete' = 'select'
     let payload: Row = {}
     const filters: Array<[string, unknown]> = []
     const inFilters: Array<[string, unknown[]]> = []
@@ -37,8 +39,9 @@ function fakeClient(tables: Tables = {}, options: { failWith?: string } = {}) {
 
     function run(): { data: Row[] | null; error: { message: string } | null } {
       if (options.failWith && op !== 'select') return { data: null, error: { message: options.failWith } }
-      if (op === 'insert') {
-        const row = { id: 'new-id', ...payload }
+      if (op === 'insert' || op === 'upsert') {
+        if (op === 'upsert') store[table] = store[table].filter((r) => r.club_id !== payload.club_id)
+        const row = op === 'upsert' ? { ...payload } : { id: 'new-id', ...payload }
         store[table].push(row)
         return { data: [row], error: null }
       }
@@ -52,6 +55,11 @@ function fakeClient(tables: Tables = {}, options: { failWith?: string } = {}) {
       select: () => api,
       insert(row: Row) {
         op = 'insert'
+        payload = row
+        return api
+      },
+      upsert(row: Row) {
+        op = 'upsert'
         payload = row
         return api
       },
@@ -246,6 +254,56 @@ describe('sửa thông tin cụm sân', () => {
     expect(await updateClubForOwner(client, user, 'club-1', { openTime: '6h' })).toEqual({ error: 'Giờ mở cửa hoặc đóng cửa không đúng định dạng HH:MM' })
     expect(await updateClubForOwner(client, user, 'club-1', { openTime: '05:30', closeTime: '22:30' })).toEqual({ success: true })
     expect(store.clubs[0]).toMatchObject({ open_time: '05:30', close_time: '22:30' })
+  })
+})
+
+describe('liên kết ngân hàng', () => {
+  const tables = () => ({
+    clubs: [
+      { id: 'club-1', owner_id: 'user-1', accepts_manual_transfer: false },
+      { id: 'club-2', owner_id: OTHER, accepts_manual_transfer: false },
+    ],
+  })
+  const input = { bin: '970436', accountNumber: '0123 456-789', accountName: 'Nguyễn Văn Á' }
+
+  it('lưu tài khoản đã chuẩn hóa và bật cờ nhận chuyển khoản', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await saveBankAccountForOwner(client, client, user, 'club-1', input)).toEqual({ success: true })
+    expect(store.club_bank_accounts).toEqual([{ club_id: 'club-1', bank_bin: '970436', account_number: '0123456789', account_name: 'NGUYEN VAN A' }])
+    expect(store.clubs[0].accepts_manual_transfer).toBe(true)
+  })
+
+  it('lưu lần nữa thì thay tài khoản cũ', async () => {
+    const { client, store } = fakeClient(tables())
+    await saveBankAccountForOwner(client, client, user, 'club-1', input)
+    await saveBankAccountForOwner(client, client, user, 'club-1', { ...input, accountNumber: '999999' })
+    expect(store.club_bank_accounts).toHaveLength(1)
+    expect(store.club_bank_accounts[0].account_number).toBe('999999')
+  })
+
+  it('không liên kết được cho cụm sân của người khác', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await saveBankAccountForOwner(client, client, user, 'club-2', input)).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+    expect(await removeBankAccountForOwner(client, client, user, 'club-2')).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+    expect(store.club_bank_accounts).toHaveLength(0)
+    expect(store.clubs[1].accepts_manual_transfer).toBe(false)
+  })
+
+  it('từ chối ngân hàng, số tài khoản hoặc tên không hợp lệ', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await saveBankAccountForOwner(client, client, user, 'club-1', { ...input, bin: '000000' })).toEqual({ error: 'Vui lòng chọn ngân hàng trong danh sách' })
+    expect(await saveBankAccountForOwner(client, client, user, 'club-1', { ...input, accountNumber: '12ab' })).toEqual({ error: 'Số tài khoản chỉ gồm 6 đến 20 chữ số' })
+    expect(await saveBankAccountForOwner(client, client, user, 'club-1', { ...input, accountName: '' })).toEqual({ error: 'Tên chủ tài khoản chỉ gồm chữ cái, từ 2 đến 60 ký tự' })
+    expect(store.club_bank_accounts).toHaveLength(0)
+    expect(store.clubs[0].accepts_manual_transfer).toBe(false)
+  })
+
+  it('gỡ tài khoản thì tắt cờ nhận chuyển khoản', async () => {
+    const { client, store } = fakeClient(tables())
+    await saveBankAccountForOwner(client, client, user, 'club-1', input)
+    expect(await removeBankAccountForOwner(client, client, user, 'club-1')).toEqual({ success: true })
+    expect(store.club_bank_accounts).toHaveLength(0)
+    expect(store.clubs[0].accepts_manual_transfer).toBe(false)
   })
 })
 
