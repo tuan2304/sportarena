@@ -58,18 +58,15 @@ export default async function MyBookingsPage() {
         cost_per_person,
         current_players,
         required_players,
-        booking:bookings (
+        start_time,
+        end_time,
+        court:courts (
           id,
-          start_time,
-          end_time,
-          court:courts (
+          name,
+          club:clubs (
             id,
             name,
-            club:clubs (
-              id,
-              name,
-              address
-            )
+            address
           )
         )
       )

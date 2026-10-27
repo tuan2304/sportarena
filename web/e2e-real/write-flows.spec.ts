@@ -132,6 +132,28 @@ test('khách đặt sân: giá do server tính, không trùng lịch, đúng gi�
   process.env.E2E_BOOKING_1 = booked.body.bookingId
 })
 
+test('khách 2 đặt 13:00 trong 3 tiếng khi khách 1 đã đặt trước từ 14:00: server chặn đặt chồng một phần, chỉ cho đặt sát nhau', async ({ request }) => {
+  const [first, second] = await Promise.all([createUser('player3', 'player', 'Khach Mot'), createUser('player4', 'player', 'Khach Hai')])
+
+  const held = await call(request, first, 'post', '/api/mobile/bookings', { courtId, ...vnSlot(5, 14) }) // 14:00-15:00
+  expect(held.status, JSON.stringify(held.body)).toBe(201)
+
+  // Bỏ qua giao diện, gọi thẳng API: 13:00-16:00 đè lên đơn của khách 1 → bị ràng buộc chống trùng lịch của Postgres chặn
+  for (const slot of [vnSlot(5, 13, 3), vnSlot(5, 13, 1.5), vnSlot(5, 14), vnSlot(5, 14, 2), vnSlot(5, 12, 3)]) {
+    const clash = await call(request, second, 'post', '/api/mobile/bookings', { courtId, ...slot })
+    expect(clash.status, JSON.stringify(slot)).toBe(400)
+    expect(clash.body.error).toMatch(/was just booked or is being held/)
+  }
+  expect(await rest('GET', `bookings?user_id=eq.${second.id}&select=id`)).toHaveLength(0)
+
+  // Sát nhau thì không chồng: 13:00-14:00 (kết thúc đúng lúc khách 1 bắt đầu) và 15:00-18:00 (sau khi khách 1 xong) đều đặt được
+  const before = await call(request, second, 'post', '/api/mobile/bookings', { courtId, ...vnSlot(5, 13) })
+  expect(before.status).toBe(201)
+  const after = await call(request, second, 'post', '/api/mobile/bookings', { courtId, ...vnSlot(5, 15, 3) })
+  expect(after.status).toBe(201)
+  expect(await rest('GET', `bookings?user_id=eq.${second.id}&select=id`)).toHaveLength(2)
+})
+
 test('chủ sân xác nhận cọc: đơn thành đã xác nhận, khoản cọc thành đã trả, khách nhận thông báo', async ({ request }) => {
   const bookingId = process.env.E2E_BOOKING_1!
   const stranger = await call(request, owner2, 'post', `/api/mobile/owner/bookings/${bookingId}/status`, { status: 'confirmed' })
@@ -220,6 +242,62 @@ test('đặt kèo ghép: tạo kèo, chỉ chủ kèo mới duyệt được ng�
   expect((await rest<{ status: string }>('GET', `match_participants?id=eq.${participant.id}&select=status`))[0].status).toBe('accepted')
   const [updated] = await rest<{ current_players: number }>('GET', `matches?id=eq.${match.id}&select=current_players`)
   expect(updated.current_players).toBe(2)
+})
+
+test('kèo theo khung giờ: qua giờ kết thúc thì hết trong danh sách, không xin vào hay được duyệt thêm; kèo chưa tới giờ vẫn nhận', async ({ request }) => {
+  // API không cho đặt giờ quá khứ nên dựng kèo đã qua giờ bằng service_role (đơn 3 tiếng trước, kéo dài 1 tiếng)
+  const pastStart = new Date(Date.now() - 3 * 3600_000).toISOString()
+  const pastEnd = new Date(Date.now() - 2 * 3600_000).toISOString()
+  const [pastBooking] = await rest<{ id: string }>('POST', 'bookings', { court_id: courtId, user_id: player.id, start_time: pastStart, end_time: pastEnd, total_price: 150000, deposit_amount: 45000, status: 'confirmed' })
+  const [pastMatch] = await rest<{ id: string }>('POST', 'matches', { booking_id: pastBooking.id, creator_id: player.id, title: 'Kèo hết giờ', sport_type: 'pickleball', required_players: 3 })
+
+  const futureSlot = vnSlot(9, 8)
+  const [futureBooking] = await rest<{ id: string }>('POST', 'bookings', { court_id: courtId, user_id: player.id, start_time: futureSlot.startTime, end_time: futureSlot.endTime, total_price: 150000, deposit_amount: 45000, status: 'confirmed' })
+  const [futureMatch] = await rest<{ id: string }>('POST', 'matches', { booking_id: futureBooking.id, creator_id: player.id, title: 'Kèo chưa tới giờ', sport_type: 'pickleball', required_players: 3 })
+
+  // Gọi REST bằng phiên người dùng, đúng như app mobile (RLS áp dụng)
+  const asUser = async (user: TestUser, method: 'GET' | 'POST', path: string, body?: unknown) => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method,
+      headers: { apikey: ANON_KEY, Authorization: `Bearer ${user.token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+    return { status: res.status, text: await res.text() }
+  }
+
+  // 1. Danh sách kèo (cùng truy vấn với web/mobile): chỉ còn kèo chưa kết thúc
+  const nowIso = encodeURIComponent(new Date().toISOString())
+  const list = await asUser(player2, 'GET', `matches?select=id,start_time,end_time,court:courts(name,club:clubs(name))&status=in.(open,full)&end_time=gt.${nowIso}`)
+  expect(list.status).toBe(200)
+  const rows = JSON.parse(list.text) as Array<{ id: string; start_time: string; end_time: string; court: { name: string; club: { name: string } } | null }>
+  expect(rows.map((m) => m.id)).toContain(futureMatch.id)
+  expect(rows.map((m) => m.id)).not.toContain(pastMatch.id)
+
+  // Người chơi khác thấy được giờ và sân của kèo dù không đọc được đơn đặt sân của chủ kèo (RLS của bookings)
+  const seen = rows.find((m) => m.id === futureMatch.id)!
+  expect(new Date(seen.start_time).toISOString()).toBe(futureSlot.startTime)
+  expect(new Date(seen.end_time).toISOString()).toBe(futureSlot.endTime)
+  expect(seen.court?.name).toBe('Sân VIP') // đã đổi tên ở ca trước
+  expect(seen.court?.club.name).toBe('Cụm Sân E2E')
+  const hidden = await asUser(player2, 'GET', `bookings?id=eq.${futureBooking.id}&select=id`)
+  expect(JSON.parse(hidden.text)).toEqual([])
+
+  // 2. Xin vào kèo (mobile insert thẳng vào bảng): kèo đã qua giờ bị RLS chặn, kèo chưa tới giờ vẫn nhận
+  const lateJoin = await asUser(player2, 'POST', 'match_participants', { match_id: pastMatch.id, user_id: player2.id, status: 'pending' })
+  expect(lateJoin.status).toBe(403)
+  const earlyJoin = await asUser(player2, 'POST', 'match_participants', { match_id: futureMatch.id, user_id: player2.id, status: 'pending' })
+  expect(earlyJoin.status).toBe(201)
+
+  // 3. Người đã xin từ trước khi kèo kết thúc: chủ kèo không duyệt thêm được nữa, nhưng vẫn từ chối được để dọn danh sách chờ
+  const [waiting] = await rest<{ id: string }>('POST', 'match_participants', { match_id: pastMatch.id, user_id: player2.id, status: 'pending' })
+  const approve = await call(request, player, 'post', `/api/mobile/matches/participants/${waiting.id}/respond`, { status: 'accepted' })
+  expect(approve.status).toBe(400)
+  expect(approve.body.error).toBe('This match has ended, so no more members can be approved')
+  expect((await rest<{ status: string }>('GET', `match_participants?id=eq.${waiting.id}&select=status`))[0].status).toBe('pending')
+
+  const reject = await call(request, player, 'post', `/api/mobile/matches/participants/${waiting.id}/respond`, { status: 'rejected' })
+  expect(reject.status).toBe(200)
+  expect((await rest<{ status: string }>('GET', `match_participants?id=eq.${waiting.id}&select=status`))[0].status).toBe('rejected')
 })
 
 test('vị trí và ảnh của cụm sân: chỉ nhận ảnh trong kho của cụm sân, gỡ ảnh thì file bị xóa', async ({ request }) => {

@@ -111,3 +111,42 @@ describe('vnHourSpan', () => {
     expect(vnHourSpan('2026-10-23T15:00:00Z', '2026-10-23T17:00:00Z')).toEqual({ startHour: 22, endHour: 24 })
   })
 })
+
+describe('khách 2 chọn 13:00 trong 3 tiếng nhưng khách 1 đã đặt trước từ 14:00', () => {
+  const base = { courtId: COURT, dateKey: DATE, closeHour: 22 }
+
+  it('khách 1 đặt 14:00-15:00: ô 13:00 chỉ đặt được 1 tiếng, 1,5/2/3 tiếng bị khóa', () => {
+    const list = [busy([14, 0], [15, 0])]
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 13, duration: 1 })).toBe(true)
+    for (const duration of [1.5, 2, 2.5, 3]) {
+      expect(isDurationAvailable({ ...base, busy: list, startHour: 13, duration })).toBe(false)
+    }
+  })
+
+  it('khách 1 đặt dài hơn (14:00-16:00): kết luận không đổi, và ô 14:00, 15:00 đều kín', () => {
+    const list = [busy([14, 0], [16, 0])]
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 13, duration: 3 })).toBe(false)
+    expect(isHourBooked(list, COURT, DATE, 14)).toBe(true)
+    expect(isHourBooked(list, COURT, DATE, 15)).toBe(true)
+    expect(isHourBooked(list, COURT, DATE, 13)).toBe(false)
+    expect(isHourBooked(list, COURT, DATE, 16)).toBe(false)
+  })
+
+  it('muốn chơi đủ 3 tiếng thì phải dời sang giờ sau khi khách 1 xong (15:00 trở đi)', () => {
+    const list = [busy([14, 0], [15, 0])]
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 15, duration: 3 })).toBe(true)
+    // Hoặc bắt đầu sớm hơn để kết thúc đúng lúc khách 1 bắt đầu: 11:00-14:00 (sát nhau không tính là chồng)
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 11, duration: 3 })).toBe(true)
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 12, duration: 3 })).toBe(false)
+  })
+
+  it('đơn của khách 1 đang giữ chỗ chờ cọc (pending) cũng chặn khách 2; đơn đã hủy thì không', () => {
+    expect(isDurationAvailable({ ...base, busy: [busy([14, 0], [15, 0], { status: 'pending' })], startHour: 13, duration: 3 })).toBe(false)
+    expect(isDurationAvailable({ ...base, busy: [busy([14, 0], [15, 0], { status: 'cancelled' })], startHour: 13, duration: 3 })).toBe(true)
+  })
+
+  it('khách 1 ở sân khác thì không ảnh hưởng', () => {
+    const list = [busy([14, 0], [15, 0], { court_id: 'court-2' })]
+    expect(isDurationAvailable({ ...base, busy: list, startHour: 13, duration: 3 })).toBe(true)
+  })
+})

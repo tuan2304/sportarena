@@ -11,6 +11,8 @@ interface MatchActionPanelProps {
   currentUserId: string | null
   isHost: boolean
   isFull: boolean
+  /** Đã qua giờ kết thúc: không còn nhận người, không còn nút xin tham gia */
+  ended: boolean
   userParticipant: MatchParticipantItem | undefined
   loading: boolean
   onJoinClick: () => void
@@ -24,6 +26,7 @@ export function MatchActionPanel({
   currentUserId,
   isHost,
   isFull,
+  ended,
   userParticipant,
   loading,
   onJoinClick,
@@ -63,7 +66,11 @@ export function MatchActionPanel({
 
         {/* Status & CTA Controls */}
         <div className="space-y-3 pt-2">
-          {!currentUserId ? (
+          {ended && !userParticipant ? (
+            <Button disabled className="w-full h-10 text-xs font-bold text-muted-foreground">
+              {t('ended')}
+            </Button>
+          ) : !currentUserId ? (
             <Link href={`/login?next=/matches/${match.id}`} className="block">
               <Button className="w-full h-10 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold cursor-pointer text-xs sm:text-sm">
                 {t('loginToJoin')}
@@ -74,7 +81,7 @@ export function MatchActionPanel({
               <div className="p-3 rounded-lg bg-muted text-xs text-center font-medium text-muted-foreground">
                 {t('youAreHost')}
               </div>
-              {match.status !== 'cancelled' && (
+              {match.status !== 'cancelled' && !ended && (
                 <Button
                   variant="outline"
                   disabled={loading}

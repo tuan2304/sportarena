@@ -55,24 +55,20 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
         full_name,
         avatar_url
       ),
-      booking:bookings (
+      start_time,
+      end_time,
+      court:courts (
         id,
-        start_time,
-        end_time,
-        total_price,
-        court:courts (
+        name,
+        sport_type,
+        club:clubs (
           id,
           name,
-          sport_type,
-          club:clubs (
-            id,
-            name,
-            address,
-            district,
-            city,
-            latitude,
-            longitude
-          )
+          address,
+          district,
+          city,
+          latitude,
+          longitude
         )
       )
     `)
@@ -115,6 +111,8 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           participants={(participants ?? []) as unknown as MatchDetailProps['participants']}
           initialMessages={initialMessages}
           currentUserId={user?.id || null}
+          // eslint-disable-next-line react-hooks/purity -- server component, chạy một lần mỗi request
+          serverNow={Date.now()}
         />
       </main>
     </div>

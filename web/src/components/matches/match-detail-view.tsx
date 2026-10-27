@@ -17,11 +17,14 @@ import type { MatchDetail, MatchParticipantItem, MatchMessage } from '@/componen
 
 import { toast } from 'sonner'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { matchPhase } from '@/lib/match-time'
 export interface MatchDetailProps {
   match: MatchDetail
   participants: MatchParticipantItem[]
   initialMessages?: MatchMessage[]
   currentUserId: string | null
+  /** Mốc "bây giờ" do server chốt (HTML server và trình duyệt khớp nhau); sau khi mount theo đồng hồ trình duyệt */
+  serverNow: number
 }
 
 export function MatchDetailView({
@@ -29,6 +32,7 @@ export function MatchDetailView({
   participants,
   initialMessages = [],
   currentUserId,
+  serverNow,
 }: MatchDetailProps) {
   const router = useRouter()
   const t = useTranslations('matches.detail')
@@ -43,6 +47,20 @@ export function MatchDetailView({
 
   const isFull = match.status === 'full' || match.current_players >= match.required_players
   const slotsLeft = Math.max(0, match.required_players - match.current_players)
+
+  // Cập nhật mỗi 30 giây để kèo tự chuyển "đang diễn ra" → "đã kết thúc" (hết nhận người) khi trang đang mở
+  const [nowMs, setNowMs] = useState(serverNow)
+  useEffect(() => {
+    const tick = () => setNowMs(Date.now())
+    const first = setTimeout(tick, 0)
+    const timer = setInterval(tick, 30_000)
+    return () => {
+      clearTimeout(first)
+      clearInterval(timer)
+    }
+  }, [])
+  const phase = matchPhase(match.start_time, match.end_time, nowMs)
+  const ended = phase === 'ended'
 
   // Real-time synchronization
   useEffect(() => {
@@ -179,13 +197,13 @@ export function MatchDetailView({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <MatchBanner match={match} isFull={isFull} slotsLeft={slotsLeft} />
+          <MatchBanner match={match} isFull={isFull} slotsLeft={slotsLeft} phase={phase} />
 
           <MatchRoster
             match={match}
             participants={participants}
             isHost={isHost}
-            isFull={isFull}
+            isFull={isFull || ended}
             loading={loading}
             onRespond={handleRespond}
           />
@@ -214,6 +232,7 @@ export function MatchDetailView({
             currentUserId={currentUserId}
             isHost={isHost}
             isFull={isFull}
+            ended={ended}
             userParticipant={userParticipant}
             loading={loading}
             onJoinClick={() => setIsJoinModalOpen(true)}

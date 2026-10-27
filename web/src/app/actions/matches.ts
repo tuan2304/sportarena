@@ -9,6 +9,7 @@ import { isMatchSkill } from '@/lib/constants'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { tr } from '@/lib/localize-error'
 import { respondToParticipant } from '@/lib/match-members'
+import { isMatchEnded } from '@/lib/match-time'
 export interface CreateMatchInput {
   bookingId: string
   title: string
@@ -129,7 +130,7 @@ export async function joinMatch(matchId: string, message?: string) {
 
   const { data: match, error: matchErr } = await admin
     .from('matches')
-    .select('id, creator_id, title, status')
+    .select('id, creator_id, title, status, end_time')
     .eq('id', matchId)
     .single()
 
@@ -138,6 +139,10 @@ export async function joinMatch(matchId: string, message?: string) {
   }
   if (match.creator_id === user.id) {
     return { error: await tr('Bạn là chủ tạo kèo này nên không cần gửi yêu cầu tham gia') }
+  }
+  // Qua giờ kết thúc của khung giờ đã đặt thì kèo không còn nhận người tham gia
+  if (isMatchEnded(match.end_time, Date.now())) {
+    return { error: await tr('Kèo này đã kết thúc, không còn nhận người tham gia') }
   }
   if (match.status !== 'open') {
     return { error: await tr('Kèo này hiện đã đóng hoặc đã đủ người tham gia') }

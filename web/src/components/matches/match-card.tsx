@@ -9,7 +9,10 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useLabels } from '@/i18n/labels'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { formatNumber, formatTime, formatShortDate } from '@/lib/format'
+import { matchPhase } from '@/lib/match-time'
 export interface MatchCardProps {
+  /** Mốc "bây giờ" do server chốt để biết kèo đang diễn ra hay chưa tới giờ */
+  nowMs?: number
   match: {
     id: string
     title: string
@@ -28,36 +31,35 @@ export interface MatchCardProps {
       avatar_url: string | null
       rating: number | null
     } | null
-    booking: {
+    /** Giờ và sân của kèo (bản sao từ đơn đặt sân, đọc công khai) */
+    start_time: string
+    end_time: string
+    court: {
       id: string
-      start_time: string
-      end_time: string
-      court: {
+      name: string
+      club: {
         id: string
         name: string
-        club: {
-          id: string
-          name: string
-          address: string | null
-          district: string | null
-        } | null
+        address: string | null
+        district: string | null
       } | null
     } | null
   }
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, nowMs }: MatchCardProps) {
   const t = useTranslations('matches.card')
   const labels = useLabels()
   const lang = useLocale() === 'en' ? 'en' : 'vi'
   const sportName = labels.sport(match.sport_type)
   const skill = skillInfo(match.skill_level)
 
-  const court = match.booking?.court
+  const court = match.court
   const club = court?.club
-  const startTime = match.booking?.start_time ? new Date(match.booking.start_time) : null
-  const endTime = match.booking?.end_time ? new Date(match.booking.end_time) : null
+  const startTime = match.start_time ? new Date(match.start_time) : null
+  const endTime = match.end_time ? new Date(match.end_time) : null
 
+  const isLive = nowMs !== undefined && matchPhase(match.start_time, match.end_time, nowMs) === 'live'
   const isFull = match.status === 'full' || match.current_players >= match.required_players
   const slotsLeft = Math.max(0, match.required_players - match.current_players)
 
@@ -117,6 +119,9 @@ export function MatchCard({ match }: MatchCardProps) {
             <div className="flex items-center gap-2 font-medium text-foreground">
               <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>{timeStr} • {dateStr}</span>
+              {isLive && (
+                <Badge className="bg-emerald-600 text-white text-xs py-0 px-1.5 font-bold">{t('live')}</Badge>
+              )}
             </div>
 
             {club && (

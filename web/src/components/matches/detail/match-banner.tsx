@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useLabels } from '@/i18n/labels'
 import { SportIcon } from '@/components/ui/sport-icon'
 import { formatTime, formatLongDate } from '@/lib/format'
+import type { MatchPhase } from '@/lib/match-time'
 import { DirectionsLinks } from '@/components/maps/directions-links'
 import { fullAddress } from '@/lib/maps'
 import type { MatchDetail } from './types'
@@ -14,18 +15,20 @@ interface MatchBannerProps {
   match: MatchDetail
   isFull: boolean
   slotsLeft: number
+  /** Chưa tới giờ, đang diễn ra hay đã kết thúc (theo giờ của khung đã đặt) */
+  phase: MatchPhase
 }
 
 /** Thẻ đầu trang: môn, trình độ, trạng thái chỗ trống, thời gian và địa điểm. */
-export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
+export function MatchBanner({ match, isFull, slotsLeft, phase }: MatchBannerProps) {
   const t = useTranslations('matches')
   const labels = useLabels()
   const lang = useLocale() === 'en' ? 'en' : 'vi'
   const skill = skillInfo(match.skill_level)
-  const court = match.booking?.court
+  const court = match.court
   const club = court?.club
-  const startTime = match.booking?.start_time ? new Date(match.booking.start_time) : null
-  const endTime = match.booking?.end_time ? new Date(match.booking.end_time) : null
+  const startTime = match.start_time ? new Date(match.start_time) : null
+  const endTime = match.end_time ? new Date(match.end_time) : null
 
   return (
     <Card className="border-border shadow-sm overflow-hidden">
@@ -46,13 +49,15 @@ export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
             className={
               match.status === 'cancelled'
                 ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30 text-xs font-bold'
-                : isFull
+                : phase === 'ended' || isFull
                 ? 'bg-muted text-muted-foreground border-border text-xs'
                 : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs font-bold'
             }
           >
             {match.status === 'cancelled'
               ? t('banner.cancelled')
+              : phase === 'ended'
+              ? t('banner.ended')
               : isFull
               ? t('card.full')
               : t('card.slotsLeft', { count: slotsLeft })}
@@ -78,10 +83,15 @@ export function MatchBanner({ match, isFull, slotsLeft }: MatchBannerProps) {
               <Clock className="w-3.5 h-3.5 text-amber-500" />
               {t('banner.time')}
             </div>
-            <div className="font-bold text-sm text-foreground">
-              {startTime && endTime
-                ? `${formatTime(startTime)} - ${formatTime(endTime)}`
-                : t('banner.timeTbd')}
+            <div className="font-bold text-sm text-foreground flex items-center gap-2 flex-wrap">
+              <span>
+                {startTime && endTime
+                  ? `${formatTime(startTime)} - ${formatTime(endTime)}`
+                  : t('banner.timeTbd')}
+              </span>
+              {phase === 'live' && (
+                <Badge className="bg-emerald-600 text-white text-xs py-0 px-1.5 font-bold">{t('banner.live')}</Badge>
+              )}
             </div>
             <div className="text-xs text-muted-foreground">
               {startTime && formatLongDate(startTime, lang)}

@@ -48,9 +48,11 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     supabase.rpc('player_public_stats', { p_user: id }),
     supabase
       .from('matches')
-      .select('id, title, sport_type, current_players, required_players, booking:bookings ( start_time, end_time )')
+      .select('id, title, sport_type, current_players, required_players, start_time, end_time')
       .eq('creator_id', id)
       .eq('status', 'open')
+      // Kèo đã qua giờ kết thúc không còn là "kèo đang mở"
+      .gt('end_time', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(6),
   ])
@@ -117,7 +119,6 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           ) : (
             <ul className="space-y-2">
               {(openMatches ?? []).map((m) => {
-                const booking = m.booking as unknown as { start_time: string; end_time: string } | null
                 return (
                   <li key={m.id}>
                     <Link href={`/matches/${m.id}`}>
@@ -125,11 +126,9 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
                         <CardContent className="p-4 flex items-center justify-between gap-3">
                           <div className="space-y-0.5 min-w-0">
                             <div className="font-bold text-sm truncate">{m.title}</div>
-                            {booking && (
-                              <div className="text-xs text-muted-foreground">
-                                {formatTime(booking.start_time)} - {formatTime(booking.end_time)} ({formatDate(booking.start_time)})
-                              </div>
-                            )}
+                            <div className="text-xs text-muted-foreground">
+                              {formatTime(m.start_time)} - {formatTime(m.end_time)} ({formatDate(m.start_time)})
+                            </div>
                           </div>
                           <Badge variant="outline" className="shrink-0">{t('playersCount', { current: m.current_players, required: m.required_players })}</Badge>
                         </CardContent>

@@ -83,6 +83,8 @@ export const EN_EXACT: Record<string, string> = {
   'Chỉ chủ phòng mới có quyền duyệt thành viên': 'Only the host can approve members',
   'Yêu cầu này đã được xử lý trước đó': 'This request has already been handled',
   'Kèo này đã đóng, không thể duyệt thêm thành viên': 'This match is closed, so no more members can be approved',
+  'Kèo này đã kết thúc, không còn nhận người tham gia': 'This match has ended and is no longer accepting players',
+  'Kèo này đã kết thúc, không thể duyệt thêm thành viên': 'This match has ended, so no more members can be approved',
   'Kèo đã đủ người, không thể duyệt thêm': 'The match is full, so no more members can be approved',
   'Không thể cập nhật yêu cầu': 'Could not update the request',
   'Bạn chưa tham gia kèo này': 'You have not joined this match',
@@ -149,10 +151,10 @@ export const EN_EXACT: Record<string, string> = {
   'Không tìm thấy sân con': 'Court not found',
   'Bạn không có quyền xóa sân con này': 'You are not allowed to delete this court',
   'Không lưu được vị trí. Vui lòng thử lại.': 'Could not save the location. Please try again.',
-  'Không thể xóa vì đã có đơn đặt hoặc giao dịch liên quan (xóa sẽ làm mất lịch sử thanh toán). Hãy tạm ngưng hoạt động thay vì xóa.':
-    'It cannot be deleted because it has related bookings or transactions (deleting would lose the payment history). Suspend it instead.',
   'Không lưu được thông tin cụm sân. Vui lòng thử lại.': 'Could not save the venue details. Please try again.',
   'Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng': 'Please enter all the bank account details',
+  'Không thể xóa vì đã có đơn đặt hoặc giao dịch liên quan (xóa sẽ làm mất lịch sử thanh toán). Hãy tạm ngưng hoạt động thay vì xóa.':
+    'It cannot be deleted because it has related bookings or transactions (deleting would lose the payment history). Suspend it instead.',
   'Vui lòng nhập đầy đủ thông tin khung giá': 'Please fill in all the price rule details',
   'Giờ không đúng định dạng HH:MM': 'Time must be in HH:MM format',
   'Giá mỗi giờ phải từ 1.000 đ đến 50.000.000 đ': 'The hourly rate must be between 1,000 đ and 50,000,000 đ',

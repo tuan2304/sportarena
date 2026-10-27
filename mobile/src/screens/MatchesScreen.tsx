@@ -13,6 +13,7 @@ import {
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { Match } from '../types'
+import { isMatchEnded, matchPhase } from '../shared/match-time'
 import { Flame, Users, Calendar, MapPin, ChevronRight, Award } from 'lucide-react-native'
 
 export default function MatchesScreen({ navigation }: any) {
@@ -20,9 +21,13 @@ export default function MatchesScreen({ navigation }: any) {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  // Mốc "bây giờ" của lần tải gần nhất, dùng để đánh dấu kèo đang diễn ra
+  const [nowMs, setNowMs] = useState(() => Date.now())
 
   async function fetchMatches() {
     try {
+      const now = Date.now()
+      setNowMs(now)
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -34,25 +39,23 @@ export default function MatchesScreen({ navigation }: any) {
             rating,
             skill_level
           ),
-          booking:bookings (
-            start_time,
-            end_time,
-            court:courts (
+          court:courts (
+            name,
+            club:clubs (
               name,
-              club:clubs (
-                name,
-                address,
-                district,
-                city
-              )
+              address,
+              district,
+              city
             )
           )
         `)
         .eq('status', 'open')
+        // Qua giờ kết thúc của khung giờ đã đặt thì kèo không còn hiện ở danh sách
+        .gt('end_time', new Date(now).toISOString())
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setMatches(data as any || [])
+      setMatches(((data as any) || []).filter((m: Match) => !isMatchEnded(m.end_time, now)))
     } catch (err: any) {
       console.error('Lỗi tải danh sách kèo:', err.message)
     } finally {
@@ -87,7 +90,7 @@ export default function MatchesScreen({ navigation }: any) {
   }
 
   function renderMatchCard({ item }: { item: Match }) {
-    const court = item.booking?.court
+    const court = item.court
     const club = court?.club
     const locationStr = club ? `${court?.name} - ${club.name} (${club.district || club.city})` : t('matches.venueUpdating')
 
@@ -118,8 +121,13 @@ export default function MatchesScreen({ navigation }: any) {
         <View style={styles.infoRow}>
           <Calendar size={14} color={colors.textSecondary} />
           <Text style={styles.infoText}>
-            {formatMatchTime(item.booking?.start_time, item.booking?.end_time)}
+            {formatMatchTime(item.start_time, item.end_time)}
           </Text>
+          {matchPhase(item.start_time, item.end_time, nowMs) === 'live' && (
+            <View style={styles.liveBadge}>
+              <Text style={styles.liveBadgeText}>{t('matches.live')}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.infoRow}>
@@ -282,6 +290,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     flex: 1,
+  },
+  liveBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  liveBadgeText: {
+    color: colors.white,
+    fontSize: 10,
+    fontWeight: '700',
   },
   cardFooter: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyUser } from '@/lib/notify'
+import { isMatchEnded } from '@/lib/match-time'
 
 /**
  * Chủ kèo duyệt hoặc từ chối một người xin tham gia. Dùng chung cho Server Action của web và API của ứng dụng mobile
@@ -15,7 +16,7 @@ export async function respondToParticipant(
 
   const { data: participant, error: pErr } = await admin
     .from('match_participants')
-    .select('id, status, user_id, match:matches ( id, title, creator_id, status )')
+    .select('id, status, user_id, match:matches ( id, title, creator_id, status, end_time )')
     .eq('id', participantId)
     .single()
 
@@ -28,6 +29,7 @@ export async function respondToParticipant(
     title: string
     creator_id: string
     status: string
+    end_time: string
   } | null
 
   if (!match || match.creator_id !== userId) {
@@ -38,6 +40,10 @@ export async function respondToParticipant(
   }
   if (newStatus === 'accepted' && !['open', 'full'].includes(match.status)) {
     return { error: 'Kèo này đã đóng, không thể duyệt thêm thành viên' }
+  }
+  // Qua giờ kết thúc thì không duyệt thêm (từ chối vẫn được để dọn danh sách chờ)
+  if (newStatus === 'accepted' && isMatchEnded(match.end_time, Date.now())) {
+    return { error: 'Kèo này đã kết thúc, không thể duyệt thêm thành viên' }
   }
 
   // current_players và status của kèo do trigger trong database tự cập nhật; trigger cũng chặn duyệt quá số người
@@ -50,6 +56,9 @@ export async function respondToParticipant(
   if (updateErr) {
     if (updateErr.message.includes('MATCH_FULL')) {
       return { error: 'Kèo đã đủ người, không thể duyệt thêm' }
+    }
+    if (updateErr.message.includes('MATCH_ENDED')) {
+      return { error: 'Kèo này đã kết thúc, không thể duyệt thêm thành viên' }
     }
     if (updateErr.message.includes('MATCH_CLOSED')) {
       return { error: 'Kèo này đã đóng, không thể duyệt thêm thành viên' }

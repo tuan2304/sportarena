@@ -72,18 +72,17 @@ export interface Match {
   cost_per_person: number | null
   status: 'open' | 'full' | 'closed' | 'cancelled'
   created_at: string
+  /** Giờ và sân của kèo (bản sao công khai từ đơn đặt sân; người chơi khác không đọc được bảng bookings) */
+  start_time: string
+  end_time: string
   creator?: Profile
-  booking?: {
-    start_time: string
-    end_time: string
-    court?: {
+  court?: {
+    name: string
+    club?: {
       name: string
-      club?: {
-        name: string
-        address: string
-        district?: string | null
-        city?: string | null
-      }
+      address: string
+      district?: string | null
+      city?: string | null
     }
   }
   participants?: MatchParticipant[]
