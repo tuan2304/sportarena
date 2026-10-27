@@ -18,24 +18,21 @@ export interface MatchDetail {
     full_name: string
     avatar_url: string | null
   } | null
-  booking: {
+  /** Giờ và sân của kèo (bản sao từ đơn đặt sân, đọc công khai; đơn đặt sân thật chỉ chủ đơn và chủ sân đọc được) */
+  start_time: string
+  end_time: string
+  court: {
     id: string
-    start_time: string
-    end_time: string
-    total_price: number
-    court: {
+    name: string
+    sport_type: string
+    club: {
       id: string
       name: string
-      sport_type: string
-      club: {
-        id: string
-        name: string
-        address: string | null
-        district: string | null
-        city?: string | null
-        latitude?: number | null
-        longitude?: number | null
-      } | null
+      address: string | null
+      district: string | null
+      city?: string | null
+      latitude?: number | null
+      longitude?: number | null
     } | null
   } | null
 }

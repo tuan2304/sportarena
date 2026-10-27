@@ -14,6 +14,7 @@ import {
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { Match } from '../types'
+import { matchPhase } from '../shared/match-time'
 import Avatar from '../components/Avatar'
 import {
   ChevronLeft,
@@ -48,18 +49,13 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             rating,
             skill_level
           ),
-          booking:bookings (
-            start_time,
-            end_time,
-            total_price,
-            court:courts (
+          court:courts (
+            name,
+            club:clubs (
               name,
-              club:clubs (
-                name,
-                address,
-                district,
-                city
-              )
+              address,
+              district,
+              city
             )
           ),
           participants:match_participants (
@@ -94,6 +90,11 @@ export default function MatchDetailScreen({ route, navigation }: any) {
   }, [matchId])
 
   async function handleJoinMatch() {
+    // Quá giờ kết thúc (kể cả khi màn hình mở từ trước): chặn ngay, database cũng chặn lần nữa
+    if (matchPhase(match?.start_time, match?.end_time, Date.now()) === 'ended') {
+      Alert.alert(t('common.notice'), t('match.endedNote'))
+      return
+    }
     setSubmitting(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -135,10 +136,11 @@ export default function MatchDetailScreen({ route, navigation }: any) {
     )
   }
 
-  const court = match.booking?.court
+  const court = match.court
   const club = court?.club
-  const startTime = match.booking?.start_time ? new Date(match.booking.start_time) : null
-  const endTime = match.booking?.end_time ? new Date(match.booking.end_time) : null
+  const startTime = match.start_time ? new Date(match.start_time) : null
+  const endTime = match.end_time ? new Date(match.end_time) : null
+  const phase = matchPhase(match.start_time, match.end_time, Date.now())
 
   return (
     <View style={styles.container}>
@@ -167,6 +169,13 @@ export default function MatchDetailScreen({ route, navigation }: any) {
                 {t('match.skillLine', { skill: t(`skills.${match.skill_level}` as MessageKey) })}
               </Text>
             </View>
+            {phase !== 'upcoming' && (
+              <View style={phase === 'live' ? styles.liveBadge : styles.endedBadge}>
+                <Text style={phase === 'live' ? styles.liveBadgeText : styles.endedBadgeText}>
+                  {phase === 'live' ? t('match.live') : t('match.ended')}
+                </Text>
+              </View>
+            )}
           </View>
 
           <Text style={styles.matchTitle}>{match.title}</Text>
@@ -276,8 +285,13 @@ export default function MatchDetailScreen({ route, navigation }: any) {
             <Text style={styles.emptyText}>{t('match.noMembers')}</Text>
           )}
 
-          {/* Join Section */}
+          {/* Join Section: qua giờ kết thúc thì kèo không còn nhận người */}
           <Text style={styles.sectionTitle}>{t('match.join')}</Text>
+          {phase === 'ended' ? (
+            <View style={styles.joinBox}>
+              <Text style={styles.emptyText}>{t('match.endedNote')}</Text>
+            </View>
+          ) : (
           <View style={styles.joinBox}>
             <TextInput
               style={styles.messageInput}
@@ -300,6 +314,7 @@ export default function MatchDetailScreen({ route, navigation }: any) {
               </Text>
             </TouchableOpacity>
           </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -379,6 +394,28 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 11,
     fontWeight: '600',
+  },
+  liveBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  liveBadgeText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  endedBadge: {
+    backgroundColor: colors.cardBorder,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  endedBadgeText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
   },
   matchTitle: {
     fontSize: 20,

@@ -331,6 +331,27 @@ SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE profile
 SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE notifications SET title_en='hack' WHERE id='77777777-7777-7777-7777-777777777777' RETURNING 'x'$$,'ERR','người dùng không sửa được bản dịch của thông báo');
 SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT title_en IS NULL FROM notifications WHERE id='77777777-7777-7777-7777-777777777777'$$,'true','đọc được cột bản dịch của thông báo của mình');
 
+-- ---------------------------------------------------------------- 19. Kèo theo khung giờ: qua giờ kết thúc thì hết nhận người
+-- Kèo đã qua giờ (đơn đặt sân 3 tiếng trước, kéo dài 1 tiếng) và một người xin vào từ trước đó (chèn bằng quyền hệ thống)
+INSERT INTO bookings(id, court_id, user_id, start_time, end_time, total_price, deposit_amount, status)
+ VALUES ('33333333-3333-3333-3333-333333333335','22222222-2222-2222-2222-222222222222','a0000000-0000-0000-0000-00000000000a', now()-interval '3 hour', now()-interval '2 hour', 100000, 30000, 'confirmed');
+INSERT INTO matches(id, booking_id, creator_id, title, sport_type, required_players)
+ VALUES ('44444444-4444-4444-4444-444444444445','33333333-3333-3333-3333-333333333335','a0000000-0000-0000-0000-00000000000a','Keo da qua gio','pickleball',3);
+INSERT INTO match_participants(id, match_id, user_id) VALUES
+ ('50000000-0000-0000-0000-0000000000f1','44444444-4444-4444-4444-444444444445','c0000000-0000-0000-0000-00000000000c');
+
+SELECT t(NULL,'anon',$$SELECT (m.court_id = '22222222-2222-2222-2222-222222222222' AND m.end_time < now() AND m.start_time < m.end_time)::text FROM matches m WHERE m.id='44444444-4444-4444-4444-444444444445'$$,'true','kèo tự lấy sân và giờ từ đơn đặt sân, khách đọc được dù không đọc được đơn');
+SELECT t(NULL,'anon',$$SELECT count(*)::text FROM bookings$$,'0','khách vẫn không đọc được đơn đặt (chỉ lộ sân và giờ của kèo)');
+UPDATE bookings SET end_time = end_time + interval '30 minute' WHERE id='33333333-3333-3333-3333-333333333335';
+SELECT t(NULL,'postgres',$$SELECT (m.end_time = b.end_time)::text FROM matches m JOIN bookings b ON b.id = m.booking_id WHERE m.id='44444444-4444-4444-4444-444444444445'$$,'true','đơn đổi giờ kết thúc thì kèo đổi theo');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$SELECT public.match_has_ended('44444444-4444-4444-4444-444444444445')::text$$,'true','kèo đã qua giờ kết thúc được nhận ra là đã kết thúc');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$SELECT public.match_has_ended('44444444-4444-4444-4444-444444444444')::text$$,'false','kèo chưa tới giờ chưa kết thúc');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$SELECT public.match_has_ended('00000000-0000-0000-0000-000000000000')::text$$,'false','kèo không tồn tại không bị coi là đã kết thúc');
+SELECT t('d0000000-0000-0000-0000-00000000000d','authenticated',$$INSERT INTO match_participants(match_id,user_id,status) VALUES ('44444444-4444-4444-4444-444444444445','d0000000-0000-0000-0000-00000000000d','pending') RETURNING 'x'$$,'ERR','xin vào kèo đã qua giờ kết thúc bị chặn (mobile insert trực tiếp)');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$WITH x AS (INSERT INTO match_participants(match_id,user_id,status) VALUES ('44444444-4444-4444-4444-444444444444','a0000000-0000-0000-0000-00000000000a','pending') RETURNING 1) SELECT count(*)::text FROM x$$,'1','xin vào kèo chưa tới giờ vẫn được');
+SELECT t(NULL,'postgres',$$UPDATE match_participants SET status='accepted' WHERE id='50000000-0000-0000-0000-0000000000f1' RETURNING 'x'$$,'ERR','duyệt thêm người vào kèo đã qua giờ bị chặn (MATCH_ENDED)');
+SELECT t(NULL,'postgres',$$UPDATE match_participants SET status='rejected' WHERE id='50000000-0000-0000-0000-0000000000f1' RETURNING status$$,'rejected','từ chối yêu cầu của kèo đã qua giờ để dọn danh sách chờ vẫn được');
+
 -- ---------------------------------------------------------------- Tổng kết
 SELECT CASE WHEN ok THEN 'PASS' ELSE 'FAIL' END AS ket_qua, label AS ca_kiem_thu, CASE WHEN ok THEN '' ELSE detail END AS chi_tiet FROM test_results ORDER BY ok, label;
 DO $$

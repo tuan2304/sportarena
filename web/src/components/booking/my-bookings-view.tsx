@@ -74,12 +74,10 @@ export interface MyParticipation {
     cost_per_person: number | null
     current_players: number
     required_players: number
-    booking: {
-      id: string
-      start_time: string
-      end_time: string
-      court: CourtRef | null
-    } | null
+    /** Giờ và sân của kèo (bản sao công khai từ đơn đặt sân; người xin vào kèo không đọc được đơn của chủ kèo) */
+    start_time: string
+    end_time: string
+    court: CourtRef | null
   } | null
 }
 
@@ -352,14 +350,13 @@ export function MyBookingsView({ bookings, participations }: MyBookingsViewProps
                 const match = part.match
                 if (!match) return null
 
-                const booking = match.booking
-                const court = booking?.court
+                const court = match.court
                 const club = court?.club
                 const isAccepted = part.status === 'accepted'
                 const isPending = part.status === 'pending'
 
-                const startTime = booking?.start_time ? new Date(booking.start_time) : null
-                const endTime = booking?.end_time ? new Date(booking.end_time) : null
+                const startTime = match.start_time ? new Date(match.start_time) : null
+                const endTime = match.end_time ? new Date(match.end_time) : null
 
                 const timeStr = startTime && endTime
                   ? `${formatTime(startTime)} - ${formatTime(endTime)}`

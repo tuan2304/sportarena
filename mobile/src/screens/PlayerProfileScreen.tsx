@@ -20,7 +20,8 @@ interface OpenMatch {
   title: string
   current_players: number
   required_players: number
-  booking: { start_time: string; end_time: string } | null
+  start_time: string
+  end_time: string
 }
 
 const EMPTY_STATS = { matches_created: 0, matches_joined: 0, bookings_played: 0 }
@@ -42,9 +43,11 @@ export default function PlayerProfileScreen({ route, navigation }: any) {
         supabase.rpc('player_public_stats', { p_user: userId }),
         supabase
           .from('matches')
-          .select('id, title, current_players, required_players, booking:bookings ( start_time, end_time )')
+          .select('id, title, current_players, required_players, start_time, end_time')
           .eq('creator_id', userId)
           .eq('status', 'open')
+          // Kèo đã qua giờ kết thúc không còn là "kèo đang mở"
+          .gt('end_time', new Date().toISOString())
           .order('created_at', { ascending: false })
           .limit(6),
       ])
@@ -126,11 +129,9 @@ export default function PlayerProfileScreen({ route, navigation }: any) {
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.matchTitle} numberOfLines={1}>{m.title}</Text>
-                  {m.booking && (
-                    <Text style={styles.matchSub}>
-                      {new Date(m.booking.start_time).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' })}
-                    </Text>
-                  )}
+                  <Text style={styles.matchSub}>
+                    {new Date(m.start_time).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' })}
+                  </Text>
                 </View>
                 <Text style={styles.matchCount}>{m.current_players}/{m.required_players}</Text>
               </TouchableOpacity>

@@ -101,7 +101,36 @@ const platformStats = {
   top_clubs: [{ id: CLUB_ID, name: club.name, bookings: 12, gmv: 1440000 }],
 }
 
+// Kèo ghép gắn với đơn đặt sân (giờ kèo = giờ đơn). Mock không lọc theo điều kiện truy vấn nên trả cả kèo đã kết thúc:
+// trang danh sách phải tự ẩn kèo đã qua giờ, trang chi tiết phải báo "đã kết thúc" và không cho xin tham gia.
+const hoursFromNow = (h) => new Date(Date.now() + h * 3_600_000).toISOString()
+const makeMatch = (n, title, startH, endH) => ({
+  id: `77777777-7777-4777-8777-77777777777${n}`,
+  booking_id: `88888888-8888-4888-8888-88888888888${n}`,
+  creator_id: USERS.owner.id,
+  title,
+  description: null,
+  sport_type: 'pickleball',
+  skill_level: 'all',
+  required_players: 4,
+  current_players: 1,
+  cost_sharing_type: 'split',
+  cost_per_person: 30000,
+  status: 'open',
+  created_at: hoursFromNow(-48 + n),
+  creator: { id: USERS.owner.id, full_name: USERS.owner.name, avatar_url: null, rating: 4.5 },
+  // Giờ và sân nằm ngay trên kèo (bản sao công khai từ đơn đặt sân; người chơi khác không đọc được bảng bookings)
+  court_id: COURT_ID,
+  start_time: hoursFromNow(startH),
+  end_time: hoursFromNow(endH),
+  court: { id: COURT_ID, name: court.name, sport_type: 'pickleball', club: { id: CLUB_ID, name: club.name, address: club.address, district: club.district, city: club.city, latitude: null, longitude: null } },
+})
+const matchUpcoming = makeMatch(1, 'Kèo Sắp Diễn Ra', 5, 6)
+const matchLive = makeMatch(2, 'Kèo Đang Chơi', -0.5, 0.5)
+const matchEnded = makeMatch(3, 'Kèo Đã Qua Giờ', -3, -2)
+
 const tables = {
+  matches: [matchUpcoming, matchLive, matchEnded],
   clubs: [club],
   courts: [court],
   bookings: [booking],
@@ -121,7 +150,10 @@ const rpcs = {
   get_my_profile: (user) => (user ? [{ ...tables.profiles.find((p) => p.id === user.id), phone_number: '0912345678' }] : []),
   player_public_stats: () => [{ matches_created: 2, matches_joined: 3, bookings_played: 5 }],
   platform_stats: () => platformStats,
-  get_busy_slots: () => [],
+  // Khách khác đã đặt sân số 1 lúc 14:00-15:00 ngày 15/03/2027 (07:00Z-08:00Z); chỉ ngày này nên không ảnh hưởng test khác
+  get_busy_slots: () => [
+    { court_id: COURT_ID, start_time: '2027-03-15T07:00:00Z', end_time: '2027-03-15T08:00:00Z', status: 'confirmed' },
+  ],
   get_booking_contacts: () => [],
 }
 

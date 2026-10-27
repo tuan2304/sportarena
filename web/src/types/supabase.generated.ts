@@ -231,14 +231,14 @@ isOneToOne: false
                   ]
                 },"matches": {
                   Row: {
-                    "booking_id": string,"cost_per_person": number | null,"cost_sharing_type": string,"created_at": string,"creator_id": string,"current_players": number,"description": string | null,"id": string,"required_players": number,"skill_level": string,"sport_type": string,"status": string,"title": string,"updated_at": string
+                    "booking_id": string,"cost_per_person": number | null,"cost_sharing_type": string,"court_id": string,"created_at": string,"creator_id": string,"current_players": number,"description": string | null,"end_time": string,"id": string,"required_players": number,"skill_level": string,"sport_type": string,"start_time": string,"status": string,"title": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "booking_id": string,"cost_per_person"?: number | null,"cost_sharing_type"?: string,"created_at"?: string,"creator_id": string,"current_players"?: number,"description"?: string | null,"id"?: string,"required_players"?: number,"skill_level"?: string,"sport_type": string,"status"?: string,"title": string,"updated_at"?: string
+                    "booking_id": string,"cost_per_person"?: number | null,"cost_sharing_type"?: string,"court_id"?: string,"created_at"?: string,"creator_id": string,"current_players"?: number,"description"?: string | null,"end_time"?: string,"id"?: string,"required_players"?: number,"skill_level"?: string,"sport_type": string,"start_time"?: string,"status"?: string,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "booking_id"?: string,"cost_per_person"?: number | null,"cost_sharing_type"?: string,"created_at"?: string,"creator_id"?: string,"current_players"?: number,"description"?: string | null,"id"?: string,"required_players"?: number,"skill_level"?: string,"sport_type"?: string,"status"?: string,"title"?: string,"updated_at"?: string
+                    "booking_id"?: string,"cost_per_person"?: number | null,"cost_sharing_type"?: string,"court_id"?: string,"created_at"?: string,"creator_id"?: string,"current_players"?: number,"description"?: string | null,"end_time"?: string,"id"?: string,"required_players"?: number,"skill_level"?: string,"sport_type"?: string,"start_time"?: string,"status"?: string,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -246,6 +246,12 @@ isOneToOne: false
       columns: ["booking_id"]
 isOneToOne: true
       referencedRelation: "bookings"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_court_id_fkey"
+      columns: ["court_id"]
+isOneToOne: false
+      referencedRelation: "courts"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "matches_creator_id_fkey"

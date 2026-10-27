@@ -7,6 +7,7 @@ import { MatchFilters } from '@/components/matches/match-filters'
 import { MatchCard, type MatchCardProps } from '@/components/matches/match-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { isMatchEnded } from '@/lib/match-time'
 import { Flame, PlusCircle, Trophy, Users } from 'lucide-react'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,6 +28,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { sport, skill, cost, q } = await searchParams
   const t = await getTranslations('matches')
   const supabase = await createClient()
+  // eslint-disable-next-line react-hooks/purity -- server component, chạy một lần mỗi request
+  const nowMs = Date.now()
 
   let query = supabase
     .from('matches')
@@ -48,23 +51,22 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         avatar_url,
         rating
       ),
-      booking:bookings (
+      start_time,
+      end_time,
+      court:courts (
         id,
-        start_time,
-        end_time,
-        court:courts (
+        name,
+        club:clubs (
           id,
           name,
-          club:clubs (
-            id,
-            name,
-            address,
-            district
-          )
+          address,
+          district
         )
       )
     `)
     .in('status', ['open', 'full'])
+    // Qua giờ kết thúc của khung giờ đã đặt thì kèo không còn hiện ở danh sách
+    .gt('end_time', new Date(nowMs).toISOString())
     .order('created_at', { ascending: false })
 
   if (sport && sport !== 'all') {
@@ -84,7 +86,8 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   }
 
   const { data: matches } = await query
-  const matchList = matches || []
+  // Lọc thêm ở đây phòng khi dữ liệu trả về lúc cắt trang đã chớm qua giờ kết thúc
+  const matchList = (matches || []).filter((m) => !isMatchEnded(m.end_time, nowMs))
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -166,7 +169,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {matchList.map((match) => (
-                <MatchCard key={match.id} match={match as unknown as MatchCardProps['match']} />
+                <MatchCard key={match.id} match={match as unknown as MatchCardProps['match']} nowMs={nowMs} />
               ))}
             </div>
           )}
