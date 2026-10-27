@@ -71,6 +71,15 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Quên mật khẩu.** Người dùng nhận thư có liên kết đặt lại (cả web lẫn app mobile). Liên kết mở được trên máy khác, chỉ đổi được mật khẩu trong vòng một giờ, và đổi xong thì các thiết bị khác bị đăng xuất. Có giới hạn số thư theo IP và email, và phản hồi không tiết lộ email nào đã đăng ký.
 - **Kiểm thử và CI.** Hơn 400 test Vitest cho logic nghiệp vụ, hơn 200 ca SQL kiểm tra RLS và ràng buộc, GitHub Actions chạy typecheck, lint, test, build, kiểm thử đầu-cuối bằng Playwright (đăng nhập 3 vai trò, phân quyền, giao diện hai ngôn ngữ, kiểm tra CSP có nonce, đặt chồng giờ, kèo theo khung giờ), thêm một bộ Playwright chạy luồng ghi dữ liệu (đặt sân, xác nhận, hủy, hoàn cọc, kèo, ảnh) trên Supabase thật trong Docker, và kiểm tra mobile ở mỗi lần push.
 
+## Thiết kế
+
+Năng động, rõ ràng, mang tinh thần thể thao nhưng vẫn dễ đọc.
+
+- **Màu có nghĩa.** Xanh lá cho sân còn trống và hành động chính, vàng cho ghép kèo và điểm cần chú ý, đỏ chỉ dành cho thao tác nguy hiểm (hủy, xóa, lỗi).
+- **Chữ.** Be Vietnam Pro cho nội dung (dấu tiếng Việt không bị lệch), Barlow Condensed cho tiêu đề và số lớn.
+- **Dễ tiếp cận.** Chữ đạt chuẩn tương phản WCAG AA ở cả giao diện sáng và tối, vùng chạm đủ lớn trên màn hình cảm ứng, có trạng thái focus nhìn thấy được và tôn trọng tùy chọn giảm chuyển động.
+- **Nhất quán.** Icon dạng SVG thay cho emoji, tiền và ngày giờ luôn định dạng theo giờ Việt Nam, màu dùng biến ngữ nghĩa nên đổi sáng/tối không phải sửa từng màn hình.
+
 ## Công nghệ
 
 | Lớp | Công nghệ |

@@ -72,6 +72,15 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - **Testing and CI.** Over 400 Vitest tests for business logic, over 200 SQL cases for RLS and constraints, and GitHub Actions running typecheck, lint, tests, build, Playwright end-to-end tests (logins for the three roles, role guards, both languages, the nonce CSP check), a second Playwright suite that runs the write flows (booking, confirmation, cancellation, refunds, matches, photos) against a real Supabase in Docker, and the mobile typecheck on every push.
 - **Bilingual UI.** Cookie-based language selection with `next-intl` (no URL changes); a test fails if an English string is missing or a placeholder differs, and server error messages are translated at the boundary.
 
+## Design
+
+Energetic, clear and sporty, but easy to read.
+
+- **Colour with meaning.** Green for free courts and primary actions, yellow for matchmaking and things that need attention, red only for dangerous actions (cancel, delete, errors).
+- **Type.** Be Vietnam Pro for content (Vietnamese diacritics stay aligned), Barlow Condensed for headings and large numbers.
+- **Accessible.** Text meets WCAG AA contrast in both light and dark themes, touch targets are large enough on touch screens, focus states are visible and the reduced-motion preference is respected.
+- **Consistent.** SVG icons instead of emoji, money and dates always formatted in Vietnam time, and semantic colour variables so switching themes needs no per-screen fixes.
+
 ## Technology
 
 | Layer | Technology |
