@@ -389,14 +389,14 @@ isOneToOne: false
                   ]
                 },"ticket_messages": {
                   Row: {
-                    "body": string,"created_at": string,"id": string,"is_staff": boolean,"sender_id": string | null,"sender_name": string,"ticket_id": string
+                    "body": string,"created_at": string,"id": string,"is_ai": boolean,"is_staff": boolean,"sender_id": string | null,"sender_name": string,"ticket_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"created_at"?: string,"id"?: string,"is_staff"?: boolean,"sender_id"?: string | null,"sender_name"?: string,"ticket_id": string
+                    "body": string,"created_at"?: string,"id"?: string,"is_ai"?: boolean,"is_staff"?: boolean,"sender_id"?: string | null,"sender_name"?: string,"ticket_id": string
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"id"?: string,"is_staff"?: boolean,"sender_id"?: string | null,"sender_name"?: string,"ticket_id"?: string
+                    "body"?: string,"created_at"?: string,"id"?: string,"is_ai"?: boolean,"is_staff"?: boolean,"sender_id"?: string | null,"sender_name"?: string,"ticket_id"?: string
                   }
                   Relationships: [
                     {

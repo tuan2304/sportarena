@@ -700,6 +700,8 @@
       "closedNote": "This request is closed. If you need more help, please create a new one.",
       "replyLabel": "Your reply",
       "placeholderAdmin": "Write a reply to the user...",
+      "aiName": "SportArena Assistant",
+      "aiBadge": "AI",
       "placeholderUser": "Write a message to support...",
       "send": "Send"
     },

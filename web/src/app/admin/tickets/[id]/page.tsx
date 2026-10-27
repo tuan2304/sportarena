@@ -29,7 +29,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
 
   const { data: messages } = await admin
     .from('ticket_messages')
-    .select('id, is_staff, sender_name, body, created_at')
+    .select('id, is_staff, is_ai, sender_name, body, created_at')
     .eq('ticket_id', id)
     .order('created_at')
 

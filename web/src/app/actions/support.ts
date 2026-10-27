@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { notifyAdmins, notifyUser } from '@/lib/notify'
+import { notifyAdmins, notifyUser, pushAfterResponse } from '@/lib/notify'
+import { isSupportAiEnabled, maybeAutoReply } from '@/lib/support-ai-reply'
+import { canAutoReplyCategory } from '@/lib/support-ai'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { tr } from '@/lib/localize-error'
 import {
@@ -18,6 +20,30 @@ import {
  * Mọi thao tác ghi phiếu hỗ trợ đi qua đây (người dùng không có quyền ghi trực tiếp vào bảng),
  * nên quyền được kiểm tra rõ ràng ở từng hàm.
  */
+
+/**
+ * Báo quản trị có phiếu cần xử lý. Nếu trợ lý AI được phép trả lời phiếu này thì để AI thử trước (sau khi
+ * phản hồi đã gửi đi, không làm người dùng chờ) và chỉ báo quản trị khi AI không trả lời được.
+ */
+async function notifyAdminsOrAutoReply(
+  ticketId: string,
+  category: string,
+  notice: { title: string; message: string; link: string },
+) {
+  if (!isSupportAiEnabled() || !canAutoReplyCategory(category)) {
+    await notifyAdmins(notice)
+    return
+  }
+  await pushAfterResponse(async () => {
+    let outcome: Awaited<ReturnType<typeof maybeAutoReply>> = 'failed'
+    try {
+      outcome = await maybeAutoReply(ticketId)
+    } catch (err) {
+      console.error('support-ai: lỗi ngoài dự kiến', err)
+    }
+    if (outcome !== 'replied' && outcome !== 'superseded') await notifyAdmins(notice)
+  })
+}
 
 async function currentActor() {
   const supabase = await createClient()
@@ -88,7 +114,7 @@ export async function createTicket(input: {
     return { error: await tr('Không gửi được yêu cầu. Vui lòng thử lại.') }
   }
 
-  await notifyAdmins({
+  await notifyAdminsOrAutoReply(ticket.id, parsed.value.category, {
     title: 'Yêu cầu hỗ trợ mới',
     message: `${actor.name}: ${parsed.value.subject}`,
     link: `/admin/tickets/${ticket.id}`,
@@ -109,7 +135,7 @@ export async function replyToTicket(ticketId: string, body: string): Promise<{ e
   if (!parsed.ok) return { error: await tr(parsed.error) }
 
   const admin = createAdminClient()
-  const { data: ticket } = await admin.from('support_tickets').select('id, user_id, subject, status').eq('id', ticketId).maybeSingle()
+  const { data: ticket } = await admin.from('support_tickets').select('id, user_id, subject, status, category').eq('id', ticketId).maybeSingle()
   if (!ticket) return { error: await tr('Không tìm thấy yêu cầu hỗ trợ') }
 
   const isAuthor = ticket.user_id === actor.user.id
@@ -147,7 +173,7 @@ export async function replyToTicket(ticketId: string, body: string): Promise<{ e
       link: `/support/${ticketId}`,
     })
   } else {
-    await notifyAdmins({
+    await notifyAdminsOrAutoReply(ticketId, ticket.category, {
       title: 'Người dùng vừa trả lời yêu cầu hỗ trợ',
       message: `${actor.name}: ${ticket.subject}`,
       link: `/admin/tickets/${ticketId}`,

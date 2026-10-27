@@ -700,6 +700,8 @@
       "closedNote": "Yêu cầu này đã đóng. Nếu bạn cần thêm hỗ trợ, hãy tạo yêu cầu mới.",
       "replyLabel": "Nội dung trả lời",
       "placeholderAdmin": "Nhập câu trả lời cho người dùng...",
+      "aiName": "Trợ lý SportArena",
+      "aiBadge": "AI",
       "placeholderUser": "Nhập tin nhắn cho bộ phận hỗ trợ...",
       "send": "Gửi"
     },
