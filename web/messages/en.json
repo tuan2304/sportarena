@@ -242,7 +242,8 @@
       "pickerSubtitle": "Choose a court, a date and the time you want to play. The price and deposit are calculated automatically.",
       "cancelPolicy": "Cancellation policy:",
       "manualTransferNote": " This venue takes deposits by bank transfer; the owner confirms bookings manually.",
-      "noPayments": "This venue hasn't set up online payment yet, so it can't take bookings on SportArena. Please come back later or contact the owner directly."
+      "noPayments": "This venue hasn't set up online payment yet, so it can't take bookings on SportArena. Please come back later or contact the owner directly.",
+      "jumpToBooking": "Pick a time & book"
     }
   },
   "booking": {
@@ -310,7 +311,11 @@
       "deposit": "Booking deposit ({percent}%):",
       "holding": "Holding your slot...",
       "confirm": "Hold This Slot for 15 Minutes",
-      "holdNote": "The court is held for 15 minutes while you scan the PayOS QR code"
+      "holdNote": "The court is held for 15 minutes while you scan the PayOS QR code",
+      "stickyDeposit": "Deposit {amount}",
+      "stickyHold": "Hold slot",
+      "moreOptions": "Note, open match",
+      "moreOptionsLabel": "Show the note and open-match options"
     }
   },
   "maps": {
@@ -619,6 +624,12 @@
       "openMatches": "Open matches",
       "noOpenMatches": "No open matches right now.",
       "playersCount": "{current}/{required} players"
+    },
+    "mobile": {
+      "support": "Support",
+      "supportHint": "Send a request or read replies",
+      "logout": "Log out",
+      "logoutHint": "Sign out of this device"
     }
   },
   "notifications": {
@@ -1185,5 +1196,15 @@
         "submit": "Send announcement"
       }
     }
+  },
+  "tabbar": {
+    "label": "Main navigation",
+    "explore": "Explore",
+    "matches": "Matches",
+    "bookings": "Bookings",
+    "profile": "Profile",
+    "login": "Log in",
+    "owner": "Owner",
+    "admin": "Admin"
   }
 }

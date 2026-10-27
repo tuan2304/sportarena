@@ -138,6 +138,25 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    /* Không tự phóng to chữ khi xoay ngang trên iOS */
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Cảm ứng: bỏ chớp xám khi chạm, bỏ độ trễ chạm đúp để phóng to, và ô nhập luôn >= 16px
+     (nhỏ hơn thì iOS Safari tự phóng to cả trang mỗi khi chạm vào ô) */
+  a,
+  button,
+  [role='button'],
+  summary,
+  label {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  @media (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
   h1,
   h2 {
@@ -301,5 +320,11 @@
   .reveal {
     opacity: 1;
     transform: none;
+  }
+}
+/* Điện thoại: nền 3D nhạt hơn một chút để chữ tiêu đề đè lên vẫn đọc được */
+@media (max-width: 640px) {
+  .hero-scene {
+    opacity: 0.6;
   }
 }

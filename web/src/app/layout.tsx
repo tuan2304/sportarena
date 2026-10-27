@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -8,6 +8,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { resolveAppUrl } from "@/lib/app-url";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+
+// Khách dùng web trên điện thoại: phủ kín màn hình có tai thỏ (safe-area), thanh trạng thái trình duyệt đổi theo giao diện
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1512" },
+  ],
+};
 
 // Font thân bài: thiết kế riêng cho tiếng Việt nên dấu không bị lệch/rơi font
 const beVietnam = Be_Vietnam_Pro({
@@ -67,6 +79,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <ConfirmProvider>{children}</ConfirmProvider>
+          <MobileTabBar />
           <Toaster />
         </NextIntlClientProvider>
       </body>

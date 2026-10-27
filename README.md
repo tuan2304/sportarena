@@ -39,6 +39,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - Chủ kèo duyệt hoặc từ chối người xin vào kèo ngay trên thông báo đẩy (nút Duyệt / Từ chối).
 - Chủ sân dùng app mobile để duyệt cọc chuyển khoản, hủy đơn, đánh dấu đã chơi, hoàn cọc và gọi khách (tab Chủ Sân). Cùng tab có mục Sân & giá để quản lý cụm sân: tạo/xóa cụm sân, tải ảnh, ghim vị trí bằng GPS của điện thoại, thêm/sửa/bật tắt/xóa sân con và thêm/sửa/xóa khung giá.
 - Đặt sân (kèm mở kèo ghép ngay lúc đặt), thanh toán cọc, hủy đơn, đổi ảnh đại diện, xem hồ sơ người chơi và nhận thông báo đẩy ngay trên ứng dụng mobile.
+- **Dùng thẳng trên điện thoại, không cần tải app.** Web có thanh điều hướng dưới cùng (Khám phá, Kèo, Lịch đặt, Cá nhân; thêm tab Chủ sân hoặc Quản trị theo vai trò), đầu trang gọn, vùng chạm lớn, ô nhập không làm iOS tự phóng to, nút nhảy thẳng tới bước chọn giờ và thanh cố định ở đáy hiện tiền cọc cùng nút Giữ chỗ ngay khi chọn giờ. Có thể "Thêm vào màn hình chính" để mở toàn màn hình (không bắt buộc).
 - Giao diện web và app mobile có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ (web: thanh đầu trang; mobile: tab Cá Nhân), mặc định theo trình duyệt hoặc điện thoại. Gồm cả khu vực chủ sân, quản trị và thông báo (thông báo mới được lưu kèm bản tiếng Anh, thông báo cũ vẫn hiện tiếng Việt).
 
 **Chủ sân**

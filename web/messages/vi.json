@@ -242,7 +242,8 @@
       "pickerSubtitle": "Chọn sân con, chọn ngày và khung giờ bạn muốn chơi. Hệ thống sẽ tự động tính giá và tạo đơn cọc.",
       "cancelPolicy": "Chính sách hủy:",
       "manualTransferNote": " Cụm sân nhận cọc bằng chuyển khoản, chủ sân sẽ xác nhận đơn thủ công.",
-      "noPayments": "Cụm sân này chưa kết nối thanh toán online nên chưa nhận đặt sân trên SportArena. Vui lòng quay lại sau hoặc liên hệ trực tiếp với chủ sân."
+      "noPayments": "Cụm sân này chưa kết nối thanh toán online nên chưa nhận đặt sân trên SportArena. Vui lòng quay lại sau hoặc liên hệ trực tiếp với chủ sân.",
+      "jumpToBooking": "Chọn giờ & đặt sân"
     }
   },
   "booking": {
@@ -310,7 +311,11 @@
       "deposit": "Tiền cọc giữ chỗ ({percent}%):",
       "holding": "Đang giữ chỗ...",
       "confirm": "Xác Nhận Giữ Chỗ 15 Phút",
-      "holdNote": "Sân được giữ tạm 15 phút chờ quét mã QR PayOS"
+      "holdNote": "Sân được giữ tạm 15 phút chờ quét mã QR PayOS",
+      "stickyDeposit": "Cọc {amount}",
+      "stickyHold": "Giữ chỗ",
+      "moreOptions": "Ghi chú, mở kèo",
+      "moreOptionsLabel": "Xem ghi chú và tùy chọn mở kèo"
     }
   },
   "maps": {
@@ -619,6 +624,12 @@
       "openMatches": "Kèo đang mở",
       "noOpenMatches": "Hiện chưa có kèo nào đang mở.",
       "playersCount": "{current}/{required} người"
+    },
+    "mobile": {
+      "support": "Hỗ trợ",
+      "supportHint": "Gửi yêu cầu hoặc xem phản hồi",
+      "logout": "Đăng xuất",
+      "logoutHint": "Thoát khỏi tài khoản trên thiết bị này"
     }
   },
   "notifications": {
@@ -1185,5 +1196,15 @@
         "submit": "Gửi thông báo"
       }
     }
+  },
+  "tabbar": {
+    "label": "Điều hướng chính",
+    "explore": "Khám phá",
+    "matches": "Kèo",
+    "bookings": "Lịch đặt",
+    "profile": "Cá nhân",
+    "login": "Đăng nhập",
+    "owner": "Chủ sân",
+    "admin": "Quản trị"
   }
 }

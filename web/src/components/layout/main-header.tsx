@@ -99,7 +99,7 @@ async function HeaderContent() {
         </nav>
 
         {/* User Auth Info */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
@@ -115,10 +115,11 @@ async function HeaderContent() {
               )}
               <NotificationBell userId={user.id} />
 
+              {/* Trên điện thoại hồ sơ nằm ở thanh điều hướng dưới (tab Cá nhân) */}
               <Link
                 href="/profile"
                 aria-label={t('myProfile')}
-                className="flex items-center gap-2 pl-1 pr-1.5 py-0.5 rounded-full hover:bg-muted/60 transition-colors"
+                className="hidden md:flex items-center gap-2 pl-1 pr-1.5 py-0.5 rounded-full hover:bg-muted/60 transition-colors"
               >
                 <Avatar name={profile?.full_name} src={profile?.avatar_url} size={32} />
                 <div className="hidden sm:block text-left text-xs">
@@ -136,7 +137,7 @@ async function HeaderContent() {
                   type="submit"
                   size="icon"
                   variant="ghost"
-                  className="h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                  className="hidden md:inline-flex h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                   title={t('logout')}
                   aria-label={t('logout')}
                 >
@@ -145,7 +146,7 @@ async function HeaderContent() {
               </form>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link href="/login">
                 <Button variant="ghost" size="sm" className="text-sm font-semibold cursor-pointer">
                   {t('login')}

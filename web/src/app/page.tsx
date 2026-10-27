@@ -79,7 +79,7 @@ export default async function Home() {
           )}
 
           {/* Auth section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
             {user ? (
@@ -89,7 +89,7 @@ export default async function Home() {
                 <Link
                   href="/profile"
                   aria-label={th('myProfile')}
-                  className="flex items-center gap-2 pl-1 pr-1.5 py-0.5 rounded-full hover:bg-muted/60 transition-colors"
+                  className="hidden md:flex items-center gap-2 pl-1 pr-1.5 py-0.5 rounded-full hover:bg-muted/60 transition-colors"
                 >
                   <Avatar name={profile?.full_name} src={profile?.avatar_url} size={32} />
                   <div className="hidden sm:block text-left text-xs">
@@ -125,7 +125,7 @@ export default async function Home() {
                     type="submit"
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                    className="hidden md:inline-flex h-8 w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                     title={th('logout')}
                   aria-label={th('logout')}
                   >
@@ -134,7 +134,7 @@ export default async function Home() {
                 </form>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <Link href="/login">
                   <Button variant="ghost" className="text-sm font-semibold cursor-pointer">
                     {th('login')}
@@ -152,7 +152,7 @@ export default async function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32 flex-1 flex flex-col justify-center">
+      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-32 flex-1 flex flex-col justify-center">
         {/* Nền: lưới mờ + các đốm sáng trôi chậm */}
         <HeroBackground />
 

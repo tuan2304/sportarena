@@ -39,6 +39,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - Match hosts approve or decline join requests right from the push notification (Approve / Decline buttons).
 - Owners can use the mobile app (Owner tab) to confirm bank-transfer deposits, cancel bookings, mark them as played, refund deposits and call customers. The same tab has a Venues & prices section to manage venues: create or delete venues, upload photos, pin the location with the phone's GPS, add, edit, switch off or delete courts, and add, edit or delete price slots.
 - On the mobile app: book (and open a match at the same time), pay the deposit, cancel, change your avatar, view player profiles and receive push notifications.
+- **Works right in the phone's browser, no app to install.** The web has a bottom tab bar (Explore, Matches, Bookings, Profile, plus an Owner or Admin tab by role), a compact header, large touch targets, inputs that do not trigger iOS zoom, a button that jumps straight to the time picker, and a fixed bottom bar showing the deposit and the Hold slot button as soon as a time is chosen. You can optionally "Add to Home Screen" to open it full screen.
 - The web interface and the mobile app are available in **Vietnamese and English** (web: language button in the header; mobile: Profile tab; the default follows your browser or phone). This covers the owner and admin areas and notifications too (new notifications are stored with an English copy; older ones stay Vietnamese).
 
 **Venue owners**

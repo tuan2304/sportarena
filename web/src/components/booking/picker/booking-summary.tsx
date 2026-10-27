@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertCircle, Loader2, ShieldCheck, Zap } from 'lucide-react'
+import { AlertCircle, ChevronUp, Loader2, ShieldCheck, Zap } from 'lucide-react'
 import { formatDate, formatNumber, formatTimeRange, formatVnd } from '@/lib/format'
 import { MatchOptions } from './match-options'
 import type { MatchDraft } from './types'
@@ -44,7 +44,8 @@ export function BookingSummary({
 }: BookingSummaryProps) {
   const t = useTranslations('booking.summary')
   return (
-    <Card className="border-border shadow-md sticky top-24 bg-card/90 backdrop-blur-sm">
+    <>
+    <Card id="booking-summary" className="scroll-mt-20 border-border shadow-md sticky top-24 bg-card/90 backdrop-blur-sm">
       <CardHeader className="pb-3 border-b border-border/60">
         <CardTitle className="text-base font-bold">{t('title')}</CardTitle>
         <CardDescription className="text-xs">{t('subtitle')}</CardDescription>
@@ -137,5 +138,42 @@ export function BookingSummary({
         </div>
       </CardContent>
     </Card>
+
+    {/* Điện thoại: tóm tắt nằm cuối trang nên thanh cố định này luôn giữ giá cọc và nút giữ chỗ trong tầm ngón cái.
+        Nằm ngay trên thanh điều hướng dưới (md trở lên không có thanh đó nên sát đáy). */}
+    {slot && (
+      <div
+        data-testid="sticky-book-bar"
+        className="lg:hidden fixed inset-x-0 z-30 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 border-t border-border bg-background/95 backdrop-blur-md shadow-[0_-6px_20px_-12px_rgba(0,0,0,0.35)]"
+      >
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs text-muted-foreground truncate">
+              {formatTimeRange(slot.start, slot.end)} · {courtName}
+            </div>
+            <div className="font-extrabold text-base text-emerald-700 dark:text-emerald-400 leading-tight whitespace-nowrap">
+              {t('stickyDeposit', { amount: formatVnd(price.depositAmount) })}
+            </div>
+          </div>
+          <a
+            href="#booking-summary"
+            aria-label={t('moreOptionsLabel')}
+            title={t('moreOptions')}
+            className="shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-border text-muted-foreground active:bg-muted"
+          >
+            <ChevronUp className="h-5 w-5" aria-hidden />
+          </a>
+          <Button
+            type="button"
+            disabled={loading}
+            onClick={onSubmit}
+            className="shrink-0 h-11 pointer-coarse:h-11 px-5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-md shadow-emerald-600/30 cursor-pointer text-sm"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" aria-label={t('holding')} /> : t('stickyHold')}
+          </Button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

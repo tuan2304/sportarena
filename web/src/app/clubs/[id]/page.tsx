@@ -14,7 +14,7 @@ import { MapEmbed } from '@/components/maps/map-embed'
 import { DirectionsLinks } from '@/components/maps/directions-links'
 import { fullAddress, hasCoordinates } from '@/lib/maps'
 import { bookableCourtIds, courtLimit, isBillingEnforced } from '@/lib/billing'
-import { MapPin, Clock, ArrowLeft, Sparkles, ShieldCheck } from 'lucide-react'
+import { MapPin, Clock, ArrowLeft, Sparkles, ShieldCheck, CalendarCheck } from 'lucide-react'
 import { resolveAppUrl } from '@/lib/app-url'
 import { describePolicy } from '@/lib/cancellation'
 import { clubDescription, clubJsonLd, serializeJsonLd, shareImage } from '@/lib/seo'
@@ -208,6 +208,17 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
             <div className="text-xs text-muted-foreground max-w-md">
               {club.description || t('defaultDescription')}
             </div>
+
+            {/* Điện thoại: nhảy thẳng tới bước chọn giờ, khỏi cuộn qua ảnh, mô tả và bản đồ */}
+            {acceptsPayments && (
+              <a
+                href="#booking"
+                className="md:hidden inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 text-sm font-bold text-white shadow-md shadow-emerald-600/30 active:bg-emerald-800"
+              >
+                <CalendarCheck className="h-4 w-4" aria-hidden />
+                {t('jumpToBooking')}
+              </a>
+            )}
           </div>
         </div>
 
@@ -237,7 +248,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
         </section>
 
         {/* Booking Slot Picker Section */}
-        <div className="pt-2">
+        <div id="booking" className="pt-2 scroll-mt-20">
           <div className="mb-4">
             <h2 className="text-xl font-extrabold text-foreground tracking-tight">
               {t('pickerTitle')}
