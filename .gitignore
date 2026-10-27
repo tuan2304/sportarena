@@ -4,3 +4,7 @@
 
 # Bản sao lưu dữ liệu tạm trước khi xóa bảng, không đưa lên git
 supabase/backups/
+
+# Tài liệu nội bộ, chỉ giữ trên máy
+/GEMINI.md
+/DESIGN.md

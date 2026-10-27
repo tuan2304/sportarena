@@ -94,7 +94,7 @@ supabase/   Migrations (schema, RLS, SQL functions) and the security test suite
 docs/       Screenshots
 ```
 
-Related documents: [How it works](#how-it-works) (with diagrams), [Design guidelines](DESIGN.md), [Deployment guide](DEPLOYMENT.md). These last two are written in Vietnamese.
+Related documents: [How it works](#how-it-works) (with diagrams), [Deployment guide](DEPLOYMENT.md) (written in Vietnamese).
 
 ## Getting started
 

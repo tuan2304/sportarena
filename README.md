@@ -93,7 +93,7 @@ supabase/   Migration (schema, RLS, hàm SQL) và bộ test bảo mật
 docs/       Ảnh minh họa
 ```
 
-Tài liệu đi kèm: [Luồng hoạt động](#luồng-hoạt-động) (có sơ đồ), [Quy chuẩn thiết kế](DESIGN.md), [Hướng dẫn triển khai](DEPLOYMENT.md).
+Tài liệu đi kèm: [Luồng hoạt động](#luồng-hoạt-động) (có sơ đồ), [Hướng dẫn triển khai](DEPLOYMENT.md).
 
 ## Chạy thử
 
