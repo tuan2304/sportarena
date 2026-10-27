@@ -8,7 +8,7 @@ Tài liệu hướng dẫn triển khai nền tảng **SportArena Web** lên mô
 > **Ưu điểm:** Miễn phí, tốc độ cao (CDN toàn cầu), hỗ trợ Server Actions / Edge Middleware tối đa, tự động deploy (CI/CD) mỗi khi push code lên GitHub.
 
 Dự án hiện đã được liên kết với GitHub Repository:  
-👉 **`https://github.com/tuan2304/pickleball-booking.git`**
+👉 **`https://github.com/tuan2304/sportarena.git`**
 
 ### Bước 0: Áp migration Giai đoạn 10 (BẮT BUỘC, làm TRƯỚC khi deploy code mới)
 Migration [20261021000000_phase10_hardening.sql](supabase/migrations/20261021000000_phase10_hardening.sql) khóa quyền ghi trực tiếp vào `bookings`, `payments`, `matches`... Code cũ sẽ lỗi nếu chạy với DB đã khóa, nên hãy áp migration rồi deploy code mới ngay sau đó.
@@ -33,7 +33,7 @@ git push origin master
 ### Bước 2: Kết nối với Vercel
 1. Truy cập [https://vercel.com](https://vercel.com) và đăng nhập bằng tài khoản GitHub của bạn.
 2. Nhấn nút **"Add New..."** $\rightarrow$ chọn **"Project"**.
-3. Tìm và chọn repository: **`tuan2304/pickleball-booking`** $\rightarrow$ bấm **"Import"**.
+3. Tìm và chọn repository: **`tuan2304/sportarena`** $\rightarrow$ bấm **"Import"**.
 
 ### Bước 3: Cấu hình Project trên Vercel
 - **Framework Preset:** `Next.js`
