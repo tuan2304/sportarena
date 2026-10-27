@@ -15,6 +15,8 @@ import { TicketStatusBadge } from '@/components/support/ticket-status-badge'
 export interface TicketMessage {
   id: string
   is_staff: boolean
+  /** Do trợ lý AI soạn (vẫn là phía hỗ trợ) */
+  is_ai?: boolean
   sender_name: string
   body: string
   created_at: string
@@ -43,7 +45,7 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
   const refetch = useCallback(async () => {
     const supabase = createClient()
     const [{ data: rows }, { data: ticket }] = await Promise.all([
-      supabase.from('ticket_messages').select('id, is_staff, sender_name, body, created_at').eq('ticket_id', ticketId).order('created_at'),
+      supabase.from('ticket_messages').select('id, is_staff, is_ai, sender_name, body, created_at').eq('ticket_id', ticketId).order('created_at'),
       supabase.from('support_tickets').select('status').eq('id', ticketId).maybeSingle(),
     ])
     if (rows) setMessages(rows)
@@ -130,7 +132,8 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
         className="max-h-[55vh] min-h-48 space-y-3 overflow-y-auto rounded-2xl border border-border bg-muted/30 p-4"
       >
         {messages.map((m) => {
-          const mine = m.is_staff === isAdmin
+          // Tin của AI luôn thuộc "bên kia" với admin, dù cũng là phía hỗ trợ
+          const mine = !m.is_ai && m.is_staff === isAdmin
           return (
             <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -139,7 +142,12 @@ export function TicketThread({ ticketId, initialMessages, initialStatus, viewer 
                 }`}
               >
                 <div className={`mb-0.5 text-xs font-semibold ${mine ? 'text-emerald-100' : 'text-muted-foreground'}`}>
-                  {m.sender_name || (m.is_staff ? t('staffFallback') : t('userFallback'))}
+                  {m.is_ai ? t('aiName') : m.sender_name || (m.is_staff ? t('staffFallback') : t('userFallback'))}
+                  {m.is_ai && (
+                    <span className="ml-1.5 rounded-full border border-amber-400/60 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide">
+                      {t('aiBadge')}
+                    </span>
+                  )}
                   <span className="font-normal"> · {formatDate(m.created_at)} {formatTime(m.created_at)}</span>
                 </div>
                 <p className="whitespace-pre-wrap break-words leading-relaxed">{m.body}</p>
