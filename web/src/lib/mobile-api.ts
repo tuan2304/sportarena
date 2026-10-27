@@ -208,6 +208,64 @@ export function parseCreateClubBody(body: unknown): ParsedBody<CreateClubBody> {
   }
 }
 
+export interface UpdateClubBody {
+  name?: string
+  address?: string
+  description?: string | null
+  city?: string
+  district?: string | null
+  openTime?: string
+  closeTime?: string
+  amenities?: string[]
+}
+
+/**
+ * Thân yêu cầu sửa cụm sân: chỉ gửi trường nào cần đổi, phải có ít nhất một trường.
+ * description/district gửi chuỗi rỗng hoặc null là xóa; amenities gửi mảng rỗng là xóa hết. Vị trí và ảnh có API riêng.
+ */
+export function parseUpdateClubBody(body: unknown): ParsedBody<UpdateClubBody> {
+  if (!isPlainObject(body)) return { ok: false, error: 'Dữ liệu gửi lên không hợp lệ' }
+  const { name, address, description, city, district, openTime, closeTime, amenities } = body
+  const value: UpdateClubBody = {}
+
+  if (name !== undefined) {
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 100) return { ok: false, error: 'Tên cụm sân phải từ 1 đến 100 ký tự' }
+    value.name = name.trim()
+  }
+  if (address !== undefined) {
+    if (typeof address !== 'string' || !address.trim() || address.trim().length > 200) return { ok: false, error: 'Địa chỉ phải từ 1 đến 200 ký tự' }
+    value.address = address.trim()
+  }
+  for (const [key, raw, max] of [['description', description, 1000], ['district', district, 60]] as const) {
+    if (raw === undefined) continue
+    const text = optionalText(raw, max)
+    if (!text.ok) return { ok: false, error: 'Thông tin cụm sân quá dài hoặc không hợp lệ' }
+    value[key] = text.value ?? null
+  }
+  if (city !== undefined) {
+    const cityText = optionalText(city, 60)
+    if (!cityText.ok) return { ok: false, error: 'Thông tin cụm sân quá dài hoặc không hợp lệ' }
+    if (cityText.value) value.city = cityText.value
+  }
+
+  for (const [key, time] of [['openTime', openTime], ['closeTime', closeTime]] as const) {
+    if (time === undefined || time === null || time === '') continue
+    if (typeof time !== 'string' || !CLOCK.test(time)) return { ok: false, error: 'Giờ mở cửa hoặc đóng cửa không đúng định dạng HH:MM' }
+    value[key] = time
+  }
+  if (value.openTime && value.closeTime && value.openTime >= value.closeTime) return { ok: false, error: 'Giờ đóng cửa phải sau giờ mở cửa' }
+
+  if (amenities !== undefined) {
+    if (!Array.isArray(amenities) || amenities.length > 20 || amenities.some((a) => typeof a !== 'string' || !a.trim() || a.length > 30)) {
+      return { ok: false, error: 'Danh sách tiện ích không hợp lệ' }
+    }
+    value.amenities = amenities.map((a) => (a as string).trim())
+  }
+
+  if (Object.keys(value).length === 0) return { ok: false, error: 'Không có gì để cập nhật' }
+  return { ok: true, value }
+}
+
 export interface CreateCourtBody {
   name: string
   sportType: (typeof COURT_SPORTS)[number]

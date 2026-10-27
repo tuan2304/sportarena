@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { createClub } from '@/app/actions/owner'
+import { createClub, updateClub } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,10 +14,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Loader2 } from 'lucide-react'
 import { LocationPicker } from '@/components/maps/location-picker'
 
-export function ClubFormModal() {
+export interface EditableClub {
+  id: string
+  name: string
+  address: string
+  description: string | null
+  district: string | null
+  city: string | null
+  open_time: string
+  close_time: string
+  amenities: string[] | null
+}
+
+/** Không truyền `club` thì là form tạo cụm sân mới; truyền `club` thì là form sửa thông tin cụm sân đó. */
+export function ClubFormModal({ club }: { club?: EditableClub }) {
   const t = useTranslations('owner.clubForm')
   const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
@@ -30,7 +43,7 @@ export function ClubFormModal() {
     setError(null)
 
     const formData = new FormData(e.currentTarget)
-    const result = await createClub(formData)
+    const result = club ? await updateClub(club.id, formData) : await createClub(formData)
 
     if (result.error) {
       setError(result.error)
@@ -43,20 +56,33 @@ export function ClubFormModal() {
 
   return (
     <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer shadow-sm"
-      >
-        <Plus className="w-4 h-4 mr-1.5" />
-        {t('openButton')}
-      </Button>
+      {club ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setOpen(true)}
+          className="h-8 w-8 p-0 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+          title={t('editButton')}
+          aria-label={t('editButton')}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </Button>
+      ) : (
+        <Button
+          onClick={() => setOpen(true)}
+          className="bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer shadow-sm"
+        >
+          <Plus className="w-4 h-4 mr-1.5" />
+          {t('openButton')}
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{t('title')}</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{club ? t('editTitle') : t('title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {t('description')}
+            {club ? t('editDescription') : t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -73,6 +99,7 @@ export function ClubFormModal() {
               id="name"
               name="name"
               placeholder={t('namePlaceholder')}
+              defaultValue={club?.name}
               required
               className="h-9"
             />
@@ -84,6 +111,7 @@ export function ClubFormModal() {
               id="address"
               name="address"
               placeholder={t('addressPlaceholder')}
+              defaultValue={club?.address}
               required
               className="h-9"
             />
@@ -96,6 +124,7 @@ export function ClubFormModal() {
                 id="district"
                 name="district"
                 placeholder={t('districtPlaceholder')}
+                defaultValue={club?.district ?? undefined}
                 className="h-9"
               />
             </div>
@@ -104,7 +133,7 @@ export function ClubFormModal() {
               <Input
                 id="city"
                 name="city"
-                defaultValue={t('cityDefault')}
+                defaultValue={club?.city ?? t('cityDefault')}
                 className="h-9"
               />
             </div>
@@ -117,7 +146,7 @@ export function ClubFormModal() {
                 id="openTime"
                 name="openTime"
                 type="time"
-                defaultValue="06:00"
+                defaultValue={club ? club.open_time.slice(0, 5) : '06:00'}
                 className="h-9"
               />
             </div>
@@ -127,16 +156,32 @@ export function ClubFormModal() {
                 id="closeTime"
                 name="closeTime"
                 type="time"
-                defaultValue="23:00"
+                defaultValue={club ? club.close_time.slice(0, 5) : '23:00'}
                 className="h-9"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-1">
-            <Label>{t('location')}</Label>
-            <LocationPicker />
+          <div className="space-y-1.5">
+            <Label htmlFor="description">{t('descriptionLabel')}</Label>
+            <textarea
+              id="description"
+              name="description"
+              rows={3}
+              maxLength={1000}
+              placeholder={t('descriptionPlaceholder')}
+              defaultValue={club?.description ?? undefined}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
           </div>
+
+          {/* Khi sửa, vị trí bản đồ đổi bằng nút "Ghim vị trí" riêng trên thẻ cụm sân */}
+          {!club && (
+            <div className="space-y-1.5 pt-1">
+              <Label>{t('location')}</Label>
+              <LocationPicker />
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="amenities">{t('amenities')}</Label>
@@ -144,6 +189,7 @@ export function ClubFormModal() {
               id="amenities"
               name="amenities"
               placeholder={t('amenitiesPlaceholder')}
+              defaultValue={club?.amenities?.join(', ')}
               className="h-9"
             />
           </div>
@@ -168,7 +214,7 @@ export function ClubFormModal() {
                   {t('saving')}
                 </>
               ) : (
-                t('submit')
+                club ? t('editSubmit') : t('submit')
               )}
             </Button>
           </DialogFooter>

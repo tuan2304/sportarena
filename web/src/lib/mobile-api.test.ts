@@ -12,6 +12,7 @@ import {
   parseOwnerStatusBody,
   parsePricingRuleBody,
   parseRespondBody,
+  parseUpdateClubBody,
   parseUpdateCourtBody,
 } from './mobile-api'
 
@@ -224,6 +225,23 @@ describe('parseUpdateCourtBody', () => {
     for (const bad of [{}, null, [], { name: '' }, { name: 'a'.repeat(81) }, { basePricePerHour: 10 }, { depositPercentage: 0 }, { depositPercentage: 101 }, { isActive: 'yes' }]) {
       expect(parseUpdateCourtBody(bad).ok, JSON.stringify(bad)).toBe(false)
     }
+  })
+})
+
+describe('parseUpdateClubBody', () => {
+  it('chỉ giữ trường được gửi', () => {
+    expect(parseUpdateClubBody({ name: ' Sân B ', openTime: '05:30' })).toEqual({ ok: true, value: { name: 'Sân B', openTime: '05:30' } })
+    expect(parseUpdateClubBody({ amenities: ['wifi', ' parking '], city: ' HCM ' })).toEqual({ ok: true, value: { amenities: ['wifi', 'parking'], city: 'HCM' } })
+  })
+
+  it('chuỗi rỗng xóa mô tả và quận, mảng rỗng xóa tiện ích, thành phố rỗng thì bỏ qua', () => {
+    expect(parseUpdateClubBody({ description: '', district: null, amenities: [], city: '' })).toEqual({ ok: true, value: { description: null, district: null, amenities: [] } })
+  })
+
+  it('từ chối thân rỗng và giá trị sai', () => {
+    const bad = [{}, null, [], { name: '' }, { name: 'a'.repeat(101) }, { address: ' ' }, { description: 'a'.repeat(1001) }, { openTime: '6h' }, { openTime: '25:00' },
+      { openTime: '22:00', closeTime: '06:00' }, { amenities: 'wifi' }, { amenities: [1] }, { amenities: Array(21).fill('a') }]
+    for (const body of bad) expect(parseUpdateClubBody(body).ok, JSON.stringify(body)).toBe(false)
   })
 })
 

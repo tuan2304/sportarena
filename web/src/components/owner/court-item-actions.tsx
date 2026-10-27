@@ -11,9 +11,11 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 interface CourtItemActionsProps {
   courtId: string
   isActive: boolean
+  /** Nút phụ do trang truyền vào (ví dụ nút sửa sân), đặt trước nút tạm ngưng */
+  children?: React.ReactNode
 }
 
-export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
+export function CourtItemActions({ courtId, isActive, children }: CourtItemActionsProps) {
   const t = useTranslations('owner.courtActions')
   const [loading, setLoading] = useState(false)
   const askConfirm = useConfirm()
@@ -47,6 +49,7 @@ export function CourtItemActions({ courtId, isActive }: CourtItemActionsProps) {
         <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
       ) : (
         <>
+          {children}
           <Button
             size="sm"
             variant="ghost"

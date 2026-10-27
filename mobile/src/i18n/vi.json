@@ -337,6 +337,7 @@
       "pinHint": "Hãy đứng tại sân rồi chọn dùng vị trí hiện tại.",
       "pinUseCurrent": "Dùng vị trí hiện tại",
       "pinRemove": "Gỡ vị trí",
+      "hiddenNoPayment": "Chưa liên kết ngân hàng nên cụm sân chưa hiện cho khách. Mở trang web của chủ sân, mục Thanh toán để liên kết ngân hàng hoặc PayOS.",
       "locationPermission": "Cần cho phép truy cập vị trí để ghim sân lên bản đồ.",
       "locationFailed": "Không lấy được vị trí. Hãy bật GPS và thử lại.",
       "edit": "Sửa",
@@ -376,7 +377,9 @@
       "cancel": "Hủy",
       "invalidNumber": "Giá và phần trăm cọc phải là số",
       "editCourtTitle": "Sửa {court}",
-      "editRuleTitle": "Sửa khung giá"
+      "editRuleTitle": "Sửa khung giá",
+      "editClubTitle": "Sửa {club}",
+      "amenities": "Tiện ích (cách nhau bởi dấu phẩy)"
     },
     "sport": {
       "football": "Bóng đá",

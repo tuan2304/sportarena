@@ -48,6 +48,14 @@ interface Club {
   id: string
   name: string
   address: string
+  description: string | null
+  district: string | null
+  city: string | null
+  open_time: string
+  close_time: string
+  amenities: string[] | null
+  accepts_online_payment: boolean | null
+  accepts_manual_transfer: boolean | null
   images: string[] | null
   latitude: number | null
   longitude: number | null
@@ -56,13 +64,15 @@ interface Club {
 
 type Form =
   | { kind: 'club' }
+  | { kind: 'editClub'; club: Club }
   | { kind: 'court'; club: Club }
   | { kind: 'rule'; court: Court }
   | { kind: 'editCourt'; court: Court }
   | { kind: 'editRule'; court: Court; rule: Rule }
 
 const SELECT = `
-  id, name, address, images, latitude, longitude,
+  id, name, address, description, district, city, open_time, close_time, amenities, accepts_online_payment, accepts_manual_transfer,
+  images, latitude, longitude,
   courts ( id, name, sport_type, surface_type, base_price_per_hour, deposit_percentage, is_active,
     court_pricing_rules ( id, name, start_time, end_time, price_per_hour ) )
 `
@@ -186,6 +196,9 @@ export default function OwnerVenuesPanel() {
                 <Text style={styles.clubName}>{club.name}</Text>
                 <Text style={styles.muted}>{club.address}</Text>
               </View>
+              <IconButton label={t('owner.venues.edit')} onPress={() => setForm({ kind: 'editClub', club })}>
+                <Pencil size={16} color={colors.primary} />
+              </IconButton>
               <IconButton
                 label={t('owner.venues.deleteClub')}
                 onPress={() =>
@@ -195,6 +208,8 @@ export default function OwnerVenuesPanel() {
                 <Trash2 size={16} color={colors.danger} />
               </IconButton>
             </View>
+
+            {!club.accepts_online_payment && !club.accepts_manual_transfer && <Text style={styles.off}>{t('owner.venues.hiddenNoPayment')}</Text>}
 
             <View style={styles.chips}>
               <TouchableOpacity style={styles.chip} onPress={() => setPhotosOf(club)} accessibilityRole="button">
@@ -322,7 +337,19 @@ function FormSheet({ form, onClose, onSaved }: { form: Form | null; onClose: () 
     if (!form) return
     setSport('football')
     if (form.kind === 'club') setValues({ openTime: '06:00', closeTime: '23:00', city: 'Hồ Chí Minh' })
-    else if (form.kind === 'court') setValues({ basePrice: '150000', deposit: '30' })
+    else if (form.kind === 'editClub') {
+      const c = form.club
+      setValues({
+        name: c.name,
+        address: c.address,
+        district: c.district ?? '',
+        city: c.city ?? '',
+        openTime: hhmm(c.open_time),
+        closeTime: hhmm(c.close_time),
+        description: c.description ?? '',
+        amenities: (c.amenities ?? []).join(', '),
+      })
+    } else if (form.kind === 'court') setValues({ basePrice: '150000', deposit: '30' })
     else if (form.kind === 'rule') setValues({ startTime: '17:00', endTime: '21:00', price: String(form.court.base_price_per_hour) })
     else if (form.kind === 'editCourt') {
       setValues({
@@ -342,24 +369,28 @@ function FormSheet({ form, onClose, onSaved }: { form: Form | null; onClose: () 
   async function submit() {
     if (!form) return
     const numbers = { basePricePerHour: Number(v('basePrice')), depositPercentage: Number(v('deposit')), pricePerHour: Number(v('price')) }
-    const needsNumbers = form.kind === 'court' || form.kind === 'editCourt' ? [numbers.basePricePerHour, numbers.depositPercentage] : form.kind === 'club' ? [] : [numbers.pricePerHour]
+    const needsNumbers = form.kind === 'court' || form.kind === 'editCourt' ? [numbers.basePricePerHour, numbers.depositPercentage] : form.kind === 'club' || form.kind === 'editClub' ? [] : [numbers.pricePerHour]
     if (needsNumbers.some((n) => Number.isNaN(n))) {
       Alert.alert(t('owner.failed'), t('owner.form.invalidNumber'))
       return
     }
 
+    const clubBody = () => ({
+      name: v('name'),
+      address: v('address'),
+      district: v('district'),
+      city: v('city'),
+      description: v('description'),
+      openTime: v('openTime'),
+      closeTime: v('closeTime'),
+      amenities: v('amenities').split(',').map((item) => item.trim()).filter(Boolean),
+    })
+
     let call: () => ReturnType<typeof apiPost>
     if (form.kind === 'club') {
-      call = () =>
-        apiPost('/api/mobile/owner/clubs', {
-          name: v('name'),
-          address: v('address'),
-          district: v('district'),
-          city: v('city'),
-          description: v('description'),
-          openTime: v('openTime'),
-          closeTime: v('closeTime'),
-        })
+      call = () => apiPost('/api/mobile/owner/clubs', clubBody())
+    } else if (form.kind === 'editClub') {
+      call = () => apiPatch(`/api/mobile/owner/clubs/${form.club.id}`, clubBody())
     } else if (form.kind === 'court') {
       call = () =>
         apiPost(`/api/mobile/owner/clubs/${form.club.id}/courts`, {
@@ -397,7 +428,9 @@ function FormSheet({ form, onClose, onSaved }: { form: Form | null; onClose: () 
     ? ''
     : form.kind === 'club'
       ? t('owner.form.clubTitle')
-      : form.kind === 'court'
+      : form.kind === 'editClub'
+        ? t('owner.form.editClubTitle', { club: form.club.name })
+        : form.kind === 'court'
         ? t('owner.form.courtTitle', { club: form.club.name })
         : form.kind === 'rule'
           ? t('owner.form.ruleTitle', { court: form.court.name })
@@ -414,7 +447,7 @@ function FormSheet({ form, onClose, onSaved }: { form: Form | null; onClose: () 
         <View style={styles.sheet}>
           <Text style={styles.sheetTitle}>{title}</Text>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 6, paddingBottom: 8 }}>
-            {form?.kind === 'club' && (
+            {(form?.kind === 'club' || form?.kind === 'editClub') && (
               <>
                 <Field label={t('owner.form.clubName')} value={v('name')} onChange={set('name')} maxLength={100} />
                 <Field label={t('owner.form.address')} value={v('address')} onChange={set('address')} maxLength={200} />
@@ -423,6 +456,7 @@ function FormSheet({ form, onClose, onSaved }: { form: Form | null; onClose: () 
                 <Field label={t('owner.form.openTime')} value={v('openTime')} onChange={set('openTime')} maxLength={5} />
                 <Field label={t('owner.form.closeTime')} value={v('closeTime')} onChange={set('closeTime')} maxLength={5} />
                 <Field label={t('owner.form.description')} value={v('description')} onChange={set('description')} maxLength={1000} multiline />
+                <Field label={t('owner.form.amenities')} value={v('amenities')} onChange={set('amenities')} maxLength={300} />
               </>
             )}
 

@@ -10,9 +10,11 @@ import { ClubItemActions } from '@/components/owner/club-item-actions'
 import { ClubLocationButton } from '@/components/owner/club-location-button'
 import { ClubImagesButton } from '@/components/owner/club-images-button'
 import { fullAddress, hasCoordinates } from '@/lib/maps'
-import { Building2, MapPin, Clock, CircleDot, ShieldCheck } from 'lucide-react'
+import { Building2, MapPin, Clock, CircleDot, ShieldCheck, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 
 import { formatNumber } from '@/lib/format'
+import { canAcceptBookings } from '@/lib/payment-channel'
 export default async function OwnerClubsPage() {
   const t = await getTranslations('owner.clubs')
   const labels = await getLabels()
@@ -73,10 +75,17 @@ export default async function OwnerClubsPage() {
                         <CardTitle className="text-xl font-bold text-foreground">
                           {club.name}
                         </CardTitle>
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-xs">
-                          <ShieldCheck className="w-3 h-3 mr-1" />
-                          {t('active')}
-                        </Badge>
+                        {canAcceptBookings(club.accepts_online_payment, club.accepts_manual_transfer) ? (
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-xs">
+                            <ShieldCheck className="w-3 h-3 mr-1" />
+                            {t('active')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-xs">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                            {t('hidden')}
+                          </Badge>
+                        )}
                       </div>
                       <CardDescription className="flex items-center gap-1.5 mt-1 text-xs">
                         <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -97,9 +106,19 @@ export default async function OwnerClubsPage() {
                       />
                       <ClubImagesButton clubId={club.id} clubName={club.name} initial={club.images ?? []} />
                       <CourtFormModal clubId={club.id} clubName={club.name} />
+                      <ClubFormModal club={club} />
                       <ClubItemActions clubId={club.id} clubName={club.name} />
                     </div>
                   </div>
+
+                  {!canAcceptBookings(club.accepts_online_payment, club.accepts_manual_transfer) && (
+                    <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
+                      {t('hiddenHint')}{' '}
+                      <Link href="/owner/payments" className="font-semibold underline underline-offset-2">
+                        {t('hiddenLink')}
+                      </Link>
+                    </div>
+                  )}
 
                   {/* Amenities tags */}
                   {club.amenities && club.amenities.length > 0 && (
@@ -175,7 +194,9 @@ export default async function OwnerClubsPage() {
                               </span>
                             </div>
 
-                            <CourtItemActions courtId={court.id} isActive={court.is_active} />
+                            <CourtItemActions courtId={court.id} isActive={court.is_active}>
+                              <CourtFormModal clubId={club.id} clubName={club.name} court={court} />
+                            </CourtItemActions>
                           </div>
                         ))}
                       </div>

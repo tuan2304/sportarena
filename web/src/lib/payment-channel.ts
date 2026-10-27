@@ -87,6 +87,17 @@ export async function credentialsForStoredChannel(
   return getPlatformCredentials()
 }
 
+/**
+ * Điều kiện PostgREST (dùng với `.or()`) để danh sách công khai chỉ gồm cụm sân đã liên kết ngân hàng
+ * (PayOS hoặc tài khoản VietQR), tức là khách thanh toán cọc được. Môi trường mô phỏng thanh toán (dev, CI) không lọc
+ * vì ở đó cụm sân nào cũng đặt được; xem `listsOnlyBookableClubs`.
+ */
+export const BOOKABLE_CLUB_FILTER = 'accepts_online_payment.eq.true,accepts_manual_transfer.eq.true'
+
+export function listsOnlyBookableClubs(): boolean {
+  return !isPaymentSimulationEnabled()
+}
+
 /** Cụm sân có nhận đặt sân online được không (để ẩn/hiện form đặt ở giao diện). */
 export function canAcceptBookings(acceptsOnlinePayment: boolean, acceptsManualTransfer = false): boolean {
   return acceptsOnlinePayment || acceptsManualTransfer || isPaymentSimulationEnabled()

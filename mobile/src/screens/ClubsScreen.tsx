@@ -61,6 +61,8 @@ export default function ClubsScreen({ navigation }: any) {
           )
         `)
         .eq('is_active', true)
+        // Cụm sân chưa liên kết ngân hàng thì khách không thanh toán cọc được nên chưa hiện trong danh sách
+        .or('accepts_online_payment.eq.true,accepts_manual_transfer.eq.true')
 
       const { data, error } = await query
       if (error) throw error

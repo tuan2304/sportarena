@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useLabels } from '@/i18n/labels'
 import { useState } from 'react'
-import { createCourt } from '@/app/actions/owner'
+import { createCourt, updateCourt } from '@/app/actions/owner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,14 +15,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Loader2 } from 'lucide-react'
+
+export interface EditableCourt {
+  id: string
+  name: string
+  surface_type: string | null
+  base_price_per_hour: number
+  deposit_percentage: number
+}
 
 interface CourtFormModalProps {
   clubId: string
   clubName: string
+  /** Truyền vào để sửa sân con này thay vì thêm sân mới (môn thể thao không đổi được) */
+  court?: EditableCourt
 }
 
-export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
+export function CourtFormModal({ clubId, clubName, court }: CourtFormModalProps) {
   const t = useTranslations('owner.courtForm')
   const tc = useTranslations('common')
   const labels = useLabels()
@@ -38,7 +48,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
     const formData = new FormData(e.currentTarget)
     formData.set('clubId', clubId)
 
-    const result = await createCourt(formData)
+    const result = court ? await updateCourt(court.id, formData) : await createCourt(formData)
 
     if (result.error) {
       setError(result.error)
@@ -51,22 +61,34 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
 
   return (
     <>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => setOpen(true)}
-        className="border-dashed border-emerald-500/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-      >
-        <Plus className="w-3.5 h-3.5 mr-1" />
-        {t('openButton')}
-      </Button>
+      {court ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setOpen(true)}
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+        >
+          <Pencil className="w-3 h-3 mr-1" />
+          {t('editButton')}
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setOpen(true)}
+          className="border-dashed border-emerald-500/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1" />
+          {t('openButton')}
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{t('title')}</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{court ? t('editTitle') : t('title')}</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            {t('description', { club: clubName })}
+            {court ? t('editDescription', { court: court.name }) : t('description', { club: clubName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -83,26 +105,29 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
               id="courtName"
               name="name"
               placeholder={t('namePlaceholder')}
+              defaultValue={court?.name}
               required
               className="h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="sportType">{t('sport')}</Label>
-            <select
-              id="sportType"
-              name="sportType"
-              required
-              className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              <option value="football">{t('football')}</option>
-              <option value="badminton">{labels.sport('badminton')}</option>
-              <option value="pickleball">{labels.sport('pickleball')}</option>
-              <option value="tennis">{labels.sport('tennis')}</option>
-              <option value="basketball">{labels.sport('basketball')}</option>
-            </select>
-          </div>
+          {!court && (
+            <div className="space-y-1.5">
+              <Label htmlFor="sportType">{t('sport')}</Label>
+              <select
+                id="sportType"
+                name="sportType"
+                required
+                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="football">{t('football')}</option>
+                <option value="badminton">{labels.sport('badminton')}</option>
+                <option value="pickleball">{labels.sport('pickleball')}</option>
+                <option value="tennis">{labels.sport('tennis')}</option>
+                <option value="basketball">{labels.sport('basketball')}</option>
+              </select>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="surfaceType">{t('surface')}</Label>
@@ -110,7 +135,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
               id="surfaceType"
               name="surfaceType"
               placeholder={t('surfacePlaceholder')}
-              defaultValue={t('surfaceDefault')}
+              defaultValue={court ? (court.surface_type ?? '') : t('surfaceDefault')}
               className="h-9"
             />
           </div>
@@ -124,7 +149,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
                 type="number"
                 min="0"
                 step="10000"
-                defaultValue="200000"
+                defaultValue={court ? court.base_price_per_hour : '200000'}
                 required
                 className="h-9"
               />
@@ -138,7 +163,7 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
                 type="number"
                 min="0"
                 max="100"
-                defaultValue="30"
+                defaultValue={court ? court.deposit_percentage : '30'}
                 required
                 className="h-9"
               />
@@ -162,10 +187,10 @@ export function CourtFormModal({ clubId, clubName }: CourtFormModalProps) {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('adding')}
+                  {court ? t('saving') : t('adding')}
                 </>
               ) : (
-                t('submit')
+                court ? t('editSubmit') : t('submit')
               )}
             </Button>
           </DialogFooter>

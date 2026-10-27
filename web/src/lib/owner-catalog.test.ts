@@ -9,6 +9,7 @@ import {
   deleteCourtForOwner,
   deletePricingRuleForOwner,
   setClubImagesForOwner,
+  updateClubForOwner,
   updateClubLocationForOwner,
   updateCourtForOwner,
   updatePricingRuleForOwner,
@@ -201,6 +202,50 @@ describe('sửa và xóa sân con', () => {
     const { client, store } = fakeClient(tables())
     expect(await deleteCourtForOwner(client, client, user, 'court-2')).toEqual({ error: 'Bạn không có quyền xóa sân con này' })
     expect(store.courts).toHaveLength(2)
+  })
+})
+
+describe('sửa thông tin cụm sân', () => {
+  const tables = () => ({
+    clubs: [
+      { id: 'club-1', owner_id: 'user-1', name: 'Sân A', address: '1 Lê Lợi', description: 'Cũ', district: 'Q1', open_time: '06:00:00', close_time: '23:00:00', amenities: ['wifi'] },
+      { id: 'club-2', owner_id: OTHER, name: 'Sân của người khác', address: '2 Hai Bà Trưng', open_time: '06:00:00', close_time: '23:00:00' },
+    ],
+  })
+
+  it('chỉ đổi các trường được gửi và cắt khoảng trắng', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubForOwner(client, user, 'club-1', { name: ' Sân B ', amenities: ['wifi', 'parking'] })).toEqual({ success: true })
+    expect(store.clubs[0]).toMatchObject({ name: 'Sân B', address: '1 Lê Lợi', description: 'Cũ', amenities: ['wifi', 'parking'] })
+  })
+
+  it('chuỗi rỗng xóa mô tả và quận, mảng rỗng xóa tiện ích', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubForOwner(client, user, 'club-1', { description: '', district: null, amenities: [] })).toEqual({ success: true })
+    expect(store.clubs[0]).toMatchObject({ description: null, district: null, amenities: [] })
+  })
+
+  it('không sửa được cụm sân của người khác', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubForOwner(client, user, 'club-2', { name: 'Hack' })).toEqual({ error: 'Bạn không phải chủ của cụm sân này' })
+    expect(store.clubs[1].name).toBe('Sân của người khác')
+  })
+
+  it('từ chối tên hoặc địa chỉ rỗng', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubForOwner(client, user, 'club-1', { name: '  ' })).toEqual({ error: 'Vui lòng nhập tên cụm sân và địa chỉ' })
+    expect(await updateClubForOwner(client, user, 'club-1', { address: '' })).toEqual({ error: 'Vui lòng nhập tên cụm sân và địa chỉ' })
+    expect(store.clubs[0]).toMatchObject({ name: 'Sân A', address: '1 Lê Lợi' })
+  })
+
+  it('giờ đóng cửa phải sau giờ mở cửa, so cả với giờ đang lưu', async () => {
+    const { client, store } = fakeClient(tables())
+    expect(await updateClubForOwner(client, user, 'club-1', { openTime: '22:00', closeTime: '06:00' })).toEqual({ error: 'Giờ đóng cửa phải sau giờ mở cửa' })
+    // Chỉ đổi giờ mở thành 23:30 trong khi giờ đóng đang lưu là 23:00
+    expect(await updateClubForOwner(client, user, 'club-1', { openTime: '23:30' })).toEqual({ error: 'Giờ đóng cửa phải sau giờ mở cửa' })
+    expect(await updateClubForOwner(client, user, 'club-1', { openTime: '6h' })).toEqual({ error: 'Giờ mở cửa hoặc đóng cửa không đúng định dạng HH:MM' })
+    expect(await updateClubForOwner(client, user, 'club-1', { openTime: '05:30', closeTime: '22:30' })).toEqual({ success: true })
+    expect(store.clubs[0]).toMatchObject({ open_time: '05:30', close_time: '22:30' })
   })
 })
 

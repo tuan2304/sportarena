@@ -55,7 +55,7 @@ export async function createClubForOwner(supabase: Client, user: User, input: Cl
       owner_id: user.id,
       name,
       address,
-      description: input.description ?? undefined,
+      description: input.description?.trim() || undefined,
       city: input.city || 'Hồ Chí Minh',
       district: input.district ?? undefined,
       open_time: input.openTime || '06:00:00',
@@ -201,9 +201,69 @@ async function ownedCourt(supabase: Client, user: User, courtId: string, denied:
 
 /** Cụm sân của chính mình, hoặc lỗi. */
 async function ownedClub(supabase: Client, user: User, clubId: string) {
-  const { data: club } = await supabase.from('clubs').select('id, owner_id, images').eq('id', clubId).maybeSingle()
+  const { data: club } = await supabase.from('clubs').select('id, owner_id, images, open_time, close_time').eq('id', clubId).maybeSingle()
   if (!club || club.owner_id !== user.id) return { error: 'Bạn không phải chủ của cụm sân này' } as Failure
-  return { images: club.images ?? [] }
+  return { images: club.images ?? [], openTime: club.open_time, closeTime: club.close_time }
+}
+
+export interface ClubPatch {
+  name?: string
+  address?: string
+  /** null để xóa */
+  description?: string | null
+  city?: string
+  /** null để xóa */
+  district?: string | null
+  openTime?: string
+  closeTime?: string
+  /** Mảng rỗng là xóa hết tiện ích */
+  amenities?: string[]
+}
+
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/
+
+/**
+ * Sửa thông tin cụm sân của mình: tên, địa chỉ, mô tả, quận/thành phố, giờ mở đóng cửa, tiện ích.
+ * Vị trí bản đồ và ảnh có luồng riêng (updateClubLocationForOwner, setClubImagesForOwner).
+ */
+export async function updateClubForOwner(supabase: Client, user: User, clubId: string, patch: ClubPatch) {
+  const owned = await ownedClub(supabase, user, clubId)
+  if ('error' in owned) return owned
+
+  const update: Database['public']['Tables']['clubs']['Update'] = {}
+  if (patch.name !== undefined) {
+    const name = patch.name.trim()
+    if (!name) return { error: 'Vui lòng nhập tên cụm sân và địa chỉ' } as Failure
+    update.name = name
+  }
+  if (patch.address !== undefined) {
+    const address = patch.address.trim()
+    if (!address) return { error: 'Vui lòng nhập tên cụm sân và địa chỉ' } as Failure
+    update.address = address
+  }
+  if (patch.description !== undefined) update.description = patch.description?.trim() || null
+  if (patch.district !== undefined) update.district = patch.district?.trim() || null
+  if (patch.city !== undefined && patch.city.trim()) update.city = patch.city.trim()
+  if (patch.amenities !== undefined) update.amenities = patch.amenities
+
+  for (const time of [patch.openTime, patch.closeTime]) {
+    if (time !== undefined && !CLOCK.test(time)) return { error: 'Giờ mở cửa hoặc đóng cửa không đúng định dạng HH:MM' } as Failure
+  }
+  if (patch.openTime !== undefined) update.open_time = patch.openTime
+  if (patch.closeTime !== undefined) update.close_time = patch.closeTime
+  if (update.open_time !== undefined || update.close_time !== undefined) {
+    const open = (update.open_time ?? owned.openTime).slice(0, 5)
+    const close = (update.close_time ?? owned.closeTime).slice(0, 5)
+    if (open >= close) return { error: 'Giờ đóng cửa phải sau giờ mở cửa' } as Failure
+  }
+
+  if (Object.keys(update).length === 0) return { success: true as const }
+  const { error } = await supabase.from('clubs').update(update).eq('id', clubId)
+  if (error) {
+    console.error('updateClub lỗi', error)
+    return { error: 'Không lưu được thông tin cụm sân. Vui lòng thử lại.' } as Failure
+  }
+  return { success: true as const }
 }
 
 /** Xóa sân con, chỉ khi chưa có đơn hay giao dịch dính tới. `admin` (service_role) chỉ dùng để kiểm tra. */

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { RemoteImage } from '@/components/ui/remote-image'
 import { DirectionsLinks } from '@/components/maps/directions-links'
 import { fullAddress } from '@/lib/maps'
+import { BOOKABLE_CLUB_FILTER, listsOnlyBookableClubs } from '@/lib/payment-channel'
 import { Button } from '@/components/ui/button'
 import { MapPin, Clock, ArrowRight, Trophy, Sparkles } from 'lucide-react'
 
@@ -99,6 +100,9 @@ export default async function ClubsPage({ searchParams }: ClubsPageProps) {
     .from('clubs')
     .select(bySport ? CLUB_SELECT_BY_SPORT : CLUB_SELECT, { count: 'exact' })
     .eq('is_active', true)
+
+  // Cụm sân chưa liên kết ngân hàng thì khách không thanh toán cọc được nên chưa đưa lên danh sách
+  if (listsOnlyBookableClubs()) query = query.or(BOOKABLE_CLUB_FILTER)
 
   if (searchQuery) {
     const term = `%${searchQuery}%`

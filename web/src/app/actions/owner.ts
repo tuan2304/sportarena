@@ -11,8 +11,11 @@ import {
   deleteCourtForOwner,
   deletePricingRuleForOwner,
   setCourtActiveForOwner,
+  updateClubForOwner,
   updateClubLocationForOwner,
+  updateCourtForOwner,
 } from '@/lib/owner-catalog'
+import { parseUpdateClubBody, parseUpdateCourtBody } from '@/lib/mobile-api'
 import { isOwnerBookingStatus, updateBookingStatusForOwner } from '@/lib/owner-booking'
 import { tr } from '@/lib/localize-error'
 
@@ -43,6 +46,59 @@ export async function createClub(formData: FormData) {
   revalidatePath('/owner/clubs')
   revalidatePath('/owner/dashboard')
   return { success: true, club: result.club }
+}
+
+/** Sửa thông tin cụm sân. Dữ liệu qua cùng bộ kiểm tra với API của app mobile. */
+export async function updateClub(clubId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: await tr('Bạn cần đăng nhập để thực hiện tác vụ này') }
+
+  const text = (key: string) => String(formData.get(key) ?? '')
+  const parsed = parseUpdateClubBody({
+    name: text('name'),
+    address: text('address'),
+    description: text('description'),
+    district: text('district'),
+    city: text('city'),
+    openTime: text('openTime'),
+    closeTime: text('closeTime'),
+    amenities: text('amenities').split(',').map((item) => item.trim()).filter(Boolean),
+  })
+  if (!parsed.ok) return { error: await tr(parsed.error) }
+
+  const result = await updateClubForOwner(supabase, user, clubId, parsed.value)
+  if ('error' in result) return { error: await tr(result.error) }
+
+  revalidatePath('/owner/clubs')
+  revalidatePath('/owner/dashboard')
+  revalidatePath('/clubs')
+  revalidatePath(`/clubs/${clubId}`)
+  return { success: true }
+}
+
+/** Sửa tên, mặt sân, giá cơ bản và % cọc của sân con. Bật/tắt sân đi qua toggleCourtStatus. */
+export async function updateCourt(courtId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: await tr('Bạn cần đăng nhập') }
+
+  const parsed = parseUpdateCourtBody({
+    name: String(formData.get('name') ?? ''),
+    surfaceType: String(formData.get('surfaceType') ?? ''),
+    basePricePerHour: Number(formData.get('basePricePerHour')),
+    depositPercentage: Number(formData.get('depositPercentage')),
+  })
+  if (!parsed.ok) return { error: await tr(parsed.error) }
+
+  const result = await updateCourtForOwner(supabase, user, courtId, parsed.value)
+  if ('error' in result) return { error: await tr(result.error) }
+
+  revalidatePath('/owner/clubs')
+  revalidatePath('/owner/schedule')
+  revalidatePath('/owner/pricing')
+  revalidatePath('/clubs')
+  return { success: true }
 }
 
 export async function createCourt(formData: FormData) {

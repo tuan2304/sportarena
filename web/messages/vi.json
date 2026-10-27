@@ -768,7 +768,10 @@
       "suspended": "Tạm ngưng",
       "standardSurface": "Tiêu chuẩn",
       "depositPct": "Cọc {percent}%",
-      "basePrice": "Giá cơ bản:"
+      "basePrice": "Giá cơ bản:",
+      "hidden": "Chưa hiển thị cho khách",
+      "hiddenHint": "Cụm sân chưa liên kết ngân hàng nên chưa nằm trong danh sách cụm sân của khách. Hãy liên kết tài khoản ngân hàng hoặc PayOS để khách thanh toán cọc online.",
+      "hiddenLink": "Liên kết ngân hàng"
     },
     "clubForm": {
       "openButton": "Thêm Cụm Sân Mới",
@@ -788,7 +791,13 @@
       "amenities": "Tiện ích (cách nhau bởi dấu phẩy)",
       "amenitiesPlaceholder": "wifi, bãi xe ô tô, tắm nóng lạnh, nước uống",
       "saving": "Đang lưu...",
-      "submit": "Tạo Cụm Sân"
+      "submit": "Tạo Cụm Sân",
+      "descriptionLabel": "Mô tả",
+      "descriptionPlaceholder": "Giới thiệu ngắn về cụm sân, điểm nổi bật, quy định...",
+      "editButton": "Sửa thông tin cụm sân",
+      "editTitle": "Sửa Thông Tin Cụm Sân",
+      "editDescription": "Vị trí bản đồ và ảnh được chỉnh bằng các nút riêng trên thẻ cụm sân",
+      "editSubmit": "Lưu thay đổi"
     },
     "courtForm": {
       "openButton": "Thêm Sân Con",
@@ -804,7 +813,12 @@
       "basePrice": "Giá cơ bản (đ/giờ) *",
       "deposit": "Mức cọc (%) *",
       "adding": "Đang thêm...",
-      "submit": "Thêm Sân Con"
+      "submit": "Thêm Sân Con",
+      "saving": "Đang lưu...",
+      "editButton": "Sửa",
+      "editTitle": "Sửa Sân Con",
+      "editDescription": "Chỉnh thông tin của {court}. Môn thể thao không đổi được.",
+      "editSubmit": "Lưu thay đổi"
     },
     "clubActions": {
       "deleteTitle": "Xóa cụm sân \"{name}\"?",

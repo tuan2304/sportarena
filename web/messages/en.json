@@ -768,7 +768,10 @@
       "suspended": "Suspended",
       "standardSurface": "Standard",
       "depositPct": "{percent}% deposit",
-      "basePrice": "Base price:"
+      "basePrice": "Base price:",
+      "hidden": "Not visible to customers",
+      "hiddenHint": "This venue has no linked bank account, so it is not in the public venue list. Link a bank account or PayOS so customers can pay deposits online.",
+      "hiddenLink": "Link a bank account"
     },
     "clubForm": {
       "openButton": "Add New Venue",
@@ -788,7 +791,13 @@
       "amenities": "Amenities (comma separated)",
       "amenitiesPlaceholder": "wifi, car park, hot showers, drinks",
       "saving": "Saving...",
-      "submit": "Create Venue"
+      "submit": "Create Venue",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "A short intro to your venue, highlights, house rules...",
+      "editButton": "Edit venue details",
+      "editTitle": "Edit Venue Details",
+      "editDescription": "Map location and photos are changed with their own buttons on the venue card",
+      "editSubmit": "Save changes"
     },
     "courtForm": {
       "openButton": "Add Court",
@@ -804,7 +813,12 @@
       "basePrice": "Base price (đ/hour) *",
       "deposit": "Deposit (%) *",
       "adding": "Adding...",
-      "submit": "Add Court"
+      "submit": "Add Court",
+      "saving": "Saving...",
+      "editButton": "Edit",
+      "editTitle": "Edit Court",
+      "editDescription": "Update details for {court}. The sport can't be changed.",
+      "editSubmit": "Save changes"
     },
     "clubActions": {
       "deleteTitle": "Delete the venue \"{name}\"?",

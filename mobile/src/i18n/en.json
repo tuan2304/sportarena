@@ -337,6 +337,7 @@
       "pinHint": "Stand at the venue, then choose your current location.",
       "pinUseCurrent": "Use my current location",
       "pinRemove": "Remove location",
+      "hiddenNoPayment": "No bank account is linked, so this venue is not shown to customers. On the owner web dashboard, open Payments to link a bank account or PayOS.",
       "locationPermission": "Location access is needed to pin the venue on the map.",
       "locationFailed": "Could not get your location. Turn on GPS and try again.",
       "edit": "Edit",
@@ -376,7 +377,9 @@
       "cancel": "Cancel",
       "invalidNumber": "Price and deposit must be numbers",
       "editCourtTitle": "Edit {court}",
-      "editRuleTitle": "Edit price slot"
+      "editRuleTitle": "Edit price slot",
+      "editClubTitle": "Edit {club}",
+      "amenities": "Amenities (comma separated)"
     },
     "sport": {
       "football": "Football",
