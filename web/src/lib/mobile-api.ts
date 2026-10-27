@@ -363,6 +363,22 @@ export function parseUpdateCourtBody(body: unknown): ParsedBody<UpdateCourtBody>
   return { ok: true, value }
 }
 
+export interface BankAccountBody {
+  bin: string
+  accountNumber: string
+  accountName: string
+}
+
+/** Thân yêu cầu liên kết tài khoản ngân hàng. Kiểm tra nội dung (ngân hàng, số tài khoản, tên) do validateBankAccount làm ở server. */
+export function parseBankAccountBody(body: unknown): ParsedBody<BankAccountBody> {
+  if (!isPlainObject(body)) return { ok: false, error: 'Dữ liệu gửi lên không hợp lệ' }
+  const { bin, accountNumber, accountName } = body
+  if (typeof bin !== 'string' || typeof accountNumber !== 'string' || typeof accountName !== 'string') {
+    return { ok: false, error: 'Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng' }
+  }
+  return { ok: true, value: { bin, accountNumber, accountName } }
+}
+
 export interface LocationBody {
   latitude: number | null
   longitude: number | null

@@ -152,6 +152,7 @@ export const EN_EXACT: Record<string, string> = {
   'Không thể xóa vì đã có đơn đặt hoặc giao dịch liên quan (xóa sẽ làm mất lịch sử thanh toán). Hãy tạm ngưng hoạt động thay vì xóa.':
     'It cannot be deleted because it has related bookings or transactions (deleting would lose the payment history). Suspend it instead.',
   'Không lưu được thông tin cụm sân. Vui lòng thử lại.': 'Could not save the venue details. Please try again.',
+  'Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng': 'Please enter all the bank account details',
   'Vui lòng nhập đầy đủ thông tin khung giá': 'Please fill in all the price rule details',
   'Giờ không đúng định dạng HH:MM': 'Time must be in HH:MM format',
   'Giá mỗi giờ phải từ 1.000 đ đến 50.000.000 đ': 'The hourly rate must be between 1,000 đ and 50,000,000 đ',

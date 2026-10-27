@@ -12,6 +12,7 @@ import {
   parseOwnerStatusBody,
   parsePricingRuleBody,
   parseRespondBody,
+  parseBankAccountBody,
   parseUpdateClubBody,
   parseUpdateCourtBody,
 } from './mobile-api'
@@ -242,6 +243,19 @@ describe('parseUpdateClubBody', () => {
     const bad = [{}, null, [], { name: '' }, { name: 'a'.repeat(101) }, { address: ' ' }, { description: 'a'.repeat(1001) }, { openTime: '6h' }, { openTime: '25:00' },
       { openTime: '22:00', closeTime: '06:00' }, { amenities: 'wifi' }, { amenities: [1] }, { amenities: Array(21).fill('a') }]
     for (const body of bad) expect(parseUpdateClubBody(body).ok, JSON.stringify(body)).toBe(false)
+  })
+})
+
+describe('parseBankAccountBody', () => {
+  it('nhận ba chuỗi', () => {
+    const body = { bin: '970436', accountNumber: '0123456789', accountName: 'NGUYEN VAN A' }
+    expect(parseBankAccountBody(body)).toEqual({ ok: true, value: body })
+  })
+
+  it('từ chối thiếu trường, sai kiểu hoặc không phải đối tượng', () => {
+    for (const bad of [{}, null, [], { bin: '970436', accountNumber: 123456, accountName: 'A' }, { bin: '970436', accountNumber: '123456' }]) {
+      expect(parseBankAccountBody(bad).ok, JSON.stringify(bad)).toBe(false)
+    }
   })
 })
 

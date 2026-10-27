@@ -337,7 +337,7 @@
       "pinHint": "Stand at the venue, then choose your current location.",
       "pinUseCurrent": "Use my current location",
       "pinRemove": "Remove location",
-      "hiddenNoPayment": "No bank account is linked, so this venue is not shown to customers. On the owner web dashboard, open Payments to link a bank account or PayOS.",
+      "hiddenNoPayment": "No bank account is linked, so this venue is not shown to customers. Tap \"Link bank account\" below so customers can pay deposits.",
       "locationPermission": "Location access is needed to pin the venue on the map.",
       "locationFailed": "Could not get your location. Turn on GPS and try again.",
       "edit": "Edit",
@@ -387,6 +387,20 @@
       "pickleball": "Pickleball",
       "tennis": "Tennis",
       "basketball": "Basketball"
+    },
+    "bank": {
+      "link": "Link bank account",
+      "linked": "Bank: {bank}",
+      "title": "Deposit account of {club}",
+      "hint": "Customers scan the VietQR code of this account, tap \"I've transferred\", and you check your statement and confirm the booking. The money goes straight to your account. A venue only shows to customers once an account is linked.",
+      "bank": "Bank",
+      "number": "Account number",
+      "name": "Account holder name",
+      "saveEnable": "Save & enable",
+      "update": "Update account",
+      "remove": "Remove account",
+      "removeTitle": "Remove the deposit account of \"{club}\"?",
+      "removeText": "Bookings already waiting for a transfer are kept. If no payment channel is left, the venue is hidden from customers."
     },
     "images": {
       "title": "Photos of {club}",
