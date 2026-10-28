@@ -8,7 +8,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-emerald-950/20 via-background to-teal-950/20 relative overflow-hidden">
+    <div className="min-h-dvh w-full flex items-center justify-center p-4 bg-gradient-to-br from-emerald-950/20 via-background to-teal-950/20 relative overflow-hidden">
       {/* Nền: đốm sáng trôi nhẹ (hiện ngay), cảnh sân 3D phủ lên khi Three.js nạp xong, rồi lớp mờ viền để thẻ đăng nhập nổi bật */}
       <div aria-hidden className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[12%] -left-24 w-96 h-96 bg-emerald-500/25 rounded-full blur-[90px] animate-float" />

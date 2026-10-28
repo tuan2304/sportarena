@@ -1,5 +1,4 @@
 import { useI18n } from '../i18n'
-import type { MessageKey } from '../i18n'
 import React, { useEffect, useMemo, useState } from 'react'
 import {
   View,

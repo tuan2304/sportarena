@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { createBooking } from '@/app/actions/booking'
+import { joinSlotWaitlist } from '@/app/actions/waitlist'
 import { computePrice } from '@/lib/pricing'
 import { vnDateKey, vnDateTime } from '@/lib/datetime'
 import { hourRange, isHourBooked, isHourPast, isDurationAvailable, type BusySlot } from '@/lib/booking-slots'
@@ -89,6 +91,16 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
     depositAmount: priced?.depositAmount ?? 0,
     depositPercent: selectedCourt?.deposit_percentage ?? 30,
     isPeak: priced?.ruleApplied ?? false,
+  }
+
+  async function handleJoinWaitlist(hour: number) {
+    if (!selectedCourt) return
+    const start = vnDateTime(selectedDate, hour)
+    const end = new Date(start.getTime() + 60 * 60 * 1000)
+    const label = `${hour.toString().padStart(2, '0')}:00`
+    const result = await joinSlotWaitlist(selectedCourt.id, start.toISOString(), end.toISOString())
+    if (result.error) toast.error(result.error)
+    else toast.success(t('waitlistJoined', { label }))
   }
 
   function changeSelection(patch: { courtId?: string; date?: string }) {
@@ -185,6 +197,7 @@ export function TimeSlotPicker({ courts, existingBookings, clubOpenTime, clubClo
             setDuration(1)
           }}
           onSelectDuration={setDuration}
+          onJoinWaitlist={handleJoinWaitlist}
         />
       </div>
 

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase/session'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { countReconciliationIssues } from '@/lib/reconciliation'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
@@ -20,14 +21,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const profile = await getCurrentProfile()
   if (profile?.role !== 'admin') redirect('/')
 
-  const { count } = await createAdminClient()
-    .from('support_tickets')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'open')
+  const admin = createAdminClient()
+  const [{ count }, paymentIssues] = await Promise.all([
+    admin.from('support_tickets').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+    // Số trên thanh bên chỉ là gợi ý: lỗi đếm không được làm sập cả khu quản trị
+    countReconciliationIssues(admin).catch(() => 0),
+  ])
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <AdminSidebar userName={profile.full_name || undefined} userEmail={user.email} openTickets={count ?? 0} />
+      <AdminSidebar userName={profile.full_name || undefined} userEmail={user.email} openTickets={count ?? 0} paymentIssues={paymentIssues} />
       <main className="flex-1 flex flex-col min-w-0 bg-muted/20">
         <header className="h-16 border-b border-border/80 px-8 flex items-center justify-between bg-card/40 backdrop-blur-sm sticky top-0 z-20">
           <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30">

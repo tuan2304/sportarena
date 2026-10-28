@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Label } from '@/components/ui/label'
-import { Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Bell, Check } from 'lucide-react'
 import { DURATION_OPTIONS } from '@/lib/booking-slots'
 
 interface HourStepProps {
@@ -12,6 +14,8 @@ interface HourStepProps {
   isDurationAvailable: (duration: number) => boolean
   onSelectHour: (hour: number) => void
   onSelectDuration: (duration: number) => void
+  /** Đăng ký chờ một giờ đang kín; không truyền thì không hiện mục này */
+  onJoinWaitlist?: (hour: number) => Promise<void>
 }
 
 export function HourStep({
@@ -23,8 +27,13 @@ export function HourStep({
   isDurationAvailable,
   onSelectHour,
   onSelectDuration,
+  onJoinWaitlist,
 }: HourStepProps) {
   const t = useTranslations('booking.picker')
+  const [waitHour, setWaitHour] = useState('')
+  const [waiting, setWaiting] = useState(false)
+  // Chỉ những giờ đã kín mà chưa trôi qua mới đăng ký chờ được
+  const fullHours = onJoinWaitlist ? hours.filter((h) => isBooked(h) && !isPast(h)) : []
   return (
     <>
       <div className="space-y-3">
@@ -69,6 +78,47 @@ export function HourStep({
             )
           })}
         </div>
+
+        {fullHours.length > 0 && onJoinWaitlist && (
+          <div className="rounded-xl border border-dashed border-border bg-muted/20 p-3 space-y-2">
+            <div className="flex items-start gap-2 text-xs">
+              <Bell className="w-4 h-4 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" aria-hidden />
+              <div>
+                <div className="font-bold text-foreground">{t('waitlistTitle')}</div>
+                <div className="text-muted-foreground">{t('waitlistHint')}</div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label={t('waitlistSelect')}
+                value={waitHour}
+                onChange={(e) => setWaitHour(e.target.value)}
+                className="h-8 rounded-lg border border-border bg-background px-2 text-xs"
+              >
+                <option value="">{t('waitlistSelect')}</option>
+                {fullHours.map((h) => (
+                  <option key={h} value={h}>
+                    {`${h.toString().padStart(2, '0')}:00`}
+                  </option>
+                ))}
+              </select>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={waiting || waitHour === ''}
+                onClick={async () => {
+                  setWaiting(true)
+                  await onJoinWaitlist(Number(waitHour))
+                  setWaiting(false)
+                }}
+                className="h-8 text-xs cursor-pointer"
+              >
+                {t('waitlistJoin')}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {startHour !== null && (

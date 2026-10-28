@@ -1,9 +1,8 @@
 import * as Notifications from 'expo-notifications'
 import * as Device from 'expo-device'
 import Constants from 'expo-constants'
-import { Platform } from 'react-native'
+import { Alert, Platform } from 'react-native'
 import { supabase } from './supabase'
-import { Alert } from 'react-native'
 import { translate } from '../i18n'
 import { apiPost } from './api'
 
@@ -58,6 +57,7 @@ export async function registerForPush(): Promise<boolean> {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: translate('push.channel'),
+        // eslint-disable-next-line import/namespace -- plugin không đọc được enum được re-export từ expo-notifications
         importance: Notifications.AndroidImportance.HIGH,
       })
     }

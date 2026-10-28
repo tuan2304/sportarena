@@ -14,7 +14,7 @@ import {
 } from 'react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
-import { Club, SportType } from '../types'
+import { Club } from '../types'
 import { MapPin, Clock, Search, Trophy, ChevronRight } from 'lucide-react-native'
 
 const SPORT_FILTERS: { key: string; label: MessageKey }[] = [

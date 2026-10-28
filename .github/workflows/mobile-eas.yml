@@ -1,0 +1,61 @@
+name: Mobile (EAS)
+
+# Chỉ chạy khi đã bật: đặt biến repo EAS_ENABLED=true và secret EXPO_TOKEN (xem mục "Phát hành mobile" trong DEPLOYMENT.md).
+#  - Đẩy vào master có đổi mobile/: đẩy bản cập nhật OTA lên kênh "preview".
+#  - Chạy tay (Run workflow): build bản cài hoặc đẩy OTA cho kênh preview/production.
+on:
+  push:
+    branches: [master]
+    paths: ['mobile/**']
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Việc cần làm'
+        type: choice
+        options: [update, build]
+        default: update
+      profile:
+        description: 'Kênh / profile (production là bản người dùng thật)'
+        type: choice
+        options: [preview, production]
+        default: preview
+      platform:
+        description: 'Nền tảng (chỉ dùng cho build)'
+        type: choice
+        options: [all, android, ios]
+        default: all
+
+concurrency:
+  group: eas-${{ github.ref }}-${{ inputs.profile || 'preview' }}
+  cancel-in-progress: false
+
+jobs:
+  eas:
+    name: EAS ${{ inputs.action || 'update' }} (${{ inputs.profile || 'preview' }})
+    if: vars.EAS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      PROFILE: ${{ inputs.profile || 'preview' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 26.x
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      # Không đẩy mã chưa qua kiểm tra lên điện thoại người dùng
+      - run: npm run check
+      - name: Đẩy OTA
+        if: inputs.action != 'build'
+        run: eas update --channel "$PROFILE" --environment "$PROFILE" --message "${{ github.sha }}" --non-interactive
+      - name: Build
+        if: inputs.action == 'build'
+        run: eas build --platform "${{ inputs.platform }}" --profile "$PROFILE" --non-interactive --no-wait

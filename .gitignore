@@ -8,3 +8,6 @@ supabase/backups/
 # Tài liệu nội bộ, chỉ giữ trên máy
 /GEMINI.md
 /DESIGN.md
+
+# Supabase CLI: nhánh preview cục bộ
+/supabase/.branches

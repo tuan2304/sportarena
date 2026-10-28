@@ -11,6 +11,8 @@ import {
   Tags,
   Wallet,
   RotateCcw,
+  Repeat,
+  BarChart3,
   Crown,
   LifeBuoy,
   LogOut,
@@ -36,6 +38,16 @@ const NAV_ITEMS = [
     key: 'schedule',
     href: '/owner/schedule',
     icon: CalendarDays,
+  },
+  {
+    key: 'recurring',
+    href: '/owner/recurring',
+    icon: Repeat,
+  },
+  {
+    key: 'analytics',
+    href: '/owner/analytics',
+    icon: BarChart3,
   },
   {
     key: 'pricing',

@@ -54,7 +54,7 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 **Platform administration**
 - Operations statistics: users, venues, bookings, transaction value, plan revenue and daily charts.
 - A support inbox (tickets) between administrators, owners and players.
-- An AI assistant (Claude) answers booking and account tickets by itself when the answer is covered by a short knowledge base. Payment and technical tickets, tickets the assistant is unsure about, users asking for a human, and tickets a human already answered always go to the administrators, and any API error escalates instead of sending anything to the user. Off by default; it only runs when `ANTHROPIC_API_KEY` is set.
+- A support assistant built into the app (no external AI service, no cost, ticket text never leaves your system). It understands Vietnamese (with or without accents) and English questions, matches them against a set of ready-made answers, and replies to booking and account tickets by itself when the match is clear. It only picks a written answer and never generates new text, so it cannot invent policies. Payment and technical tickets, complaints, suspected fraud, security, data deletion, questions that need a specific booking looked up, ambiguous questions, users asking for a human, and tickets a human already answered always go to the administrators. On by default; set `SUPPORT_AI_ENABLED=false` to turn it off.
 - Announcements for updates or maintenance, sent to any group of users.
 
 **Interface**: light and dark themes, readable contrast, works on phones, with an Expo mobile app. The owner and admin areas are bilingual too. The home page has a 3D background (Three.js): sports balls bounce around the frame and collide elastically; it is off for users who prefer reduced motion or devices without WebGL.
@@ -91,7 +91,7 @@ Energetic, clear and sporty, but easy to read.
 | Payments | PayOS v2 (VietQR) |
 | Mobile | Expo, React Native |
 | 3D | Three.js (home page background, loaded dynamically) |
-| Support assistant | Claude via `@anthropic-ai/sdk` (optional) |
+| Support assistant | In-house FAQ matcher running inside the app (no external API) |
 | Testing | Vitest, SQL tests in Docker, Playwright |
 | Infrastructure | Vercel or Docker, GitHub Actions |
 
@@ -135,7 +135,7 @@ Other commands, run in `web/`:
 | `npm run e2e:real` | Run the write-flow Playwright tests against a real local Supabase (needs Docker and the Supabase CLI; run `supabase start` in the project root first, or point `E2E_SUPABASE_WORKDIR` at a separate config if another local Supabase already uses the default ports) |
 | `npm run build` | Production build |
 
-Optional environment variables: `ANTHROPIC_API_KEY` (turns on the AI ticket assistant; `SUPPORT_AI_ENABLED=false` switches it off, `SUPPORT_AI_MODEL` overrides the model). See `.env.example`.
+Optional environment variable: `SUPPORT_AI_ENABLED=false` switches the ticket assistant off. See `.env.example`.
 
 Mobile app: `cd mobile && npm install`, copy `.env.example` to `.env` and add `EXPO_PUBLIC_API_URL` (the web server address, used to hold slots, cancel bookings and report transfers), then `npm start`. The login session is kept in the Keychain/Keystore. Pricing, time, cancellation and profile logic is shared with the web through `npm run sync:mobile` (in `web/`); a test fails if the two copies drift apart.
 

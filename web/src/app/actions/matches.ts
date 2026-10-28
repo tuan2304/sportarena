@@ -9,6 +9,7 @@ import { isMatchSkill } from '@/lib/constants'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { tr } from '@/lib/localize-error'
 import { respondToParticipant } from '@/lib/match-members'
+import { setParticipantNoShow } from '@/lib/no-show'
 import { isMatchEnded } from '@/lib/match-time'
 export interface CreateMatchInput {
   bookingId: string
@@ -212,6 +213,19 @@ export async function respondParticipant(participantId: string, newStatus: 'acce
   }
 
   const result = await respondToParticipant(user.id, participantId, newStatus)
+  if ('error' in result) return { error: await tr(result.error) }
+  return result
+}
+
+/** Chủ kèo báo (hoặc gỡ báo) thành viên đã được duyệt không đến; ảnh hưởng điểm uy tín của người đó. */
+export async function reportParticipantNoShow(
+  participantId: string,
+  noShow: boolean
+): Promise<{ error?: string; success?: boolean }> {
+  const { user } = await requireUser()
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
+
+  const result = await setParticipantNoShow(user.id, participantId, noShow)
   if ('error' in result) return { error: await tr(result.error) }
   return result
 }

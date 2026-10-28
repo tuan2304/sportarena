@@ -27,17 +27,23 @@ isOneToOne: false
                   ]
                 },"bookings": {
                   Row: {
-                    "cancelled_at": string | null,"cancelled_by": string | null,"court_id": string,"created_at": string,"deposit_amount": number,"during": unknown,"end_time": string,"expires_at": string,"id": string,"is_open_match": boolean,"note": string | null,"refund_amount": number,"refund_status": string,"refunded_at": string | null,"start_time": string,"status": string,"total_price": number,"updated_at": string,"user_id": string
+                    "cancelled_at": string | null,"cancelled_by": string | null,"court_id": string,"created_at": string,"deposit_amount": number,"during": unknown,"end_time": string,"expires_at": string,"id": string,"is_open_match": boolean,"note": string | null,"refund_amount": number,"refund_status": string,"refunded_at": string | null,"start_time": string,"status": string,"total_price": number,"updated_at": string,"user_id": string,"late_cancel": boolean,"no_show_at": string | null,"recurring_id": string | null,"reminder_sent_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"court_id": string,"created_at"?: string,"deposit_amount": number,"during"?: never,"end_time": string,"expires_at"?: string,"id"?: string,"is_open_match"?: boolean,"note"?: string | null,"refund_amount"?: number,"refund_status"?: string,"refunded_at"?: string | null,"start_time": string,"status"?: string,"total_price": number,"updated_at"?: string,"user_id": string
+                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"court_id": string,"created_at"?: string,"deposit_amount": number,"during"?: never,"end_time": string,"expires_at"?: string,"id"?: string,"is_open_match"?: boolean,"note"?: string | null,"refund_amount"?: number,"refund_status"?: string,"refunded_at"?: string | null,"start_time": string,"status"?: string,"total_price": number,"updated_at"?: string,"user_id": string,"late_cancel"?: boolean,"no_show_at"?: string | null,"recurring_id"?: string | null,"reminder_sent_at"?: string | null
                   }
                   Update: {
-                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"court_id"?: string,"created_at"?: string,"deposit_amount"?: number,"during"?: never,"end_time"?: string,"expires_at"?: string,"id"?: string,"is_open_match"?: boolean,"note"?: string | null,"refund_amount"?: number,"refund_status"?: string,"refunded_at"?: string | null,"start_time"?: string,"status"?: string,"total_price"?: number,"updated_at"?: string,"user_id"?: string
+                    "cancelled_at"?: string | null,"cancelled_by"?: string | null,"court_id"?: string,"created_at"?: string,"deposit_amount"?: number,"during"?: never,"end_time"?: string,"expires_at"?: string,"id"?: string,"is_open_match"?: boolean,"note"?: string | null,"refund_amount"?: number,"refund_status"?: string,"refunded_at"?: string | null,"start_time"?: string,"status"?: string,"total_price"?: number,"updated_at"?: string,"user_id"?: string,"late_cancel"?: boolean,"no_show_at"?: string | null,"recurring_id"?: string | null,"reminder_sent_at"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "bookings_recurring_id_fkey"
+      columns: ["recurring_id"]
+isOneToOne: false
+      referencedRelation: "recurring_bookings"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "bookings_court_id_fkey"
       columns: ["court_id"]
 isOneToOne: false
@@ -205,14 +211,14 @@ isOneToOne: false
                   ]
                 },"match_participants": {
                   Row: {
-                    "id": string,"joined_at": string,"match_id": string,"message": string | null,"status": string,"user_id": string
+                    "id": string,"joined_at": string,"match_id": string,"message": string | null,"status": string,"user_id": string,"left_late": boolean,"no_show_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"joined_at"?: string,"match_id": string,"message"?: string | null,"status"?: string,"user_id": string
+                    "id"?: string,"joined_at"?: string,"match_id": string,"message"?: string | null,"status"?: string,"user_id": string,"left_late"?: boolean,"no_show_at"?: string | null
                   }
                   Update: {
-                    "id"?: string,"joined_at"?: string,"match_id"?: string,"message"?: string | null,"status"?: string,"user_id"?: string
+                    "id"?: string,"joined_at"?: string,"match_id"?: string,"message"?: string | null,"status"?: string,"user_id"?: string,"left_late"?: boolean,"no_show_at"?: string | null
                   }
                   Relationships: [
                     {
@@ -419,13 +425,95 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"recurring_bookings": {
+                  Row: {
+                    "court_id": string,"created_at": string,"decided_at": string | null,"end_time": string,"ends_on": string | null,"id": string,"note": string | null,"start_time": string,"starts_on": string,"status": string,"updated_at": string,"user_id": string,"weekday": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "court_id": string,"created_at"?: string,"decided_at"?: string | null,"end_time": string,"ends_on"?: string | null,"id"?: string,"note"?: string | null,"start_time": string,"starts_on": string,"status"?: string,"updated_at"?: string,"user_id": string,"weekday": number
+                  }
+                  Update: {
+                    "court_id"?: string,"created_at"?: string,"decided_at"?: string | null,"end_time"?: string,"ends_on"?: string | null,"id"?: string,"note"?: string | null,"start_time"?: string,"starts_on"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string,"weekday"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recurring_bookings_court_id_fkey"
+      columns: ["court_id"]
+isOneToOne: false
+      referencedRelation: "courts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recurring_bookings_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"slot_waitlist": {
+                  Row: {
+                    "court_id": string,"created_at": string,"end_time": string,"id": string,"notified_at": string | null,"start_time": string,"status": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "court_id": string,"created_at"?: string,"end_time": string,"id"?: string,"notified_at"?: string | null,"start_time": string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "court_id"?: string,"created_at"?: string,"end_time"?: string,"id"?: string,"notified_at"?: string | null,"start_time"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "slot_waitlist_court_id_fkey"
+      columns: ["court_id"]
+isOneToOne: false
+      referencedRelation: "courts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "slot_waitlist_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"zalo_identities": {
+                  Row: {
+                    "created_at": string,"user_id": string,"zalo_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"user_id": string,"zalo_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"user_id"?: string,"zalo_id"?: string
+                  }
+                  Relationships: []
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            "apply_subscription_payment":
+            "claim_due_reminders":
+{ Args: { "p_lead"?: string }; Returns: {
+              "booking_id": string,"club_name": string,"court_name": string,"match_id": string | null,"match_title": string | null,"member_ids": (string)[],"start_time": string,"user_id": string
+            }[]
+                           },
+"claim_free_waitlist_entries":
+{ Args: { "p_hold"?: string }; Returns: {
+              "court_id": string,"end_time": string,"id": string,"start_time": string,"user_id": string
+            }[]
+                           },
+"get_player_reputation":
+{ Args: { "p_user_ids": (string)[] }; Returns: {
+              "late_cancels": number,"no_shows": number,"played": number,"user_id": string
+            }[]
+                           },
+"slot_is_busy":
+{ Args: { "p_court": string,"p_end": string,"p_start": string }; Returns: boolean
+                           },
+"apply_subscription_payment":
 { Args: { "p_payment_id": string,"p_reference"?: string }; Returns: {
               "club_id": string,"plan_until": string,"user_id": string
             }[]
@@ -471,6 +559,24 @@ isOneToOne: false
                            },
 "set_my_locale":
 { Args: { "p_locale": string }; Returns: undefined
+                           },
+"settle_booking_payment":
+{ Args: { "p_payment_id": string,"p_reference"?: string }; Returns: string
+                           },
+"account_deletion_blockers":
+{ Args: { "p_user": string }; Returns: (string)[]
+                           },
+"anonymize_user":
+{ Args: { "p_user": string }; Returns: boolean
+                           },
+"export_user_data":
+{ Args: { "p_user": string }; Returns: Json
+                           },
+"admin_mark_payment_refunded":
+{ Args: { "p_admin": string,"p_note"?: string,"p_payment_id": string }; Returns: string
+                           },
+"admin_repair_paid_payment":
+{ Args: { "p_admin": string,"p_payment_id": string }; Returns: string
                            },
 "get_booking_contacts":
 { Args: { "p_booking_ids": (string)[] }; Returns: {

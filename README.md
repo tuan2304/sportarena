@@ -54,7 +54,7 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 **Quản trị nền tảng**
 - Thống kê vận hành: người dùng, cụm sân, lượt đặt, giá trị giao dịch, doanh thu thuê gói, biểu đồ theo ngày.
 - Hộp thư hỗ trợ (ticket) giữa quản trị với chủ sân và người chơi.
-- Trợ lý AI (Claude) tự trả lời ticket về đặt sân, tài khoản khi câu trả lời nằm trong cơ sở kiến thức ngắn. Ticket thanh toán, kỹ thuật, ticket trợ lý không chắc, người dùng đòi gặp người thật hoặc đã có người trả lời thì luôn chuyển cho quản trị, và mọi lỗi API đều chuyển lên chứ không gửi gì cho người dùng. Tắt mặc định, chỉ chạy khi có `ANTHROPIC_API_KEY`.
+- Trợ lý hỗ trợ tích hợp sẵn trong app (không dùng dịch vụ AI bên ngoài, không tốn phí, nội dung ticket không rời khỏi hệ thống). Nó hiểu câu hỏi tiếng Việt (có dấu hoặc không) và tiếng Anh, so khớp với kho câu trả lời có sẵn rồi tự trả lời ticket về đặt sân, tài khoản khi khớp rõ ràng; nó chỉ chọn câu trả lời viết sẵn chứ không sinh nội dung mới nên không bịa chính sách. Ticket thanh toán, kỹ thuật, khiếu nại, nghi lừa đảo, bảo mật, xóa dữ liệu, câu hỏi cần tra đơn cụ thể, câu mơ hồ, người dùng đòi gặp người thật hoặc đã có người trả lời thì luôn chuyển cho quản trị. Bật mặc định; `SUPPORT_AI_ENABLED=false` để tắt.
 - Gửi thông báo cập nhật hoặc bảo trì tới từng nhóm người dùng.
 
 **Giao diện**: sáng và tối, đủ tương phản chữ, dùng được trên điện thoại, có ứng dụng mobile bằng Expo. Trang chủ có nền 3D (Three.js): các quả bóng thể thao tự nảy trong khung và va chạm đàn hồi với nhau; tắt khi người dùng giảm chuyển động hoặc máy không có WebGL.
@@ -90,7 +90,7 @@ Năng động, rõ ràng, mang tinh thần thể thao nhưng vẫn dễ đọc.
 | Thanh toán | PayOS v2 (VietQR) |
 | Mobile | Expo, React Native |
 | 3D | Three.js (nền trang chủ, nạp động) |
-| Trợ lý hỗ trợ | Claude qua `@anthropic-ai/sdk` (tùy chọn) |
+| Trợ lý hỗ trợ | Bộ so khớp FAQ tự viết, chạy trong app (không API ngoài) |
 | Kiểm thử | Vitest, test SQL trong Docker, Playwright |
 | Hạ tầng | Vercel hoặc Docker, GitHub Actions |
 
@@ -134,7 +134,7 @@ Các lệnh khác, chạy trong `web/`:
 | `npm run e2e:real` | Chạy Playwright cho luồng ghi dữ liệu trên Supabase cục bộ thật (cần Docker và Supabase CLI; đặt `E2E_SUPABASE_WORKDIR` nếu máy đã có Supabase cục bộ khác chiếm cổng mặc định) |
 | `npm run build` | Build production |
 
-Biến môi trường tùy chọn: `ANTHROPIC_API_KEY` (bật trợ lý AI trả lời ticket; `SUPPORT_AI_ENABLED=false` để tắt, `SUPPORT_AI_MODEL` để đổi model). Xem `.env.example`.
+Biến môi trường tùy chọn: `SUPPORT_AI_ENABLED=false` để tắt trợ lý trả lời ticket. Xem `.env.example`.
 
 Ứng dụng mobile: `cd mobile && npm install`, sao chép `.env.example` thành `.env` rồi điền thêm `EXPO_PUBLIC_API_URL` (địa chỉ máy chủ web, dùng để giữ chỗ, hủy đơn và báo đã chuyển khoản), sau đó `npm start`. Phiên đăng nhập được lưu trong Keychain/Keystore. Logic tính giá, giờ, hủy đơn và hồ sơ được dùng chung với web qua `npm run sync:mobile` (trong `web/`); một test sẽ báo lỗi nếu hai bản lệch nhau.
 

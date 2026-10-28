@@ -102,7 +102,24 @@
     "closeEdit": "Close editor",
     "edit": "Edit profile",
     "viewPublic": "View public profile",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "account": {
+      "title": "Data and account",
+      "exportTitle": "Download my data",
+      "exportHint": "Your profile, bookings, payments, matches, reviews and notifications as JSON.",
+      "exportFailed": "Could not download your data",
+      "shareFailed": "Could not open the share sheet. Please try again.",
+      "deleteTitle": "Delete account",
+      "deleteHint": "Permanently deletes your personal information. This cannot be undone.",
+      "dialogTitle": "Permanently delete your account?",
+      "willDelete": "Deleted: your name, phone number, avatar, reviews, match chat messages, support tickets, notifications and sign-in details.",
+      "willKeep": "Kept (with your name removed): booking and payment history, as required for transaction records.",
+      "ownerNote": "If you own a venue, it stops taking bookings. Upcoming bookings and refunds you owe must be settled first.",
+      "passwordLabel": "Current password",
+      "confirmLabel": "Type {phrase} to confirm",
+      "confirm": "Delete permanently",
+      "deleted": "Your account has been deleted."
+    }
   },
   "player": {
     "played": "Games played",

@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { ScheduleView } from '@/components/owner/schedule-view'
 import type { BookingStatus } from '@/types/database'
+import { fetchReputations } from '@/lib/reputation'
 
 export default async function OwnerSchedulePage() {
   const t = await getTranslations('ownerSchedule')
@@ -42,6 +43,9 @@ export default async function OwnerSchedulePage() {
     total_price: number
     deposit_amount: number
     status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+    user_id: string
+    no_show: boolean
+    recurring: boolean
     user_name: string
     user_phone: string
     court_name: string
@@ -58,6 +62,9 @@ export default async function OwnerSchedulePage() {
         total_price,
         deposit_amount,
         status,
+        user_id,
+        no_show_at,
+        recurring_id,
         court:courts(name),
         profile:profiles(full_name)
       `)
@@ -78,11 +85,22 @@ export default async function OwnerSchedulePage() {
       total_price: Number(item.total_price),
       deposit_amount: Number(item.deposit_amount),
       status: item.status as BookingStatus,
+      user_id: item.user_id,
+      no_show: Boolean(item.no_show_at),
+      recurring: Boolean(item.recurring_id),
       user_name: item.profile?.full_name || t('guest'),
       user_phone: phoneByBooking.get(item.id) || t('noPhone'),
       court_name: item.court?.name || t('standardCourt'),
     }))
   }
+
+  // Uy tín của khách đang và sắp đặt sân (tối đa 100 người mỗi lần gọi)
+  // eslint-disable-next-line react-hooks/purity -- server component, chạy một lần mỗi request
+  const recentCutoff = Date.now() - 24 * 60 * 60 * 1000
+  const reputations = await fetchReputations(
+    supabase,
+    bookings.filter((b) => new Date(b.start_time).getTime() >= recentCutoff).map((b) => b.user_id)
+  )
 
   return (
     <div className="space-y-6">
@@ -95,7 +113,13 @@ export default async function OwnerSchedulePage() {
         </p>
       </div>
 
-      <ScheduleView courts={courts} initialBookings={bookings} />
+      <ScheduleView
+        courts={courts}
+        initialBookings={bookings}
+        reputations={Object.fromEntries(reputations)}
+        // eslint-disable-next-line react-hooks/purity -- server component, chạy một lần mỗi request
+        serverNow={Date.now()}
+      />
     </div>
   )
 }

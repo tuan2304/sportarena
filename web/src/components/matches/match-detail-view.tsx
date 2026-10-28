@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
-import { joinMatch, respondParticipant, leaveMatch, cancelMatch } from '@/app/actions/matches'
+import { joinMatch, respondParticipant, leaveMatch, cancelMatch, reportParticipantNoShow } from '@/app/actions/matches'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { MatchChatBox } from '@/components/matches/match-chat-box'
@@ -18,11 +18,14 @@ import type { MatchDetail, MatchParticipantItem, MatchMessage } from '@/componen
 import { toast } from 'sonner'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { matchPhase } from '@/lib/match-time'
+import type { Reputation } from '@/lib/reputation'
 export interface MatchDetailProps {
   match: MatchDetail
   participants: MatchParticipantItem[]
   initialMessages?: MatchMessage[]
   currentUserId: string | null
+  /** Điểm uy tín theo user id của chủ kèo và các thành viên */
+  reputations?: Record<string, Reputation>
   /** Mốc "bây giờ" do server chốt (HTML server và trình duyệt khớp nhau); sau khi mount theo đồng hồ trình duyệt */
   serverNow: number
 }
@@ -32,10 +35,12 @@ export function MatchDetailView({
   participants,
   initialMessages = [],
   currentUserId,
+  reputations = {},
   serverNow,
 }: MatchDetailProps) {
   const router = useRouter()
   const t = useTranslations('matches.detail')
+  const tRoster = useTranslations('matches.roster')
   const askConfirm = useConfirm()
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
   const [joinMessage, setJoinMessage] = useState('')
@@ -123,6 +128,30 @@ export function MatchDetailView({
     }
   }
 
+  async function handleNoShow(participantId: string, noShow: boolean) {
+    if (noShow) {
+      const ok = await askConfirm({
+        title: tRoster('noShowConfirmTitle'),
+        description: tRoster('noShowConfirmText'),
+        confirmText: tRoster('noShowConfirm'),
+        cancelText: tRoster('noShowKeep'),
+        destructive: true,
+      })
+      if (!ok) return
+    }
+
+    setLoading(true)
+    const res = await reportParticipantNoShow(participantId, noShow)
+    setLoading(false)
+
+    if (res?.error) {
+      toast.error(res.error)
+    } else {
+      toast.success(noShow ? tRoster('noShowMarked') : tRoster('noShowCleared'))
+      router.refresh()
+    }
+  }
+
   async function handleLeave() {
     const ok = await askConfirm({
       title: t('leave.title'),
@@ -206,6 +235,9 @@ export function MatchDetailView({
             isFull={isFull || ended}
             loading={loading}
             onRespond={handleRespond}
+            reputations={reputations}
+            canReportNoShow={isHost && nowMs >= new Date(match.start_time).getTime()}
+            onNoShow={handleNoShow}
           />
 
           {isHost || userParticipant?.status === 'accepted' ? (

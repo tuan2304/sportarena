@@ -26,6 +26,12 @@ const FILES = [
   'app/actions/admin.ts',
   'app/actions/bank-account.ts',
   'app/actions/announcements.ts',
+  'app/actions/account.ts',
+  'app/actions/reconciliation.ts',
+  'lib/account.ts',
+  'app/api/mobile/account/delete/route.ts',
+  'app/api/mobile/account/export/route.ts',
+  'app/api/account/export/route.ts',
   'lib/pricing-rule.ts',
   'lib/club-limits.ts',
   'lib/deletion-guards.ts',
@@ -48,6 +54,15 @@ const FILES = [
   'lib/profile.ts',
   'lib/rate-limit.ts',
   'lib/support.ts',
+  'lib/no-show.ts',
+  'lib/waitlist.ts',
+  'lib/recurring.ts',
+  'lib/recurring-service.ts',
+  'app/actions/waitlist.ts',
+  'app/actions/phone-auth.ts',
+  'app/actions/recurring.ts',
+  'app/api/mobile/owner/bookings/[id]/no-show/route.ts',
+  'app/api/mobile/matches/participants/[id]/no-show/route.ts',
 ]
 
 /** Gom các câu đứng sau `error:` / `reason:` hoặc nằm trong tr('...'). Câu có ${...} được thay bằng số để thử khớp mẫu. */

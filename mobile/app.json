@@ -6,10 +6,15 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "vn.sportarena.app"
     },
     "android": {
+      "package": "vn.sportarena.app",
       "adaptiveIcon": {
         "backgroundColor": "#064E3B",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -32,7 +37,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "SportArena cần truy cập thư viện ảnh để bạn chọn ảnh đại diện."
+          "photosPermission": "SportArena cần truy cập thư viện ảnh để bạn chọn ảnh đại diện.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [
@@ -42,6 +49,15 @@
         }
       ],
       "expo-localization"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "459737f3-4b12-434f-8e11-6efe188e37db"
+      }
+    },
+    "owner": "vutuan2304",
+    "updates": {
+      "url": "https://u.expo.dev/459737f3-4b12-434f-8e11-6efe188e37db"
+    }
   }
 }

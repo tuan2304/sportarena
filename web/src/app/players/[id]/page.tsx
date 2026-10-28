@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDate, formatTime } from '@/lib/format'
+import { fetchReputations } from '@/lib/reputation'
+import { ReputationBadge } from '@/components/profile/reputation-badge'
 import { Calendar, Flame, Star, Trophy, Users } from 'lucide-react'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -59,6 +61,8 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
   if (!profile) notFound()
 
+  const reputation = (await fetchReputations(supabase, [profile.id])).get(profile.id)
+
   const s = stats?.[0] ?? { matches_created: 0, matches_joined: 0, bookings_played: 0 }
   const isMe = viewer?.id === profile.id
   const tiles = [
@@ -88,6 +92,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
                     {Number(profile.rating).toFixed(1)}
                   </Badge>
                 )}
+                <ReputationBadge reputation={reputation} />
               </div>
             </div>
             {isMe && (

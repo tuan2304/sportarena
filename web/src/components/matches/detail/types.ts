@@ -43,6 +43,8 @@ export interface MatchParticipantItem {
   status: string
   message: string | null
   joined_at: string
+  /** Chủ kèo đã báo thành viên không đến */
+  no_show_at?: string | null
   user: {
     id: string
     full_name: string

@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { updateBookingStatus } from '@/app/actions/owner'
+import { updateBookingStatus, reportBookingNoShow } from '@/app/actions/owner'
 import { toast } from 'sonner'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -25,6 +25,8 @@ import {
 import { formatVnd, formatTime, formatDate } from '@/lib/format'
 import { addDaysToDateKey, vnDateKey } from '@/lib/datetime'
 import { vnHourSpan } from '@/lib/booking-slots'
+import { ReputationBadge } from '@/components/profile/reputation-badge'
+import type { Reputation } from '@/lib/reputation'
 interface ScheduleCourt {
   id: string
   name: string
@@ -40,6 +42,9 @@ interface ScheduleBooking {
   total_price: number
   deposit_amount: number
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  user_id: string
+  no_show: boolean
+  recurring: boolean
   user_name: string
   user_phone: string
   court_name: string
@@ -48,6 +53,10 @@ interface ScheduleBooking {
 interface ScheduleViewProps {
   courts: ScheduleCourt[]
   initialBookings: ScheduleBooking[]
+  /** Điểm uy tín của khách theo user id */
+  reputations?: Record<string, Reputation>
+  /** Mốc "bây giờ" do server chốt (HTML server và trình duyệt khớp nhau) */
+  serverNow: number
 }
 
 const TIME_SLOTS = [
@@ -56,7 +65,7 @@ const TIME_SLOTS = [
   '18:00', '19:00', '20:00', '21:00', '22:00',
 ]
 
-export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
+export function ScheduleView({ courts, initialBookings, reputations = {}, serverNow }: ScheduleViewProps) {
   const t = useTranslations('ownerSchedule')
   const router = useRouter()
   const askConfirm = useConfirm()
@@ -109,6 +118,30 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
     if (statusFilter === 'all') return true
     return b.status === statusFilter
   })
+
+  async function handleNoShow(bookingId: string, noShow: boolean) {
+    if (noShow) {
+      const ok = await askConfirm({
+        title: t('noShowConfirmTitle'),
+        description: t('noShowConfirmText'),
+        confirmText: t('noShowConfirm'),
+        cancelText: t('noShowKeep'),
+        destructive: true,
+      })
+      if (!ok) return
+    }
+
+    setUpdatingId(bookingId)
+    const result = await reportBookingNoShow(bookingId, noShow)
+    setUpdatingId(null)
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    toast.success(noShow ? t('noShowMarked') : t('noShowCleared'))
+    router.refresh()
+  }
 
   async function handleStatusChange(bookingId: string, status: 'confirmed' | 'cancelled' | 'completed') {
     if (status === 'cancelled') {
@@ -421,6 +454,19 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                           <td className="py-3 px-4">
                             <div className="font-semibold text-foreground">{b.user_name}</div>
                             <div className="text-xs text-muted-foreground">{b.user_phone}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                              <ReputationBadge reputation={reputations[b.user_id]} />
+                              {b.recurring && (
+                                <Badge variant="outline" className="border-blue-500/30 text-blue-600 dark:text-blue-400">
+                                  {t('recurringBadge')}
+                                </Badge>
+                              )}
+                              {b.no_show && (
+                                <Badge variant="outline" className="border-red-500/30 text-red-600 dark:text-red-400">
+                                  {t('noShow')}
+                                </Badge>
+                              )}
+                            </div>
                           </td>
                           <td className="py-3 px-4 font-medium text-foreground">
                             <span className="flex items-center gap-1">
@@ -480,6 +526,17 @@ export function ScheduleView({ courts, initialBookings }: ScheduleViewProps) {
                                     {t('markDone')}
                                   </Button>
                                 )}
+                                {(b.status === 'confirmed' || b.status === 'completed') &&
+                                  new Date(b.start_time).getTime() <= serverNow && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleNoShow(b.id, !b.no_show)}
+                                      className="h-7 text-xs cursor-pointer"
+                                    >
+                                      {b.no_show ? t('undoNoShow') : t('reportNoShow')}
+                                    </Button>
+                                  )}
                                 {b.status !== 'cancelled' && b.status !== 'completed' && (
                                   <Button
                                     size="sm"

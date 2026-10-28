@@ -6,6 +6,7 @@ import { MainHeader } from '@/components/layout/main-header'
 import { MatchDetailView, type MatchDetailProps } from '@/components/matches/match-detail-view'
 import { getMatchMessages } from '@/app/actions/chat'
 import { truncateDescription } from '@/lib/seo'
+import { fetchReputations } from '@/lib/reputation'
 
 interface MatchDetailPageProps {
   params: Promise<{
@@ -89,6 +90,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
         status,
         message,
         joined_at,
+        no_show_at,
         user:profiles (
           id,
           full_name,
@@ -101,6 +103,12 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
     getMatchMessages(id),
   ])
 
+  // Uy tín của chủ kèo và các thành viên, để chủ kèo duyệt người dễ hơn
+  const reputations = await fetchReputations(supabase, [
+    match.creator_id,
+    ...(participants ?? []).map((p) => p.user_id),
+  ])
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MainHeader />
@@ -111,6 +119,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           participants={(participants ?? []) as unknown as MatchDetailProps['participants']}
           initialMessages={initialMessages}
           currentUserId={user?.id || null}
+          reputations={Object.fromEntries(reputations)}
           // eslint-disable-next-line react-hooks/purity -- server component, chạy một lần mỗi request
           serverNow={Date.now()}
         />

@@ -66,3 +66,10 @@ export const COST_TYPE_FILTER_OPTIONS = [
   { id: 'split', label: 'Chia đều' },
   { id: 'host_covers', label: 'Chủ bao trọn (0đ)' },
 ]
+
+/** Thời gian giữ chỗ khi chưa cọc (phút). Dùng chung cho đặt sân và câu trả lời của trợ lý hỗ trợ để không bao giờ lệch nhau. */
+export const HOLD_MINUTES = 15
+// Chuyển khoản thủ công cần thời gian khách chuyển và chủ sân đối chiếu, nên giữ chỗ lâu hơn
+export const HOLD_MINUTES_MANUAL = 60
+/** Số giờ hủy miễn phí mặc định của một cụm sân (mỗi cụm sân tự đặt lại được). */
+export const DEFAULT_FREE_CANCEL_HOURS = 24

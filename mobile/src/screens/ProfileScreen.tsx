@@ -13,14 +13,15 @@ import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import AuthForm from '../components/AuthForm'
 import ProfileEditForm from '../components/ProfileEditForm'
+import AccountActions from '../components/AccountActions'
 import Avatar from '../components/Avatar'
 import { pickAndUploadAvatar, removeAvatar } from '../lib/avatar'
 import { unregisterPush } from '../lib/push'
 import type { MessageKey } from '../i18n'
-
-const SKILL_IDS: Record<string, true> = { beginner: true, intermediate: true, advanced: true, pro: true }
 import { Profile } from '../types'
 import { Shield, LogOut, Smartphone, Camera, ExternalLink } from 'lucide-react-native'
+
+const SKILL_IDS: Record<string, true> = { beginner: true, intermediate: true, advanced: true, pro: true }
 
 export default function ProfileScreen({ navigation }: any) {
   const { t, lang, setLang } = useI18n()
@@ -30,12 +31,16 @@ export default function ProfileScreen({ navigation }: any) {
   const [phone, setPhone] = useState('')
   const [editing, setEditing] = useState(false)
   const [avatarBusy, setAvatarBusy] = useState(false)
+  const [needsPassword, setNeedsPassword] = useState(false)
 
   async function checkSession() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         setCurrentUserEmail(session.user.email || null)
+        // Chỉ tài khoản đăng ký bằng email + mật khẩu mới phải nhập lại mật khẩu khi xóa tài khoản
+        const providers = (session.user.app_metadata?.providers as string[] | undefined) ?? []
+        setNeedsPassword(Boolean(session.user.email) && providers.includes('email'))
         // Số điện thoại bị khóa đọc trực tiếp; hàm này chỉ trả hồ sơ của chính mình (kể cả số điện thoại)
         const { data: mine } = await supabase.rpc('get_my_profile')
         if (mine && mine.length > 0) {
@@ -188,6 +193,16 @@ export default function ProfileScreen({ navigation }: any) {
             checkSession()
           }}
           onCancel={() => setEditing(false)}
+        />
+      )}
+
+      {profile && (
+        <AccountActions
+          needsPassword={needsPassword}
+          onDeleted={() => {
+            setProfile(null)
+            setCurrentUserEmail(null)
+          }}
         />
       )}
 

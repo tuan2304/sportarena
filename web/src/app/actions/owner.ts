@@ -18,6 +18,7 @@ import {
 import { parseUpdateClubBody, parseUpdateCourtBody } from '@/lib/mobile-api'
 import { isOwnerBookingStatus, updateBookingStatusForOwner } from '@/lib/owner-booking'
 import { tr } from '@/lib/localize-error'
+import { setBookingNoShow } from '@/lib/no-show'
 
 export async function createClub(formData: FormData) {
   const supabase = await createClient()
@@ -153,6 +154,20 @@ export async function updateBookingStatus(
   if (!user) return { error: await tr('Vui lòng đăng nhập') }
 
   const result = await updateBookingStatusForOwner(supabase, user, bookingId, status)
+  if ('error' in result) return { error: await tr(result.error) }
+  return result
+}
+
+/** Chủ sân báo (hoặc gỡ báo) người đặt không đến sân; ảnh hưởng điểm uy tín của người đó. */
+export async function reportBookingNoShow(
+  bookingId: string,
+  noShow: boolean
+): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: await tr('Vui lòng đăng nhập') }
+
+  const result = await setBookingNoShow(user.id, bookingId, noShow)
   if ('error' in result) return { error: await tr(result.error) }
   return result
 }

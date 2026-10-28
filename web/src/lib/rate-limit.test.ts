@@ -4,8 +4,15 @@ import { clientIp, RATE_RULES, retryMessage } from './rate-limit'
 const h = (map: Record<string, string>) => ({ get: (k: string) => map[k.toLowerCase()] ?? null })
 
 describe('clientIp', () => {
-  it('lấy IP đầu tiên trong x-forwarded-for', () => {
-    expect(clientIp(h({ 'x-forwarded-for': '1.2.3.4, 10.0.0.1, 10.0.0.2' }))).toBe('1.2.3.4')
+  it('một proxy tin cậy: lấy IP do proxy đó ghi (cuối danh sách), không tin IP client tự khai ở đầu', () => {
+    expect(clientIp(h({ 'x-forwarded-for': '1.2.3.4' }))).toBe('1.2.3.4')
+    expect(clientIp(h({ 'x-forwarded-for': '6.6.6.6, 1.2.3.4' }))).toBe('1.2.3.4')
+  })
+  it('nhiều proxy tin cậy: đếm từ cuối theo số hop', () => {
+    const xff = h({ 'x-forwarded-for': '6.6.6.6, 1.2.3.4, 10.0.0.1' })
+    expect(clientIp(xff, 2)).toBe('1.2.3.4')
+    expect(clientIp(xff, 3)).toBe('6.6.6.6')
+    expect(clientIp(xff, 9)).toBe('6.6.6.6')
   })
   it('rơi về x-real-ip rồi unknown', () => {
     expect(clientIp(h({ 'x-real-ip': ' 5.6.7.8 ' }))).toBe('5.6.7.8')

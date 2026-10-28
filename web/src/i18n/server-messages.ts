@@ -5,6 +5,48 @@
  * Có test quét mã nguồn để báo nếu thiếu bản dịch cho một câu lỗi mới.
  */
 export const EN_EXACT: Record<string, string> = {
+  // --- Uy tín, danh sách chờ, lịch cố định
+  'Số điện thoại không hợp lệ': 'Invalid phone number',
+  'Không gửi được mã xác thực. Vui lòng thử lại sau.': 'Could not send the verification code. Please try again later.',
+  'Mã xác thực không đúng hoặc đã hết hạn': 'The verification code is incorrect or has expired',
+  'Vui lòng nhập họ tên (ít nhất 2 ký tự)': 'Please enter your full name (at least 2 characters)',
+  'Không thể lưu họ tên. Vui lòng thử lại.': 'Could not save your name. Please try again.',
+  'Chỉ báo không đến được với đơn đã xác nhận': 'You can only report a no-show on a confirmed booking',
+  'Chưa đến giờ chơi nên chưa thể báo không đến': 'The play time has not started yet, so you cannot report a no-show',
+  'Chỉ chủ phòng mới có quyền báo thành viên không đến': 'Only the match host can report a member as a no-show',
+  'Chỉ báo không đến được với thành viên đã được duyệt': 'You can only report a no-show on an approved member',
+  'Mã thành viên không hợp lệ': 'Invalid member code',
+  'Không thể đăng ký chờ. Vui lòng thử lại.': 'Could not join the waitlist. Please try again.',
+  'Khung giờ này đang trống, bạn có thể đặt ngay.': 'This time slot is open, you can book it right away.',
+  'Bạn đã đăng ký chờ khung giờ này rồi.': 'You are already on the waitlist for this time slot.',
+  'Không thể rút khỏi danh sách chờ. Vui lòng thử lại.': 'Could not leave the waitlist. Please try again.',
+  'Không tìm thấy đăng ký chờ này': 'We could not find this waitlist entry',
+  'Vui lòng chọn sân': 'Please choose a court',
+  'Thứ trong tuần không hợp lệ': 'Invalid day of the week',
+  'Giờ chơi không hợp lệ (chọn theo mốc 30 phút)': 'Invalid play time (choose in 30-minute steps)',
+  'Mỗi buổi chơi tối thiểu 1 giờ': 'Each session must be at least 1 hour',
+  'Mỗi buổi chơi tối đa 6 giờ': 'Each session can be at most 6 hours',
+  'Ngày bắt đầu không hợp lệ': 'Invalid start date',
+  'Ngày bắt đầu không được ở quá khứ': 'The start date cannot be in the past',
+  'Ngày kết thúc không hợp lệ': 'Invalid end date',
+  'Ngày kết thúc phải sau ngày bắt đầu': 'The end date must be after the start date',
+  'Lịch cố định tối đa 1 năm. Hết hạn bạn có thể đăng ký lại.': 'A recurring booking can last at most 1 year. You can sign up again when it ends.',
+  'Bạn đã có lịch cố định cho khung giờ này': 'You already have a recurring booking for this time slot',
+  'Không thể gửi yêu cầu lịch cố định. Vui lòng thử lại.': 'Could not send the recurring booking request. Please try again.',
+  'Bạn không có quyền thao tác lịch cố định này': 'You are not allowed to manage this recurring booking',
+  'Không tìm thấy lịch cố định này': 'We could not find this recurring booking',
+  'Lịch cố định này đã kết thúc': 'This recurring booking has already ended',
+  'Bạn bị ghi nhận không đến sân': 'You were marked as a no-show',
+  'Bạn bị ghi nhận không đến kèo': 'You were marked as a no-show for a match',
+  'Sắp đến giờ chơi ⏰': 'Game time is coming up ⏰',
+  'Sắp đến giờ vào kèo ⏰': 'Your match is about to start ⏰',
+  'Khung giờ bạn chờ đã trống 🎉': 'The time slot you were waiting for is open 🎉',
+  'Có yêu cầu đặt lịch cố định mới': 'New recurring booking request',
+  'Yêu cầu lịch cố định bị từ chối': 'Recurring booking request declined',
+  'Lịch cố định đã được duyệt 🎉': 'Recurring booking approved 🎉',
+  'Lịch cố định đã bị chủ sân kết thúc': 'The owner ended your recurring booking',
+  'Lịch cố định bị bỏ qua một buổi': 'A recurring session was skipped',
+
   // --- Đăng nhập / đăng ký / quyền
   'Vui lòng đăng nhập': 'Please log in',
   'Chưa đăng nhập': 'Not logged in',
@@ -15,6 +57,34 @@ export const EN_EXACT: Record<string, string> = {
   'Không thể tạo tài khoản. Vui lòng thử lại.': 'Could not create the account. Please try again.',
   'Bạn không phải chủ của cụm sân này': 'You are not the owner of this venue',
   'Chỉ quản trị nền tảng mới được thực hiện thao tác này': 'Only platform administrators can do this',
+
+  // --- Xóa tài khoản / xuất dữ liệu
+  'Vui lòng gõ XÓA để xác nhận xóa tài khoản': 'Please type DELETE to confirm deleting your account',
+  'Vui lòng nhập mật khẩu để xác nhận': 'Please enter your password to confirm',
+  'Mật khẩu không đúng': 'Incorrect password',
+  'Không thể xóa tài khoản lúc này. Vui lòng thử lại sau.': 'Could not delete the account right now. Please try again later.',
+  'Tài khoản vừa có thay đổi nên chưa thể xóa. Vui lòng thử lại.': 'Your account just changed, so it could not be deleted. Please try again.',
+  'Đã xóa dữ liệu cá nhân nhưng chưa đóng được tài khoản. Vui lòng bấm xóa lại.':
+    'Your personal data was deleted but the account could not be closed. Please press delete again.',
+  'Không thể xuất dữ liệu lúc này. Vui lòng thử lại sau.': 'Could not export your data right now. Please try again later.',
+  'Tài khoản quản trị không thể tự xóa. Hãy nhờ một quản trị khác gỡ quyền quản trị trước.':
+    'An administrator account cannot delete itself. Ask another administrator to remove the admin role first.',
+  'Bạn còn đơn đặt sân sắp tới. Hãy hủy đơn hoặc chờ chơi xong rồi xóa tài khoản.':
+    'You have upcoming bookings. Cancel them or wait until you have played, then delete your account.',
+  'Bạn còn khoản tiền cọc đang chờ được hoàn. Hãy nhận lại tiền hoặc liên hệ hỗ trợ trước khi xóa tài khoản.':
+    'You have a deposit waiting to be refunded. Get your money back or contact support before deleting your account.',
+  'Cụm sân của bạn còn khách đặt sắp tới. Hãy xử lý các đơn đó (hủy hoặc chờ chơi xong) rồi xóa tài khoản.':
+    'Your venue has upcoming bookings. Deal with them (cancel or wait until they are played), then delete your account.',
+  'Bạn còn khoản cọc phải hoàn cho khách. Hãy hoàn tiền và bấm "Đã hoàn cọc" trước khi xóa tài khoản.':
+    'You still owe a deposit refund to a customer. Refund it and press "Refunded" before deleting your account.',
+
+  // --- Đối soát thanh toán (quản trị)
+  'Mã giao dịch không hợp lệ': 'Invalid transaction ID',
+  'Ghi chú tối đa 500 ký tự': 'Notes can be at most 500 characters',
+  'Không cập nhật được giao dịch. Vui lòng thử lại.': 'Could not update the transaction. Please try again.',
+  'Giao dịch này đã được xử lý trước đó': 'This transaction has already been handled',
+  'Tiền cọc đã được hoàn': 'Your deposit has been refunded',
+  'Đặt sân đã được xác nhận': 'Your booking has been confirmed',
 
   // --- Đặt sân
   'Vui lòng đăng nhập để tiến hành đặt sân': 'Please log in to book a court',
@@ -249,6 +319,27 @@ export const EN_EXACT: Record<string, string> = {
 
 /** Câu có chèn số/tên: khớp theo mẫu, $1.. là phần bắt được */
 export const EN_PATTERNS: Array<[RegExp, string]> = [
+  // --- Uy tín, danh sách chờ, lịch cố định
+  [/^Đã quá (\d+) ngày kể từ buổi chơi nên không thể thay đổi báo không đến$/, 'It has been more than $1 days since the session, so the no-show report can no longer be changed'],
+  [/^Bạn đang chờ tối đa (\d+) khung giờ\. Hãy rút bớt rồi đăng ký thêm\.$/, 'You can wait for at most $1 time slots. Leave some before joining more.'],
+  [/^Bạn đang có tối đa (\d+) lịch cố định\. Hãy kết thúc bớt một lịch rồi đăng ký thêm\.$/, 'You can have at most $1 recurring bookings. End one before adding another.'],
+  [/^Chỉ nhận lịch cố định bắt đầu trong vòng (\d+) ngày tới$/, 'Recurring bookings can only start within the next $1 days'],
+  [/^Chủ sân (.+) ghi nhận bạn không đến (.+) lúc (.+)\. Điều này ảnh hưởng điểm uy tín của bạn; hãy liên hệ chủ sân nếu có nhầm lẫn\.$/, 'The owner of $1 recorded that you did not show up at $2 at $3. This affects your reliability score; contact the owner if this is a mistake.'],
+  [/^Chủ kèo ghi nhận bạn không đến kèo "(.+)"\. Điều này ảnh hưởng điểm uy tín của bạn\.$/, 'The host recorded that you did not show up to the match "$1". This affects your reliability score.'],
+  [/^Bạn có lịch chơi lúc (.+) tại (.+) \((.*)\)\. Hãy ra sân đúng giờ nhé!$/, 'You are playing at $1 at $2 ($3). Please arrive on time!'],
+  [/^Kèo "(.+)" bắt đầu lúc (.+) tại (.+) \((.*)\)\. Hãy ra sân đúng giờ nhé!$/, 'The match "$1" starts at $2 at $3 ($4). Please arrive on time!'],
+  [/^(.+) \((.*)\) lúc (.+) - (.+) ngày (.+) vừa trống\. Đặt ngay trong 15 phút kẻo người khác giành mất!$/, '$1 ($2) at $3 - $4 on $5 just opened up. Book within 15 minutes before someone else takes it!'],
+  [/^Một khách muốn đặt cố định (.+) \((.+)\) vào (.+)\. Bấm để xem và duyệt\.$/, 'A customer wants to book $1 ($2) on a recurring basis: $3. Tap to review and approve.'],
+  [/^Chủ sân (.+) đã từ chối lịch cố định (.+) tại (.+)\.$/, 'The owner of $1 declined your recurring booking $2 at $3.'],
+  [/^Chủ sân (.+) đã duyệt lịch cố định (.+) tại (.+)\. Đã giữ (\d+) buổi sắp tới, các buổi sau sẽ tự được giữ mỗi tuần\.$/, 'The owner of $1 approved your recurring booking $2 at $3. $4 upcoming sessions are held, and later ones are held automatically each week.'],
+  [/^Chủ sân (.+) đã kết thúc lịch cố định (.+) tại (.+); các buổi sắp tới đã được hủy\.$/, 'The owner of $1 ended your recurring booking $2 at $3; upcoming sessions were cancelled.'],
+  [/^Buổi (.+) ngày (.+) tại (.+) \((.*)\) bị bỏ qua vì khung giờ đã có người đặt\.$/, 'The session at $1 on $2 at $3 ($4) was skipped because the time slot was already booked.'],
+
+  [/^Khoản cọc (.+)đ cho "(.+)" đã được hoàn lại cho bạn\.$/, 'Your $1đ deposit for "$2" has been refunded.'],
+  [
+    /^Khoản cọc của bạn cho "(.+)" đã được ghi nhận và lịch đặt đã được xác nhận\.$/,
+    'Your deposit for "$1" was received and the booking is confirmed.',
+  ],
   [/^Bạn thao tác quá nhanh\. Vui lòng thử lại sau (\d+) giây\.$/, "You're doing that too fast. Please try again in $1 seconds."],
   [/^Bạn thao tác quá nhanh\. Vui lòng thử lại sau (\d+) phút\.$/, "You're doing that too fast. Please try again in $1 minutes."],
   [/^Chỉ nhận đặt trước tối đa (\d+) ngày$/, 'Bookings can be made at most $1 days ahead'],
@@ -303,7 +394,16 @@ export function translateServerMessage(message: string, locale: string): string 
   const exact = EN_EXACT[message]
   if (exact !== undefined) return exact
   for (const [pattern, replacement] of EN_PATTERNS) {
-    if (pattern.test(message)) return message.replace(pattern, replacement)
+    if (pattern.test(message)) return localizeRecurringLabels(message.replace(pattern, replacement))
   }
   return message
+}
+
+const EN_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/** "Thứ 3 hằng tuần, 19:00 - 20:00" (describeRecurring) → "every Tuesday, 19:00 - 20:00" khi nằm trong một câu đã dịch sang tiếng Anh */
+function localizeRecurringLabels(text: string): string {
+  return text
+    .replace(/Chủ nhật hằng tuần/g, 'every Sunday')
+    .replace(/Thứ ([2-7]) hằng tuần/g, (_, n: string) => `every ${EN_WEEKDAYS[Number(n) - 1]}`)
 }

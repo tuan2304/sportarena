@@ -60,6 +60,25 @@ export function decideCancellation({ status, start, now, paidAmount, freeCancelH
     : { allowed: true, refundAmount: 0, refundStatus: 'none', forfeited: true, hoursBeforeStart }
 }
 
+/**
+ * Người chơi tự hủy đơn đã xác nhận khi còn ít giờ hơn chính sách miễn phí của cụm sân thì tính là hủy muộn và bị ghi vào
+ * điểm uy tín. Đơn chưa cọc (pending) hủy lúc nào cũng được; chủ sân hủy không bao giờ là hủy muộn của người chơi.
+ * Khác với `forfeited` (mất cọc): đơn không có cọc thật (khách cố định trả tại sân) vẫn có thể là hủy muộn.
+ */
+export function isLateCancel({
+  by,
+  status,
+  hoursBeforeStart,
+  freeCancelHours,
+}: {
+  by: CancelledBy
+  status: string
+  hoursBeforeStart: number
+  freeCancelHours: number
+}): boolean {
+  return by === 'player' && status === 'confirmed' && hoursBeforeStart < clampFreeCancelHours(freeCancelHours)
+}
+
 export function clampFreeCancelHours(hours: unknown): number {
   const n = Math.floor(Number(hours))
   if (!Number.isFinite(n)) return DEFAULT_FREE_CANCEL_HOURS

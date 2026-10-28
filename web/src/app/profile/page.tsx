@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { MainHeader } from '@/components/layout/main-header'
 import { ProfileForm } from '@/components/profile/profile-form'
+import { AccountSection } from '@/components/profile/account-section'
+import { requiresPassword } from '@/lib/account'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, ExternalLink, LifeBuoy, LogOut } from 'lucide-react'
@@ -60,6 +62,8 @@ export default async function ProfilePage() {
             />
           </CardContent>
         </Card>
+
+        <AccountSection needsPassword={requiresPassword(user)} />
 
         {/* Điện thoại không có menu đầu trang đầy đủ nên hỗ trợ và đăng xuất để ở đây */}
         <Card className="md:hidden">

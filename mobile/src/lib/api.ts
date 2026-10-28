@@ -11,6 +11,10 @@ const TIMEOUT_MS = 20_000
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; status: number }
 
+export function apiGet<T>(path: string): Promise<ApiResult<T>> {
+  return request<T>('GET', path)
+}
+
 export function apiPost<T>(path: string, body?: unknown): Promise<ApiResult<T>> {
   return request<T>('POST', path, body)
 }
@@ -32,7 +36,7 @@ export function apiDelete<T>(path: string): Promise<ApiResult<T>> {
   return request<T>('DELETE', path)
 }
 
-async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown, authenticated = true): Promise<ApiResult<T>> {
+async function request<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown, authenticated = true): Promise<ApiResult<T>> {
   if (!API_URL) {
     return { ok: false, status: 0, error: translate('api.noServer') }
   }
@@ -55,7 +59,7 @@ async function request<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: str
         'Accept-Language': currentLang(),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      ...(method === 'DELETE' ? {} : { body: JSON.stringify(body ?? {}) }),
+      ...(method === 'DELETE' || method === 'GET' ? {} : { body: JSON.stringify(body ?? {}) }),
       signal: controller.signal,
     })
 

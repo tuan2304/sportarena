@@ -3,6 +3,7 @@ import { getPlatformCredentials, verifyPaymentWebhook } from '@/lib/payos'
 import { credentialsForStoredChannel } from '@/lib/payment-channel'
 import { settlePayment } from '@/lib/payments'
 import { settleSubscription } from '@/lib/subscriptions'
+import { captureError } from '@/lib/monitoring'
 
 export interface WebhookResponse {
   status: number
@@ -39,7 +40,7 @@ export async function handlePayosWebhook(body: unknown): Promise<WebhookResponse
     try {
       creds = await credentialsForStoredChannel(admin, meta.channel, meta.club_id)
     } catch (err) {
-      console.error('webhook: không đọc được khóa của kênh', err)
+      captureError('payos.webhook', err, { orderCode, channel: meta.channel })
       return { status: 500, body: { error: 'Không đọc được cấu hình kênh thanh toán' } }
     }
   } else {

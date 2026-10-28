@@ -1,6 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyUser } from '@/lib/notify'
+import { captureError } from '@/lib/monitoring'
 import { formatNumber as money } from '@/lib/format'
 
 export type SettleResult =
@@ -51,69 +52,29 @@ export async function settlePayment({ orderCode, paidAmount, reference }: Settle
     return { ok: false, status: 400, error: 'Số tiền thanh toán không khớp với đơn' }
   }
 
-  // Giành quyền xử lý: chỉ một request chuyển được pending → paid
-  const { data: claimed, error: claimErr } = await admin
-    .from('payments')
-    .update({
-      status: 'paid',
-      paid_at: new Date().toISOString(),
-      payos_transaction_id: reference || `SIM_${Date.now()}`,
-    })
-    .eq('id', payment.id)
-    .in('status', ['pending', 'cancelled'])
-    .select('id')
-
-  if (claimErr) {
-    console.error('settlePayment: lỗi cập nhật payment', claimErr)
-    return { ok: false, status: 500, error: 'Không cập nhật được giao dịch' }
+  // Payment → paid, booking → confirmed và mở lại kèo chạy trong MỘT transaction của Postgres, nên tiến trình có chết
+  // giữa chừng cũng không để lại "đã cọc nhưng đơn chưa xác nhận" (webhook gọi lại sẽ tưởng đã xong và bỏ qua).
+  // Chỉ một request giành được pending → paid. Nếu tiền về sau khi đơn hết hạn mà sân đã có người khác đặt thì hàm
+  // giữ lại bằng chứng (needs_refund) để hoàn tiền thủ công.
+  const { data: outcome, error: settleErr } = await admin.rpc('settle_booking_payment', {
+    p_payment_id: payment.id,
+    p_reference: reference,
+  })
+  if (settleErr) {
+    // Lỗi đã hoàn tác toàn bộ nên payment vẫn pending: trả 500 để PayOS gọi lại và xử lý lại từ đầu
+    captureError('payments.settle', settleErr, { paymentId: payment.id, orderCode })
+    return { ok: false, status: 500, error: 'Không xác nhận được lịch đặt' }
   }
-  if (!claimed || claimed.length === 0) {
+  if (outcome === 'already_paid') {
     return { ok: true, alreadyPaid: true }
   }
+  const needsRefund = outcome === 'slot_taken'
 
-  // Xác nhận đơn. Nếu đơn đã bị hủy do hết hạn mà tiền vẫn về, thử giành lại khung giờ.
   const booking = payment.booking as unknown as {
     id: string
     status: string
     court: { name: string; club: { name: string; owner_id: string } | null } | null
   } | null
-
-  const { error: bookingErr } = await admin
-    .from('bookings')
-    .update({ status: 'confirmed' })
-    .eq('id', payment.booking_id)
-    .in('status', ['pending', 'cancelled'])
-
-  let needsRefund = false
-  if (bookingErr) {
-    if (bookingErr.code === '23P01') {
-      // Khung giờ đã có người khác đặt → giữ lại bằng chứng để hoàn tiền thủ công
-      needsRefund = true
-      await admin
-        .from('payments')
-        // Gộp vào metadata cũ: phải giữ channel/club_id để webhook gọi lại vẫn kiểm chữ ký bằng đúng khóa
-        .update({
-          metadata: {
-            ...((payment.metadata as Record<string, unknown> | null) ?? {}),
-            needs_refund: true,
-            reason: 'slot_taken_after_expiry',
-          },
-        })
-        .eq('id', payment.id)
-    } else {
-      console.error('settlePayment: lỗi xác nhận booking', bookingErr)
-      // Trả 500 để PayOS gọi lại; trả payment về pending để lần sau xử lý lại từ đầu
-      await admin.from('payments').update({ status: 'pending', paid_at: null }).eq('id', payment.id)
-      return { ok: false, status: 500, error: 'Không xác nhận được lịch đặt' }
-    }
-  } else {
-    // Kèo gắn với đơn (nếu bị hủy do hết hạn) được mở lại
-    await admin
-      .from('matches')
-      .update({ status: 'open' })
-      .eq('booking_id', payment.booking_id)
-      .eq('status', 'cancelled')
-  }
 
   const courtName = booking?.court?.name || 'Sân'
   const clubName = booking?.court?.club?.name || 'Cụm sân'

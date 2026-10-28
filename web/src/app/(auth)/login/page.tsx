@@ -3,13 +3,17 @@ import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { LoginForm } from '@/components/auth/login-form'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { enabledAuthProviders, parseLoginError } from '@/lib/auth-providers'
+import { safeNextPath } from '@/lib/zalo'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('auth')
   return { title: t('login.metaTitle'), description: t('login.metaDescription') }
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
+  const params = await searchParams
+  const t = await getTranslations('auth')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -30,5 +34,14 @@ export default async function LoginPage() {
     }
   }
 
-  return <LoginForm />
+  const errorCode = parseLoginError(params.error)
+  const next = safeNextPath(params.next, '')
+
+  return (
+    <LoginForm
+      providers={enabledAuthProviders()}
+      next={next || undefined}
+      initialError={errorCode ? t(`errors.${errorCode}`) : null}
+    />
+  )
 }

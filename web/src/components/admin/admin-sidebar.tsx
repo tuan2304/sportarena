@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, ChevronRight, Home, LifeBuoy, LogOut, Megaphone, ShieldCheck, Wallet } from 'lucide-react'
+import { BarChart3, ChevronRight, Home, LifeBuoy, LogOut, Megaphone, Receipt, ShieldCheck, Wallet } from 'lucide-react'
 import { logout } from '@/app/actions/auth'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { key: 'stats', href: '/admin', icon: BarChart3, exact: true },
   { key: 'tickets', href: '/admin/tickets', icon: LifeBuoy, exact: false },
   { key: 'announcements', href: '/admin/announcements', icon: Megaphone, exact: false },
+  { key: 'payments', href: '/admin/payments', icon: Receipt, exact: false },
   { key: 'plans', href: '/admin/finance', icon: Wallet, exact: false },
 ] as const
 
@@ -20,9 +21,11 @@ interface AdminSidebarProps {
   userName?: string
   userEmail?: string
   openTickets: number
+  /** Khoản cọc cần hoàn hoặc đơn kẹt đang chờ quản trị xử lý */
+  paymentIssues: number
 }
 
-export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarProps) {
+export function AdminSidebar({ userName, userEmail, openTickets, paymentIssues }: AdminSidebarProps) {
   const t = useTranslations('admin.sidebar')
   const pathname = usePathname()
 
@@ -50,7 +53,8 @@ export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarP
           {NAV_ITEMS.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
             const Icon = item.icon
-            const showBadge = item.href === '/admin/tickets' && openTickets > 0
+            const badgeCount = item.href === '/admin/tickets' ? openTickets : item.href === '/admin/payments' ? paymentIssues : 0
+            const showBadge = badgeCount > 0
             return (
               <Link
                 key={item.href}
@@ -69,9 +73,9 @@ export function AdminSidebar({ userName, userEmail, openTickets }: AdminSidebarP
                 {showBadge ? (
                   <span
                     className="min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center"
-                    aria-label={t('openTickets', { count: openTickets })}
+                    aria-label={item.href === '/admin/payments' ? t('paymentIssues', { count: badgeCount }) : t('openTickets', { count: badgeCount })}
                   >
-                    {openTickets > 99 ? '99+' : openTickets}
+                    {badgeCount > 99 ? '99+' : badgeCount}
                   </span>
                 ) : (
                   isActive && <ChevronRight className="w-4 h-4 text-white/70" aria-hidden />

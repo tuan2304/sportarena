@@ -1,0 +1,35 @@
+name: Cron tick
+
+# Tác vụ định kỳ của web: nhắc lịch trước giờ chơi ~2 giờ, báo danh sách chờ khi khung giờ được nhả, sinh các buổi của
+# lịch cố định hằng tuần. Gọi endpoint /api/cron/tick; mỗi bước tự đánh dấu việc đã làm nên chạy trễ hay chạy chồng không gửi trùng.
+#
+# Cần hai secret trong GitHub (Settings → Secrets and variables → Actions):
+#   APP_URL      https://tên-dự-án.vercel.app  (không có dấu / ở cuối)
+#   CRON_SECRET  trùng với biến CRON_SECRET đặt trên Vercel
+# GitHub chạy lịch theo kiểu "cố gắng hết sức": có thể trễ vài phút. Cần đúng giờ hơn thì dùng Vercel Cron (gói Pro) hoặc pg_cron + pg_net.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: cron-tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call /api/cron/tick
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Chưa cấu hình secret APP_URL / CRON_SECRET, bỏ qua."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 --retry 2 --retry-delay 5 \
+            -X POST -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/tick"

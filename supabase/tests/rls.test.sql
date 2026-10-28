@@ -352,6 +352,190 @@ SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$WITH x AS (INS
 SELECT t(NULL,'postgres',$$UPDATE match_participants SET status='accepted' WHERE id='50000000-0000-0000-0000-0000000000f1' RETURNING 'x'$$,'ERR','duyệt thêm người vào kèo đã qua giờ bị chặn (MATCH_ENDED)');
 SELECT t(NULL,'postgres',$$UPDATE match_participants SET status='rejected' WHERE id='50000000-0000-0000-0000-0000000000f1' RETURNING status$$,'rejected','từ chối yêu cầu của kèo đã qua giờ để dọn danh sách chờ vẫn được');
 
+-- ---------------------------------------------------------------- 20. Ghi nhận cọc trong một transaction (settle_booking_payment)
+-- 20a. Tiền về sau khi đơn hết hạn nhưng sân còn trống: giành lại sân, mở lại kèo
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('f1000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '40 day',now()+interval '40 day 1 hour',100000,30000,'cancelled');
+INSERT INTO payments(booking_id,user_id,order_code,amount,status,metadata) VALUES ('f1000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-00000000000c',2001,30000,'cancelled','{"channel":"club","club_id":"11111111-1111-1111-1111-111111111111"}');
+SELECT t(NULL,'service_role',$$SELECT public.settle_booking_payment((SELECT id FROM payments WHERE order_code=2001), 'TF2001')$$,'confirmed','settle_booking_payment xác nhận cọc đến muộn khi sân còn trống');
+SELECT t(NULL,'postgres',$$SELECT b.status||'/'||p.status||'/'||p.payos_transaction_id FROM bookings b JOIN payments p ON p.booking_id=b.id WHERE p.order_code=2001$$,'confirmed/paid/TF2001','booking confirmed, payment paid cùng một lúc, lưu mã giao dịch');
+SELECT t(NULL,'service_role',$$SELECT public.settle_booking_payment((SELECT id FROM payments WHERE order_code=2001), 'TF2001')$$,'already_paid','gọi lặp (webhook gửi lại) không xử lý lần hai');
+
+-- 20b. Tiền về muộn mà sân đã có người khác đặt: payment ghi paid + needs_refund, booking giữ cancelled, metadata kênh còn nguyên
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('f1000000-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '41 day',now()+interval '41 day 1 hour',100000,30000,'cancelled');
+INSERT INTO payments(booking_id,user_id,order_code,amount,status,metadata) VALUES ('f1000000-0000-0000-0000-000000000002','c0000000-0000-0000-0000-00000000000c',2002,30000,'cancelled','{"channel":"club","club_id":"11111111-1111-1111-1111-111111111111"}');
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('f1000000-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','d0000000-0000-0000-0000-00000000000d',now()+interval '41 day',now()+interval '41 day 1 hour',100000,30000,'confirmed');
+SELECT t(NULL,'service_role',$$SELECT public.settle_booking_payment((SELECT id FROM payments WHERE order_code=2002), 'TF2002')$$,'slot_taken','tiền về khi sân đã có người đặt → slot_taken');
+SELECT t(NULL,'postgres',$$SELECT b.status||'/'||p.status||'/'||(p.metadata->>'needs_refund')||'/'||(p.metadata->>'channel') FROM bookings b JOIN payments p ON p.booking_id=b.id WHERE p.order_code=2002$$,'cancelled/paid/true/club','slot_taken: giữ bằng chứng hoàn tiền, booking vẫn cancelled, không mất metadata kênh');
+
+-- 20c. Quyền gọi: chỉ service_role
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.settle_booking_payment((SELECT id FROM payments WHERE order_code=1005), 'x')$$,'ERR','người dùng không tự ghi nhận cọc được');
+SELECT t(NULL,'anon',$$SELECT public.settle_booking_payment('00000000-0000-0000-0000-000000000000', 'x')$$,'ERR','khách không gọi được settle_booking_payment');
+SELECT t(NULL,'service_role',$$SELECT public.settle_booking_payment('00000000-0000-0000-0000-000000000000', 'x')$$,'already_paid','payment không tồn tại thì không đổi gì');
+
+-- ---------------------------------------------------------------- 21. Xóa tài khoản & xuất dữ liệu
+INSERT INTO auth.users(id, raw_user_meta_data) VALUES
+ ('f8000000-0000-0000-0000-00000000000f', '{"full_name":"Phuc"}'),
+ ('90000000-0000-0000-0000-000000000009', '{"full_name":"Chin"}'),
+ ('80000000-0000-0000-0000-000000000008', '{"full_name":"Tam"}'),
+ ('70000000-0000-0000-0000-000000000007', '{"full_name":"Bay"}');
+UPDATE profiles SET phone_number = '0912345678' WHERE id = 'f8000000-0000-0000-0000-00000000000f';
+
+-- Phúc: đơn cũ đã hoàn thành có cọc, một đánh giá, một thông báo, tin nhắn chat, một lời xin vào kèo
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status,note) VALUES ('e1000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','f8000000-0000-0000-0000-00000000000f',now()-interval '60 day',now()-interval '60 day'+interval '1 hour',100000,30000,'completed','ghi chu rieng');
+INSERT INTO payments(booking_id,user_id,order_code,amount,status) VALUES ('e1000000-0000-0000-0000-000000000001','f8000000-0000-0000-0000-00000000000f',2101,30000,'paid');
+INSERT INTO club_reviews(club_id,user_id,rating,comment) VALUES ('11111111-1111-1111-1111-111111111111','f8000000-0000-0000-0000-00000000000f',5,'tot');
+INSERT INTO notifications(user_id,title,message) VALUES ('f8000000-0000-0000-0000-00000000000f','a','b');
+INSERT INTO match_participants(id,match_id,user_id,message) VALUES ('50000000-0000-0000-0000-0000000000f2','44444444-4444-4444-4444-444444444444','f8000000-0000-0000-0000-00000000000f','cho minh vao voi');
+
+INSERT INTO zalo_identities(zalo_id,user_id) VALUES ('8801','f8000000-0000-0000-0000-00000000000f');
+INSERT INTO slot_waitlist(user_id,court_id,start_time,end_time) VALUES ('f8000000-0000-0000-0000-00000000000f','22222222-2222-2222-2222-222222222222',now()+interval '85 day',now()+interval '85 day 1 hour');
+INSERT INTO recurring_bookings(id,user_id,court_id,weekday,start_time,end_time,starts_on,status,note) VALUES ('e1000000-0000-0000-0000-0000000000a1','f8000000-0000-0000-0000-00000000000f','22222222-2222-2222-2222-222222222222',2,'19:00','20:00',current_date,'pending','ghi chu lich');
+SELECT t(NULL,'service_role',$$SELECT public.account_deletion_blockers('f8000000-0000-0000-0000-00000000000f')::text$$,'{}','người không còn việc dang dở thì không bị chặn xóa');
+SELECT t(NULL,'service_role',$$SELECT (jsonb_array_length(public.export_user_data('f8000000-0000-0000-0000-00000000000f')->'bookings')::text)||'/'||(public.export_user_data('f8000000-0000-0000-0000-00000000000f')->'profile'->>'phone_number')$$,'1/0912345678','xuất dữ liệu có đơn đặt và số điện thoại của chính người đó');
+SELECT t(NULL,'service_role',$$SELECT (public.export_user_data('f8000000-0000-0000-0000-00000000000f')::text LIKE '%c0000000-0000-0000-0000-00000000000c%')::text$$,'false','xuất dữ liệu của người này không lẫn dữ liệu người khác');
+SELECT t(NULL,'service_role',$$SELECT public.anonymize_user('f8000000-0000-0000-0000-00000000000f')::text$$,'true','còn sổ sách tài chính → báo phải xóa mềm tài khoản đăng nhập');
+SELECT t(NULL,'postgres',$$SELECT full_name||'/'||COALESCE(phone_number,'NULL')||'/'||COALESCE(avatar_url,'NULL')||'/'||(deleted_at IS NOT NULL)::text FROM profiles WHERE id='f8000000-0000-0000-0000-00000000000f'$$,'Người dùng đã xóa/NULL/NULL/true','hồ sơ bị bỏ tên, số điện thoại và ảnh bị xóa');
+SELECT t(NULL,'postgres',$$SELECT (SELECT count(*) FROM notifications WHERE user_id='f8000000-0000-0000-0000-00000000000f')||'/'||(SELECT count(*) FROM club_reviews WHERE user_id='f8000000-0000-0000-0000-00000000000f')$$,'0/0','thông báo và đánh giá của người đó bị xóa');
+SELECT t(NULL,'postgres',$$SELECT status||'/'||COALESCE(message,'NULL') FROM match_participants WHERE id='50000000-0000-0000-0000-0000000000f2'$$,'left/NULL','rời kèo và xóa lời nhắn xin vào');
+SELECT t(NULL,'postgres',$$SELECT b.status||'/'||COALESCE(b.note,'NULL')||'/'||p.status FROM bookings b JOIN payments p ON p.booking_id=b.id WHERE b.id='e1000000-0000-0000-0000-000000000001'$$,'completed/NULL/paid','đơn và cọc được giữ làm chứng từ, ghi chú riêng bị xóa');
+
+SELECT t(NULL,'postgres',$$SELECT (SELECT count(*) FROM zalo_identities WHERE user_id='f8000000-0000-0000-0000-00000000000f')||'/'||(SELECT count(*) FROM slot_waitlist WHERE user_id='f8000000-0000-0000-0000-00000000000f')||'/'||(SELECT status||'/'||COALESCE(note,'NULL') FROM recurring_bookings WHERE id='e1000000-0000-0000-0000-0000000000a1')$$,'0/0/cancelled/NULL','gỡ liên kết Zalo, rút khỏi danh sách chờ, hủy lịch cố định đang chờ duyệt');
+
+DELETE FROM recurring_bookings WHERE id='e1000000-0000-0000-0000-0000000000a1';
+SELECT t(NULL,'service_role',$$SELECT public.anonymize_user('90000000-0000-0000-0000-000000000009')::text$$,'false','không có sổ sách nào → cho phép xóa cứng tài khoản');
+
+-- Việc dang dở thì chặn: đơn sắp tới, cọc chờ hoàn, vai trò quản trị, chủ sân còn khách
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('e1000000-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','80000000-0000-0000-0000-000000000008',now()+interval '80 day',now()+interval '80 day 1 hour',100000,30000,'confirmed');
+SELECT t(NULL,'service_role',$$SELECT public.account_deletion_blockers('80000000-0000-0000-0000-000000000008')::text$$,'{active_bookings}','còn đơn sắp tới thì bị chặn xóa');
+SELECT t(NULL,'service_role',$$SELECT public.anonymize_user('80000000-0000-0000-0000-000000000008')$$,'ERR','anonymize_user tự kiểm tra lại và từ chối khi còn việc dang dở');
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status,cancelled_by,cancelled_at,refund_amount,refund_status) VALUES ('e1000000-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','70000000-0000-0000-0000-000000000007',now()+interval '81 day',now()+interval '81 day 1 hour',100000,30000,'cancelled','owner',now(),30000,'pending');
+SELECT t(NULL,'service_role',$$SELECT public.account_deletion_blockers('70000000-0000-0000-0000-000000000007')::text$$,'{refund_owed}','đang chờ được hoàn cọc thì bị chặn xóa');
+SELECT t(NULL,'service_role',$$SELECT (public.account_deletion_blockers('a0000000-0000-0000-0000-00000000000a') @> ARRAY['club_active_bookings'])::text$$,'true','chủ sân còn khách sắp tới thì bị chặn xóa');
+SELECT t(NULL,'service_role',$$SELECT (public.account_deletion_blockers('99999999-9999-9999-9999-999999999999') @> ARRAY['admin'])::text$$,'true','tài khoản quản trị không tự xóa được');
+
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.anonymize_user('d0000000-0000-0000-0000-00000000000d')$$,'ERR','người dùng không gọi trực tiếp anonymize_user được');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.export_user_data('d0000000-0000-0000-0000-00000000000d')$$,'ERR','người dùng không đọc dữ liệu người khác qua export_user_data');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.account_deletion_blockers('d0000000-0000-0000-0000-00000000000d')$$,'ERR','người dùng không gọi trực tiếp account_deletion_blockers');
+SELECT t(NULL,'anon',$$SELECT public.export_user_data('d0000000-0000-0000-0000-00000000000d')$$,'ERR','khách không xuất được dữ liệu');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT deleted_at FROM profiles LIMIT 1$$,'ERR','cột deleted_at không đọc được từ phía app');
+
+-- ---------------------------------------------------------------- 22. Đối soát thanh toán
+-- 22a. Đóng khoản cần hoàn tiền (payment 2002 ở mục 20b đang needs_refund)
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.admin_mark_payment_refunded((SELECT id FROM payments WHERE order_code=2002), 'b0000000-0000-0000-0000-00000000000b', 'x')$$,'ERR','người dùng không tự đánh dấu đã hoàn tiền');
+SELECT t(NULL,'service_role',$$SELECT public.admin_mark_payment_refunded((SELECT id FROM payments WHERE order_code=2002), 'b0000000-0000-0000-0000-00000000000b', 'CK ngay 1')$$,'refunded','đánh dấu đã hoàn tiền');
+SELECT t(NULL,'postgres',$$SELECT status||'/'||(metadata->>'refund_note')||'/'||(metadata->>'channel') FROM payments WHERE order_code=2002$$,'refunded/CK ngay 1/club','payment thành refunded, ghi chú và kênh còn nguyên');
+SELECT t(NULL,'service_role',$$SELECT public.admin_mark_payment_refunded((SELECT id FROM payments WHERE order_code=2002), 'b0000000-0000-0000-0000-00000000000b', 'lan 2')$$,'not_found','đánh dấu lần hai không đổi gì');
+SELECT t(NULL,'service_role',$$SELECT public.admin_mark_payment_refunded((SELECT id FROM payments WHERE order_code=2101), 'b0000000-0000-0000-0000-00000000000b', 'x')$$,'not_found','payment bình thường (không needs_refund) không bị đánh dấu hoàn nhầm');
+
+-- 22b. Đơn kẹt: payment đã paid nhưng booking còn pending → xác nhận lại
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('e2000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '82 day',now()+interval '82 day 1 hour',100000,30000,'pending');
+INSERT INTO payments(booking_id,user_id,order_code,amount,status,paid_at) VALUES ('e2000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-00000000000c',2201,30000,'paid',now());
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT public.admin_repair_paid_payment((SELECT id FROM payments WHERE order_code=2201), 'b0000000-0000-0000-0000-00000000000b')$$,'ERR','người dùng không tự xác nhận đơn kẹt');
+SELECT t(NULL,'service_role',$$SELECT public.admin_repair_paid_payment((SELECT id FROM payments WHERE order_code=2201), 'b0000000-0000-0000-0000-00000000000b')$$,'confirmed','đơn kẹt ở pending được xác nhận');
+SELECT t(NULL,'postgres',$$SELECT b.status||'/'||(p.metadata->>'reconciled_by') FROM bookings b JOIN payments p ON p.booking_id=b.id WHERE p.order_code=2201$$,'confirmed/b0000000-0000-0000-0000-00000000000b','booking confirmed, ghi ai đã đối soát');
+SELECT t(NULL,'service_role',$$SELECT public.admin_repair_paid_payment((SELECT id FROM payments WHERE order_code=2201), 'b0000000-0000-0000-0000-00000000000b')$$,'not_stuck','gọi lặp không còn kẹt nữa');
+
+-- 22c. Cron hết hạn hủy đơn (cancelled_by trống) khi tiền đã về, và sân đã có người khác đặt → chuyển sang cần hoàn tiền
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('e2000000-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '83 day',now()+interval '83 day 1 hour',100000,30000,'cancelled');
+INSERT INTO payments(booking_id,user_id,order_code,amount,status,paid_at) VALUES ('e2000000-0000-0000-0000-000000000002','c0000000-0000-0000-0000-00000000000c',2202,30000,'paid',now());
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES ('e2000000-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','d0000000-0000-0000-0000-00000000000d',now()+interval '83 day',now()+interval '83 day 1 hour',100000,30000,'confirmed');
+SELECT t(NULL,'service_role',$$SELECT public.admin_repair_paid_payment((SELECT id FROM payments WHERE order_code=2202), 'b0000000-0000-0000-0000-00000000000b')$$,'slot_taken','sân đã có người khác → slot_taken');
+SELECT t(NULL,'postgres',$$SELECT b.status||'/'||(p.metadata->>'needs_refund') FROM bookings b JOIN payments p ON p.booking_id=b.id WHERE p.order_code=2202$$,'cancelled/true','booking giữ cancelled, payment chuyển sang cần hoàn tiền');
+
+-- 22d. Đơn khách chủ động hủy (cancelled_by có giá trị) không phải kẹt: cọc đi theo luồng hoàn cọc, không được kéo đơn sống lại
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status,cancelled_by,cancelled_at) VALUES ('e2000000-0000-0000-0000-000000000004','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '84 day',now()+interval '84 day 1 hour',100000,30000,'cancelled','player',now());
+INSERT INTO payments(booking_id,user_id,order_code,amount,status,paid_at) VALUES ('e2000000-0000-0000-0000-000000000004','c0000000-0000-0000-0000-00000000000c',2203,30000,'paid',now());
+SELECT t(NULL,'service_role',$$SELECT public.admin_repair_paid_payment((SELECT id FROM payments WHERE order_code=2203), 'b0000000-0000-0000-0000-00000000000b')$$,'not_stuck','đơn khách chủ động hủy không bị coi là kẹt');
+SELECT t(NULL,'postgres',$$SELECT status FROM bookings WHERE id='e2000000-0000-0000-0000-000000000004'$$,'cancelled','đơn khách đã hủy vẫn giữ nguyên cancelled');
+
+-- ---------------------------------------------------------------- 21. Điểm uy tín người chơi
+-- c: 1 buổi đã chơi; d: 1 buổi không đến (không tính là đã chơi); e: 1 lần hủy muộn
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES
+ ('f2000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()-interval '10 day',now()-interval '10 day'+interval '1 hour',100000,0,'confirmed'),
+ ('f2000000-0000-0000-0000-000000000002','22222222-2222-2222-2222-222222222222','d0000000-0000-0000-0000-00000000000d',now()-interval '9 day',now()-interval '9 day'+interval '1 hour',100000,0,'confirmed'),
+ ('f2000000-0000-0000-0000-000000000003','22222222-2222-2222-2222-222222222222','e0000000-0000-0000-0000-00000000000e',now()-interval '8 day',now()-interval '8 day'+interval '1 hour',100000,0,'cancelled');
+UPDATE bookings SET no_show_at = now() WHERE id='f2000000-0000-0000-0000-000000000002';
+UPDATE bookings SET late_cancel = true WHERE id='f2000000-0000-0000-0000-000000000003';
+
+SELECT t(NULL,'anon',$$SELECT played||'/'||no_shows||'/'||late_cancels FROM public.get_player_reputation(ARRAY['c0000000-0000-0000-0000-00000000000c']::uuid[])$$,'1/0/0','uy tín: người đã chơi 1 buổi, khách chưa đăng nhập đọc được số đếm');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$SELECT played||'/'||no_shows||'/'||late_cancels FROM public.get_player_reputation(ARRAY['d0000000-0000-0000-0000-00000000000d']::uuid[])$$,'0/1/0','uy tín: buổi không đến được đếm và không tính là đã chơi');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$SELECT played||'/'||no_shows||'/'||late_cancels FROM public.get_player_reputation(ARRAY['e0000000-0000-0000-0000-00000000000e']::uuid[])$$,'0/0/1','uy tín: hủy muộn được đếm');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$SELECT count(*)::text FROM public.get_player_reputation(ARRAY['c0000000-0000-0000-0000-00000000000c','c0000000-0000-0000-0000-00000000000c','d0000000-0000-0000-0000-00000000000d']::uuid[])$$,'2','uy tín: id trùng chỉ tính một lần');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$UPDATE bookings SET no_show_at = now() WHERE id='f2000000-0000-0000-0000-000000000001' RETURNING 'x'$$,'ERR','chủ sân không tự ghi cột không đến qua API (chỉ máy chủ ghi)');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE bookings SET late_cancel = false WHERE id='f2000000-0000-0000-0000-000000000003' RETURNING 'x'$$,'ERR','người chơi không tự xóa dấu hủy muộn');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE match_participants SET left_late = false WHERE id='50000000-0000-0000-0000-00000000000c' RETURNING 'x'$$,'ERR','thành viên không tự sửa cột rời muộn');
+
+-- Rời kèo khi còn dưới 2 giờ là rời muộn; rời kèo còn xa thì không
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status) VALUES
+ ('f2000000-0000-0000-0000-000000000004','22222222-2222-2222-2222-222222222222','b0000000-0000-0000-0000-00000000000b',now()+interval '30 minute',now()+interval '90 minute',100000,0,'confirmed');
+INSERT INTO matches(id,booking_id,creator_id,title,sport_type,required_players) VALUES
+ ('f2000000-0000-0000-0000-0000000000a4','f2000000-0000-0000-0000-000000000004','b0000000-0000-0000-0000-00000000000b','Keo sap toi','pickleball',4);
+INSERT INTO match_participants(id,match_id,user_id,status) VALUES
+ ('f2000000-0000-0000-0000-0000000000b1','f2000000-0000-0000-0000-0000000000a4','c0000000-0000-0000-0000-00000000000c','pending');
+UPDATE match_participants SET status='accepted' WHERE id='f2000000-0000-0000-0000-0000000000b1';
+UPDATE match_participants SET status='left' WHERE id='f2000000-0000-0000-0000-0000000000b1';
+SELECT t(NULL,'postgres',$$SELECT left_late::text FROM match_participants WHERE id='f2000000-0000-0000-0000-0000000000b1'$$,'true','rời kèo khi còn dưới 2 giờ bị đánh dấu rời muộn');
+SELECT t(NULL,'postgres',$$SELECT left_late::text FROM match_participants WHERE id='50000000-0000-0000-0000-00000000000d'$$,'false','thành viên kèo còn xa không bị đánh dấu');
+SELECT t(NULL,'anon',$$SELECT played||'/'||no_shows||'/'||late_cancels FROM public.get_player_reputation(ARRAY['c0000000-0000-0000-0000-00000000000c']::uuid[])$$,'1/0/1','uy tín: rời kèo muộn cộng vào số lần hủy muộn');
+
+-- ---------------------------------------------------------------- 22. Nhắc lịch trước giờ chơi
+-- Đơn xác nhận cách giờ chơi 100 phút, đặt từ hôm qua, có một thành viên đã duyệt; và đơn f2...04 (đặt vừa xong, còn 30 phút)
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status,created_at) VALUES
+ ('f3000000-0000-0000-0000-000000000001','22222222-2222-2222-2222-222222222222','b0000000-0000-0000-0000-00000000000b',now()+interval '100 minute',now()+interval '160 minute',100000,0,'confirmed',now()-interval '1 day');
+INSERT INTO matches(id,booking_id,creator_id,title,sport_type,required_players) VALUES
+ ('f3000000-0000-0000-0000-0000000000a1','f3000000-0000-0000-0000-000000000001','b0000000-0000-0000-0000-00000000000b','Keo nhac lich','pickleball',4);
+INSERT INTO match_participants(id,match_id,user_id,status) VALUES
+ ('f3000000-0000-0000-0000-0000000000b1','f3000000-0000-0000-0000-0000000000a1','d0000000-0000-0000-0000-00000000000d','accepted');
+
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM public.claim_due_reminders()$$,'ERR','người dùng không gọi được claim_due_reminders');
+SELECT t(NULL,'service_role',$$SELECT count(*)||'/'||COALESCE(max(array_length(member_ids,1)),0) FROM public.claim_due_reminders()$$,'1/1','nhắc lịch: chỉ đơn đủ điều kiện, kèm thành viên đã duyệt');
+SELECT t(NULL,'service_role',$$SELECT count(*)::text FROM public.claim_due_reminders()$$,'0','nhắc lịch: chạy lại không nhắc trùng');
+SELECT t(NULL,'postgres',$$SELECT (reminder_sent_at IS NOT NULL)::text FROM bookings WHERE id='f2000000-0000-0000-0000-000000000004'$$,'true','đơn vừa đặt sát giờ không được nhắc nhưng được đánh dấu để khỏi quét lại');
+
+-- ---------------------------------------------------------------- 23. Danh sách chờ khung giờ
+INSERT INTO slot_waitlist(id,user_id,court_id,start_time,end_time,created_at) VALUES
+ ('f4000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',now()+interval '50 day',now()+interval '50 day 1 hour',now()-interval '3 minute'),
+ ('f4000000-0000-0000-0000-000000000002','d0000000-0000-0000-0000-00000000000d','22222222-2222-2222-2222-222222222222',now()+interval '50 day 30 minute',now()+interval '50 day 90 minute',now()-interval '2 minute'),
+ ('f4000000-0000-0000-0000-000000000003','e0000000-0000-0000-0000-00000000000e','22222222-2222-2222-2222-222222222222',now()+interval '41 day',now()+interval '41 day 1 hour',now()-interval '1 minute');
+
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$INSERT INTO slot_waitlist(user_id,court_id,start_time,end_time) VALUES ('c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',now()+interval '60 day',now()+interval '60 day 1 hour') RETURNING 'x'$$,'ERR','người chơi không tự chèn danh sách chờ (đi qua máy chủ)');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM slot_waitlist$$,'1','người chơi chỉ đọc danh sách chờ của mình');
+SELECT t(NULL,'anon',$$SELECT count(*)::text FROM slot_waitlist$$,'0','khách không đọc được danh sách chờ');
+SELECT t(NULL,'postgres',$$INSERT INTO slot_waitlist(user_id,court_id,start_time,end_time) SELECT user_id,court_id,start_time,end_time FROM slot_waitlist WHERE id='f4000000-0000-0000-0000-000000000001' RETURNING 'x'$$,'ERR','không chờ trùng cùng một khung giờ hai lần');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM public.claim_free_waitlist_entries()$$,'ERR','người dùng không gọi được claim_free_waitlist_entries');
+-- Khung giờ 1 trống: người đăng ký sớm nhất được báo; khung giờ 2 chồng lên nên phải chờ; khung giờ 3 vẫn kín
+SELECT t(NULL,'service_role',$$SELECT string_agg(id::text, ',') FROM public.claim_free_waitlist_entries()$$,'f4000000-0000-0000-0000-000000000001','danh sách chờ: chỉ báo người đứng đầu của khung giờ đã trống');
+SELECT t(NULL,'service_role',$$SELECT count(*)::text FROM public.claim_free_waitlist_entries()$$,'0','danh sách chờ: chạy lại không báo trùng');
+-- Người được báo không đặt trong hạn giữ chỗ → nhường người kế tiếp
+UPDATE slot_waitlist SET notified_at = now() - interval '20 minute' WHERE id='f4000000-0000-0000-0000-000000000001';
+SELECT t(NULL,'service_role',$$SELECT string_agg(id::text, ',') FROM public.claim_free_waitlist_entries()$$,'f4000000-0000-0000-0000-000000000002','danh sách chờ: hết hạn giữ chỗ thì báo người kế tiếp');
+SELECT t(NULL,'postgres',$$SELECT status FROM slot_waitlist WHERE id='f4000000-0000-0000-0000-000000000001'$$,'expired','người được báo mà không đặt chuyển sang expired');
+
+-- ---------------------------------------------------------------- 24. Lịch cố định hằng tuần
+INSERT INTO recurring_bookings(id,user_id,court_id,weekday,start_time,end_time,starts_on,status) VALUES
+ ('f5000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',2,'19:00','20:00',current_date,'pending');
+
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$INSERT INTO recurring_bookings(user_id,court_id,weekday,start_time,end_time,starts_on,status) VALUES ('c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',3,'19:00','20:00',current_date,'active') RETURNING 'x'$$,'ERR','người chơi không tự tạo lịch cố định đã duyệt');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$UPDATE recurring_bookings SET status='active' WHERE id='f5000000-0000-0000-0000-000000000001' RETURNING 'x'$$,'ERR','người chơi không tự duyệt lịch cố định của mình');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM recurring_bookings$$,'1','người đặt đọc được lịch cố định của mình');
+SELECT t('a0000000-0000-0000-0000-00000000000a','authenticated',$$SELECT count(*)::text FROM recurring_bookings$$,'1','chủ sân đọc được yêu cầu lịch cố định ở sân mình');
+SELECT t('e0000000-0000-0000-0000-00000000000e','authenticated',$$SELECT count(*)::text FROM recurring_bookings$$,'0','người ngoài không đọc được lịch cố định của người khác');
+SELECT t(NULL,'postgres',$$INSERT INTO recurring_bookings(user_id,court_id,weekday,start_time,end_time,starts_on) VALUES ('c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',7,'19:00','20:00',current_date) RETURNING 'x'$$,'ERR','thứ trong tuần ngoài 0-6 bị chặn');
+SELECT t(NULL,'postgres',$$INSERT INTO recurring_bookings(user_id,court_id,weekday,start_time,end_time,starts_on) VALUES ('c0000000-0000-0000-0000-00000000000c','22222222-2222-2222-2222-222222222222',2,'20:00','19:00',current_date) RETURNING 'x'$$,'ERR','giờ kết thúc phải sau giờ bắt đầu');
+-- Mỗi tuần đúng một đơn cho một lịch cố định, kể cả đơn đã hủy
+INSERT INTO bookings(id,court_id,user_id,start_time,end_time,total_price,deposit_amount,status,recurring_id) VALUES
+ ('f5000000-0000-0000-0000-0000000000b1','22222222-2222-2222-2222-222222222222','c0000000-0000-0000-0000-00000000000c',now()+interval '70 day',now()+interval '70 day 1 hour',100000,0,'cancelled','f5000000-0000-0000-0000-000000000001');
+SELECT t(NULL,'postgres',$$INSERT INTO bookings(court_id,user_id,start_time,end_time,total_price,deposit_amount,status,recurring_id) SELECT court_id,user_id,start_time,end_time,total_price,deposit_amount,'confirmed',recurring_id FROM bookings WHERE id='f5000000-0000-0000-0000-0000000000b1' RETURNING 'x'$$,'ERR','không tạo lại đơn của một tuần đã có (kể cả đã hủy)');
+
+-- ---------------------------------------------------------------- 25. Đăng nhập điện thoại / Zalo
+INSERT INTO auth.users(id, raw_user_meta_data, phone) VALUES ('f6000000-0000-0000-0000-000000000001', '{}', '84901234567');
+SELECT t(NULL,'postgres',$$SELECT phone_number FROM profiles WHERE id='f6000000-0000-0000-0000-000000000001'$$,'+84901234567','đăng ký bằng OTP điện thoại: hồ sơ mang sẵn số điện thoại');
+SELECT t('c0000000-0000-0000-0000-00000000000c','authenticated',$$SELECT count(*)::text FROM zalo_identities$$,'ERR','người dùng không đọc được bảng nối tài khoản Zalo');
+SELECT t(NULL,'anon',$$INSERT INTO zalo_identities(zalo_id,user_id) VALUES ('123','c0000000-0000-0000-0000-00000000000c') RETURNING 'x'$$,'ERR','khách không ghi được bảng Zalo');
+SELECT t(NULL,'service_role',$$INSERT INTO zalo_identities(zalo_id,user_id) VALUES ('123','c0000000-0000-0000-0000-00000000000c') RETURNING zalo_id$$,'123','máy chủ nối được tài khoản Zalo');
+SELECT t(NULL,'service_role',$$INSERT INTO zalo_identities(zalo_id,user_id) VALUES ('456','c0000000-0000-0000-0000-00000000000c') RETURNING 'x'$$,'ERR','một tài khoản chỉ nối một Zalo');
+SELECT t(NULL,'service_role',$$INSERT INTO zalo_identities(zalo_id,user_id) VALUES ('abc','d0000000-0000-0000-0000-00000000000d') RETURNING 'x'$$,'ERR','zalo_id phải là số');
+
 -- ---------------------------------------------------------------- Tổng kết
 SELECT CASE WHEN ok THEN 'PASS' ELSE 'FAIL' END AS ket_qua, label AS ca_kiem_thu, CASE WHEN ok THEN '' ELSE detail END AS chi_tiet FROM test_results ORDER BY ok, label;
 DO $$

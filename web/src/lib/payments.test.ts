@@ -33,6 +33,29 @@ function seed(overrides: { paymentStatus?: string; bookingStatus?: string; amoun
     bookings: [{ id: 'bk-1', status: overrides.bookingStatus ?? 'pending' }],
     matches: [{ id: 'm-1', booking_id: 'bk-1', status: 'cancelled' }],
   })
+  installSettleRpc()
+}
+
+/**
+ * Giả lập hàm SQL settle_booking_payment (supabase/migrations/20261106...). Hàm thật chạy trong một transaction;
+ * ở đây `slotTaken` mô phỏng lỗi trùng lịch (23P01) và `failure` mô phỏng lỗi database: cả hai trường hợp, thay đổi
+ * dở dang phải được hoàn tác, đúng như transaction thật.
+ */
+function installSettleRpc(opts: { slotTaken?: boolean; failure?: string } = {}) {
+  db.rpc.settle_booking_payment = (args) => {
+    if (opts.failure) return { data: null, error: { message: opts.failure } }
+    const pay = db.tables.payments.find((p) => p.id === args.p_payment_id)
+    if (!pay || !['pending', 'cancelled'].includes(pay.status as string)) return { data: 'already_paid', error: null }
+    Object.assign(pay, { status: 'paid', payos_transaction_id: args.p_reference || 'SIM_x' })
+    if (opts.slotTaken) {
+      pay.metadata = { ...(pay.metadata as object), needs_refund: true, reason: 'slot_taken_after_expiry' }
+      return { data: 'slot_taken', error: null }
+    }
+    const bk = db.tables.bookings.find((b) => b.id === pay.booking_id)
+    if (bk && ['pending', 'cancelled'].includes(bk.status as string)) bk.status = 'confirmed'
+    db.tables.matches.filter((m) => m.booking_id === pay.booking_id && m.status === 'cancelled').forEach((m) => (m.status = 'open'))
+    return { data: 'confirmed', error: null }
+  }
 }
 
 const payment = () => db.tables.payments[0]
@@ -101,7 +124,7 @@ describe('settlePayment', () => {
 
   it('tiền về muộn mà sân đã có người khác đặt: ghi nhận để hoàn tiền, chỉ báo người chơi', async () => {
     seed({ paymentStatus: 'cancelled', bookingStatus: 'cancelled' })
-    db.failUpdate.bookings = { code: '23P01', message: 'conflicting key value violates exclusion constraint' }
+    installSettleRpc({ slotTaken: true })
 
     const r = await settlePayment({ orderCode: ORDER, paidAmount: 30000, reference: 'LATE' })
 
@@ -113,14 +136,23 @@ describe('settlePayment', () => {
     expect(notified()).toEqual(['player-1'])
   })
 
-  it('lỗi database khi xác nhận booking: trả 500 để PayOS gọi lại và hoàn payment về pending', async () => {
+  it('lỗi database khi ghi nhận: trả 500 để PayOS gọi lại, payment vẫn pending (đã hoàn tác trọn gói)', async () => {
     seed()
-    db.failUpdate.bookings = { code: '57P01', message: 'connection lost' }
+    installSettleRpc({ failure: 'connection lost' })
 
     const r = await settlePayment({ orderCode: ORDER, paidAmount: 30000, reference: 'TF1' })
 
     expect(r).toMatchObject({ ok: false, status: 500 })
     expect(payment().status).toBe('pending')
+    expect(booking().status).toBe('pending')
     expect(notifyUser).not.toHaveBeenCalled()
+  })
+
+  it('không ghi payments/bookings từng bước từ ứng dụng: mọi thay đổi đi qua một lần gọi RPC duy nhất', async () => {
+    seed()
+    await settlePayment({ orderCode: ORDER, paidAmount: 30000, reference: 'TF1' })
+
+    expect(db.log.filter((l) => l.startsWith('rpc settle_booking_payment'))).toHaveLength(1)
+    expect(db.log.filter((l) => /^update (payments|bookings|matches)/.test(l))).toEqual([])
   })
 })

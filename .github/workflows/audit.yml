@@ -1,0 +1,30 @@
+name: Audit
+
+on:
+  push:
+    branches: [master]
+    paths: ['web/package*.json', 'mobile/package*.json']
+  pull_request:
+    paths: ['web/package*.json', 'mobile/package*.json']
+  # Quét lỗ hổng mới được công bố dù không có commit nào
+  schedule:
+    - cron: '0 2 * * 1'
+
+jobs:
+  npm-audit:
+    name: Security (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Web: gói chạy trên máy chủ nên chặn từ mức high
+      - name: Audit web
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=high
+      # Mobile: các lỗ hổng high còn lại nằm trong công cụ build của Expo (@expo/cli, zod, node-forge), không vào bản app và chỉ
+      # sửa được khi Expo ra bản mới (Dependabot sẽ đề xuất), nên chỉ chặn từ mức critical.
+      - name: Audit mobile
+        working-directory: mobile
+        run: npm audit --omit=dev --audit-level=critical

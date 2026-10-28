@@ -102,7 +102,24 @@
     "closeEdit": "Đóng chỉnh sửa",
     "edit": "Chỉnh sửa hồ sơ",
     "viewPublic": "Xem hồ sơ công khai",
-    "logout": "Đăng Xuất"
+    "logout": "Đăng Xuất",
+    "account": {
+      "title": "Dữ liệu và tài khoản",
+      "exportTitle": "Tải dữ liệu của tôi",
+      "exportHint": "Hồ sơ, đơn đặt sân, thanh toán, kèo, đánh giá và thông báo của bạn dạng JSON.",
+      "exportFailed": "Không tải được dữ liệu",
+      "shareFailed": "Không mở được bảng chia sẻ. Vui lòng thử lại.",
+      "deleteTitle": "Xóa tài khoản",
+      "deleteHint": "Xóa vĩnh viễn thông tin cá nhân của bạn. Không thể hoàn tác.",
+      "dialogTitle": "Xóa tài khoản vĩnh viễn?",
+      "willDelete": "Sẽ bị xóa: tên, số điện thoại, ảnh đại diện, đánh giá, tin nhắn trong kèo, phiếu hỗ trợ, thông báo và thông tin đăng nhập.",
+      "willKeep": "Được giữ lại (đã bỏ tên): lịch sử đặt sân và thanh toán, theo quy định lưu chứng từ giao dịch.",
+      "ownerNote": "Nếu bạn là chủ sân, cụm sân sẽ ngừng nhận khách. Cần xử lý hết đơn sắp tới và khoản cọc phải hoàn trước.",
+      "passwordLabel": "Mật khẩu hiện tại",
+      "confirmLabel": "Gõ {phrase} để xác nhận",
+      "confirm": "Xóa vĩnh viễn",
+      "deleted": "Tài khoản của bạn đã được xóa."
+    }
   },
   "player": {
     "played": "Lần đã chơi",

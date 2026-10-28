@@ -9,7 +9,8 @@ import { resolveClubChannel } from '@/lib/payment-channel'
 import { bookableCourtIds, courtLimit, isBillingEnforced } from '@/lib/billing'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { buildVietQrImageUrl, transferMemo } from '@/lib/vietqr'
-import { isMatchSkill } from '@/lib/constants'
+import { HOLD_MINUTES, HOLD_MINUTES_MANUAL, isMatchSkill } from '@/lib/constants'
+import { fulfillWaitlist } from '@/lib/waitlist'
 import type { Database } from '@/types/database'
 
 /**
@@ -31,9 +32,6 @@ export interface CreateBookingResult {
   bookingId?: string
 }
 
-const HOLD_MINUTES = 15
-// Chuyển khoản thủ công cần thời gian khách chuyển và chủ sân đối chiếu, nên giữ chỗ lâu hơn
-const HOLD_MINUTES_MANUAL = 60
 const MAX_PENDING_PER_USER = 3
 const MAX_BOOKING_HOURS = 6
 const MAX_DAYS_AHEAD = 60
@@ -215,6 +213,18 @@ export async function createBookingForUser(
     await admin.from('matches').update({ status: 'cancelled' }).eq('booking_id', booking.id)
   }
 
+  // Kiểm tra ở trên đếm rồi mới chèn nên hai request đồng thời cùng lọt qua được. Đếm lại sau khi chèn: mỗi request
+  // đều thấy các đơn đã commit của nhau, nên tổng đơn chưa cọc không bao giờ vượt giới hạn (tệ nhất là cả hai cùng bị từ chối).
+  const { count: pendingAfter } = await admin
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
+  if ((pendingAfter ?? 0) > MAX_PENDING_PER_USER) {
+    await rollback()
+    return { error: `Bạn đang giữ chỗ ${MAX_PENDING_PER_USER} đơn chưa cọc. Hãy hoàn tất hoặc chờ hết hạn rồi đặt thêm.` }
+  }
+
   // ---- 6. Mở ghép kèo cùng lúc đặt sân ----
   if (isOpenMatch && matchConfig) {
     const requiredPlayers = Math.min(50, Math.max(2, Math.floor(matchConfig.requiredPlayers || 2)))
@@ -325,6 +335,9 @@ export async function createBookingForUser(
     await rollback()
     return { error: 'Không thể lưu giao dịch thanh toán. Vui lòng thử lại.' }
   }
+
+  // Người đang chờ đúng khung giờ này đã đặt được thì đóng đăng ký chờ của họ
+  await fulfillWaitlist(admin, user.id, courtId, startDate, endDate)
 
   revalidateBookingPages()
   return { bookingId: booking.id }

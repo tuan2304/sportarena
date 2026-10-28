@@ -142,7 +142,35 @@
       "metaDescription": "Đặt mật khẩu mới cho tài khoản của bạn"
     },
     "email": "Email",
-    "passwordLabel": "Mật khẩu"
+    "passwordLabel": "Mật khẩu",
+    "errors": {
+      "oauth": "Không thể đăng nhập bằng tài khoản này. Vui lòng thử lại hoặc dùng cách khác.",
+      "zalo": "Đăng nhập Zalo không thành công. Vui lòng thử lại.",
+      "zalo_unavailable": "Đăng nhập bằng Zalo hiện chưa khả dụng."
+    },
+    "social": {
+      "or": "hoặc tiếp tục với",
+      "google": "Tiếp tục với Google",
+      "apple": "Tiếp tục với Apple",
+      "zalo": "Tiếp tục với Zalo",
+      "phone": "Đăng nhập bằng số điện thoại",
+      "failed": "Không thể bắt đầu đăng nhập. Vui lòng thử lại."
+    },
+    "phone": {
+      "phoneLabel": "Số điện thoại",
+      "phoneHint": "Chúng tôi gửi mã xác thực 6 số qua tin nhắn. Tài khoản mới sẽ tự được tạo.",
+      "sendCode": "Gửi mã xác thực",
+      "sendFailed": "Không gửi được mã. Vui lòng thử lại.",
+      "cancel": "Quay lại đăng nhập bằng email",
+      "codeLabel": "Nhập mã đã gửi tới {phone}",
+      "verify": "Xác nhận",
+      "changePhone": "Đổi số điện thoại",
+      "resend": "Gửi lại mã",
+      "resendIn": "Gửi lại sau {seconds}s",
+      "nameLabel": "Họ và tên",
+      "nameHint": "Tên này hiển thị cho chủ sân và người chơi khác.",
+      "finish": "Hoàn tất"
+    }
   },
   "common": {
     "sports": {
@@ -278,7 +306,12 @@
       "full": "Đã kín",
       "slotBooked": "{label}, đã kín",
       "duration": "Thời lượng chơi",
-      "hours": "{count} tiếng"
+      "hours": "{count} tiếng",
+      "waitlistTitle": "Giờ bạn muốn đã kín?",
+      "waitlistHint": "Đăng ký chờ, chúng tôi báo ngay khi có người hủy hoặc nhả giờ.",
+      "waitlistSelect": "Chọn giờ muốn chờ",
+      "waitlistJoin": "Báo cho tôi",
+      "waitlistJoined": "Đã đăng ký chờ {label}. Bạn sẽ nhận thông báo khi khung giờ trống."
     },
     "match": {
       "title": "Mở Ghép Kèo Giao Lưu",
@@ -450,7 +483,8 @@
     "cost": "Chi phí",
     "free": "Miễn phí",
     "matchDetails": "Chi Tiết Kèo",
-    "courtFallback": "Sân"
+    "courtFallback": "Sân",
+    "recurringLink": "Đặt lịch cố định hằng tuần & danh sách chờ →"
   },
   "matches": {
     "metaTitle": "Kèo giao lưu thể thao",
@@ -561,7 +595,16 @@
       "applicant": "Ứng viên",
       "message": "Lời nhắn: “{message}”",
       "accept": "Chấp Nhận",
-      "reject": "Từ Chối"
+      "reject": "Từ Chối",
+      "markNoShow": "Báo không đến",
+      "undoNoShow": "Gỡ báo",
+      "noShowBadge": "Không đến",
+      "noShowConfirmTitle": "Báo thành viên này không đến?",
+      "noShowConfirmText": "Thành viên sẽ nhận thông báo và điểm uy tín bị trừ. Bạn có thể gỡ báo trong 14 ngày.",
+      "noShowConfirm": "Báo không đến",
+      "noShowKeep": "Chưa",
+      "noShowMarked": "Đã ghi nhận thành viên không đến",
+      "noShowCleared": "Đã gỡ báo không đến"
     },
     "panel": {
       "title": "Chi Phí & Tham Gia",
@@ -630,6 +673,27 @@
       "supportHint": "Gửi yêu cầu hoặc xem phản hồi",
       "logout": "Đăng xuất",
       "logoutHint": "Thoát khỏi tài khoản trên thiết bị này"
+    },
+    "account": {
+      "title": "Dữ liệu và tài khoản",
+      "description": "Tải về bản sao dữ liệu của bạn hoặc xóa tài khoản vĩnh viễn.",
+      "exportTitle": "Tải dữ liệu của tôi",
+      "exportHint": "Một tệp JSON gồm hồ sơ, đơn đặt sân, thanh toán, kèo, đánh giá, phiếu hỗ trợ và thông báo của bạn.",
+      "exportButton": "Tải về",
+      "exportFailed": "Không tải được dữ liệu. Vui lòng thử lại.",
+      "deleteTitle": "Xóa tài khoản",
+      "deleteHint": "Xóa vĩnh viễn thông tin cá nhân của bạn. Không thể hoàn tác.",
+      "deleteButton": "Xóa tài khoản",
+      "dialogTitle": "Xóa tài khoản vĩnh viễn?",
+      "dialogIntro": "Hành động này không thể hoàn tác và bạn sẽ bị đăng xuất ngay.",
+      "willDelete": "Sẽ bị xóa: tên, số điện thoại, ảnh đại diện, đánh giá, tin nhắn trong kèo, phiếu hỗ trợ, thông báo và thông tin đăng nhập.",
+      "willKeep": "Được giữ lại (đã bỏ tên): lịch sử đặt sân và thanh toán, theo quy định lưu chứng từ giao dịch.",
+      "ownerNote": "Nếu bạn là chủ sân, cụm sân sẽ ngừng nhận khách. Cần xử lý hết đơn sắp tới và khoản cọc phải hoàn trước.",
+      "passwordLabel": "Mật khẩu hiện tại",
+      "confirmLabel": "Gõ {phrase} để xác nhận",
+      "cancel": "Hủy",
+      "confirm": "Xóa vĩnh viễn",
+      "deleting": "Đang xóa..."
     }
   },
   "notifications": {
@@ -743,7 +807,9 @@
       "payments": "Nhận thanh toán",
       "refunds": "Hoàn cọc",
       "billing": "Gói dịch vụ",
-      "support": "Hỗ trợ"
+      "support": "Hỗ trợ",
+      "recurring": "Lịch cố định",
+      "analytics": "Thống kê"
     },
     "sidebar": {
       "for": "Dành cho Chủ Sân",
@@ -970,7 +1036,17 @@
     "badgeCancelled": "Đã hủy",
     "approveDeposit": "Duyệt Cọc",
     "markDone": "Hoàn Tất",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "noShow": "Không đến",
+    "reportNoShow": "Báo không đến",
+    "undoNoShow": "Gỡ báo",
+    "noShowConfirmTitle": "Báo khách không đến?",
+    "noShowConfirmText": "Khách sẽ nhận thông báo và điểm uy tín bị trừ. Bạn có thể gỡ báo trong 14 ngày.",
+    "noShowConfirm": "Báo không đến",
+    "noShowKeep": "Chưa",
+    "noShowMarked": "Đã ghi nhận khách không đến",
+    "noShowCleared": "Đã gỡ báo không đến",
+    "recurringBadge": "Cố định"
   },
   "ownerRefunds": {
     "metaTitle": "Hoàn cọc",
@@ -1089,7 +1165,9 @@
       "plans": "Gói dịch vụ",
       "openTickets": "{count} yêu cầu đang chờ",
       "home": "Về trang chủ",
-      "logout": "Đăng xuất"
+      "logout": "Đăng xuất",
+      "payments": "Đối soát thanh toán",
+      "paymentIssues": "{count} khoản cần xử lý"
     },
     "overview": {
       "metaTitle": "Thống kê vận hành",
@@ -1195,6 +1273,46 @@
         "linkHint": "Chỉ nhận địa chỉ trong web, bắt đầu bằng dấu /.",
         "submit": "Gửi thông báo"
       }
+    },
+    "payments": {
+      "metaTitle": "Đối soát thanh toán",
+      "title": "Đối soát thanh toán",
+      "subtitle": "Những khoản tiền cọc bị lệch sổ và cần người xử lý: khách đã trả nhưng không có sân, hoặc đã trả mà đơn chưa được xác nhận.",
+      "empty": "Không có khoản nào cần xử lý.",
+      "refundTitle": "Cần hoàn tiền cho khách ({count})",
+      "refundHint": "Tiền về sau khi đơn hết hạn mà sân đã có người khác đặt. Hãy chuyển trả cọc cho khách (qua chủ sân nếu tiền nằm ở tài khoản của họ) rồi bấm \"Đã hoàn tiền\".",
+      "stuckTitle": "Đã trả cọc nhưng đơn chưa xác nhận ({count})",
+      "stuckHint": "Khách đã thanh toán nhưng đơn vẫn chờ hoặc bị hủy do hết hạn. Xác nhận lại đơn; nếu sân đã có người khác đặt, khoản này sẽ chuyển sang danh sách cần hoàn tiền.",
+      "overdueTitle": "Chủ sân chưa hoàn cọc quá hạn ({count})",
+      "overdueHint": "Khách hủy hợp lệ được hoàn cọc nhưng chủ sân chưa chuyển trả sau hơn {days} ngày. Hãy nhắc chủ sân.",
+      "overdueDays": "Quá {days} ngày",
+      "channelClub": "Kênh chủ sân",
+      "channelPlatform": "Kênh nền tảng",
+      "reasonSlotTaken": "Sân đã có người đặt",
+      "rowCustomer": "Khách: {name}",
+      "rowOwner": "Chủ sân: {name}",
+      "rowPaidAt": "Trả lúc {time}",
+      "rowPlayAt": "Giờ chơi {time}",
+      "rowCancelledAt": "Hủy lúc {time}",
+      "bookingStatus": {
+        "pending": "Đơn đang chờ",
+        "confirmed": "Đơn đã xác nhận",
+        "completed": "Đơn đã hoàn thành",
+        "cancelled": "Đơn đã hủy"
+      },
+      "actions": {
+        "refundButton": "Đã hoàn tiền",
+        "refundConfirmTitle": "Xác nhận đã hoàn tiền cho khách?",
+        "refundConfirmBody": "Khoản này sẽ được đóng và khách nhận thông báo đã được hoàn cọc.",
+        "repairButton": "Xác nhận đơn",
+        "repairConfirmTitle": "Xác nhận lại đơn đặt sân?",
+        "repairConfirmBody": "Đơn được xác nhận và khách nhận thông báo. Nếu sân đã có người khác đặt, khoản này chuyển sang cần hoàn tiền.",
+        "noteLabel": "Ghi chú hoàn tiền",
+        "notePlaceholder": "Ghi chú (vd. mã chuyển khoản)",
+        "refunded": "Đã đóng khoản hoàn tiền",
+        "repaired": "Đã xác nhận đơn",
+        "slotTaken": "Sân đã có người đặt: khoản này đã chuyển sang danh sách cần hoàn tiền"
+      }
     }
   },
   "tabbar": {
@@ -1206,5 +1324,118 @@
     "login": "Đăng nhập",
     "owner": "Chủ sân",
     "admin": "Quản trị"
+  },
+  "reputation": {
+    "title": "Uy tín người chơi",
+    "new": "Người mới",
+    "excellent": "Rất uy tín",
+    "good": "Uy tín",
+    "fair": "Trung bình",
+    "risky": "Cần cân nhắc",
+    "score": "{score} điểm",
+    "detail": "Đã chơi {played} buổi · Không đến {noShows} · Hủy/rời muộn {lateCancels} (180 ngày gần nhất)",
+    "explain": "Điểm tính từ số lần không đến sân và hủy muộn trong 180 ngày gần nhất. Người mới chưa có điểm."
+  },
+  "recurring": {
+    "metaTitle": "Lịch cố định hằng tuần",
+    "heading": "Lịch cố định & Danh sách chờ",
+    "subheading": "Đặt cố định một khung giờ mỗi tuần (ví dụ thứ 3 hằng tuần 19h) và theo dõi các khung giờ bạn đang chờ.",
+    "formTitle": "Đặt lịch cố định hằng tuần",
+    "formHint": "Chủ sân duyệt xong, hệ thống tự giữ chỗ cho 4 tuần tới và cứ thế cuốn chiếu. Thường thanh toán trực tiếp tại sân.",
+    "noCourts": "Chưa có sân nào đang nhận đặt.",
+    "court": "Sân",
+    "weekday": "Thứ trong tuần",
+    "from": "Từ",
+    "to": "Đến",
+    "endsOn": "Kết thúc vào (không bắt buộc)",
+    "endsOnHint": "Bỏ trống nếu muốn chơi dài hạn (tối đa 1 năm).",
+    "note": "Ghi chú cho chủ sân",
+    "notePlaceholder": "Ví dụ: nhóm 10 người, cần thuê bóng",
+    "approvalHint": "Yêu cầu cần được chủ sân duyệt.",
+    "submit": "Gửi yêu cầu",
+    "requested": "Đã gửi yêu cầu. Chủ sân sẽ xem và phản hồi.",
+    "mySeries": "Lịch cố định của tôi",
+    "noSeries": "Bạn chưa có lịch cố định nào.",
+    "seriesLabel": "{day} hằng tuần, {start} - {end}",
+    "until": "đến {date}",
+    "statusActive": "Đang chạy",
+    "statusPending": "Chờ chủ sân duyệt",
+    "end": "Kết thúc",
+    "withdraw": "Rút yêu cầu",
+    "endTitle": "Kết thúc lịch cố định này?",
+    "endText": "Các buổi còn xa giờ chơi sẽ được hủy. Các buổi trong thời hạn hủy của cụm sân vẫn giữ nguyên; nếu không đến được, hãy hủy riêng từng buổi.",
+    "endConfirm": "Kết thúc",
+    "endKeep": "Giữ lại",
+    "ended": "Đã kết thúc lịch cố định.",
+    "seriesBookingsHint": "Các buổi đã giữ chỗ nằm trong mục Lịch đặt của tôi.",
+    "seeBookings": "Xem lịch đặt",
+    "waitlist": "Khung giờ đang chờ",
+    "noWaits": "Bạn chưa chờ khung giờ nào. Khi giờ bạn muốn đã kín, hãy đăng ký chờ ở bước chọn giờ.",
+    "waitWaiting": "Đang chờ",
+    "waitNotified": "Đã trống, đặt ngay!",
+    "waitLeave": "Rút",
+    "waitLeft": "Đã rút khỏi danh sách chờ."
+  },
+  "ownerRecurring": {
+    "title": "Lịch cố định hằng tuần",
+    "subtitle": "Khách đặt cố định một khung giờ mỗi tuần. Sau khi bạn duyệt, hệ thống tự giữ chỗ 4 tuần tới và cuốn chiếu hằng tuần.",
+    "guest": "Khách",
+    "pending": "Chờ duyệt",
+    "noPending": "Không có yêu cầu nào đang chờ.",
+    "active": "Đang chạy",
+    "noActive": "Chưa có lịch cố định nào đang chạy.",
+    "seriesLabel": "{day} hằng tuần, {start} - {end}",
+    "until": "đến {date}",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "approved": "Đã duyệt lịch cố định.",
+    "rejected": "Đã từ chối yêu cầu.",
+    "end": "Kết thúc",
+    "endTitle": "Kết thúc lịch cố định này?",
+    "endText": "Mọi buổi sắp tới sẽ bị hủy và khách nhận thông báo. Khách không bị tính hủy muộn.",
+    "endConfirm": "Kết thúc",
+    "endKeep": "Giữ lại",
+    "ended": "Đã kết thúc lịch cố định."
+  },
+  "ownerAnalytics": {
+    "title": "Thống kê",
+    "subtitle": "Doanh thu, tỉ lệ lấp đầy và giờ cao điểm của các cụm sân bạn quản lý.",
+    "guest": "Khách",
+    "export": "Xuất CSV",
+    "range": "{days} ngày",
+    "allClubs": "Tất cả cụm sân",
+    "truncated": "Khoảng thời gian này có quá nhiều đơn nên số liệu có thể chưa đầy đủ. Hãy chọn khoảng ngắn hơn.",
+    "kpi": {
+      "revenue": "Doanh thu",
+      "revenueHint": "Tổng giá thuê các đơn đã xác nhận",
+      "bookings": "Số đơn",
+      "bookingsHint": "Trung bình {avg} / đơn",
+      "occupancy": "Tỉ lệ lấp đầy",
+      "occupancyHint": "{booked} / {available} giờ",
+      "cancelRate": "Tỉ lệ hủy / không đến",
+      "cancelHint": "{cancelled} hủy · {noShows} không đến"
+    },
+    "definition": "Doanh thu là tổng giá thuê của các đơn đã xác nhận hoặc hoàn thành trong kỳ (tính theo ngày chơi), không gồm đơn bị hủy hay khách không đến. Tỉ lệ lấp đầy = giờ đã đặt ÷ giờ mở cửa của các sân đang hoạt động.",
+    "revenueByDay": "Doanh thu theo ngày",
+    "revenueByWeek": "Doanh thu theo tuần",
+    "revenueChartLabel": "Biểu đồ cột doanh thu",
+    "weekOf": "Tuần từ {date}",
+    "noData": "Chưa có dữ liệu trong khoảng này.",
+    "peakTitle": "Giờ cao điểm",
+    "peakHint": "Các khung giờ có nhiều giờ đặt nhất trong kỳ.",
+    "peakHours": "{hours} giờ",
+    "busiestHour": "Khung {hour}:00 là giờ đông nhất trong ngày.",
+    "byCourt": "Hiệu quả từng sân",
+    "noCourts": "Chưa có sân nào.",
+    "col": {
+      "court": "Sân",
+      "revenue": "Doanh thu",
+      "bookings": "Đơn",
+      "occupancy": "Lấp đầy"
+    },
+    "heatmapTitle": "Bản đồ nhiệt theo thứ và giờ",
+    "heatmapHint": "Màu càng đậm, khung giờ đó càng được đặt nhiều.",
+    "legendLow": "Ít",
+    "legendHigh": "Nhiều"
   }
 }

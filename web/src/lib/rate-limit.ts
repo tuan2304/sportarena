@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { captureMessage } from '@/lib/monitoring'
 
 /**
  * Giới hạn tần suất theo cửa sổ cố định, đếm trong Postgres (hàm rate_limit_hit) thay vì trong bộ nhớ,
@@ -29,13 +30,38 @@ export const RATE_RULES = {
   joinMatch: { max: 15, windowSec: 600 },
   createMatch: { max: 10, windowSec: 3600 },
   review: { max: 10, windowSec: 3600 },
+  // Xóa tài khoản kèm nhập lại mật khẩu: chặn dò mật khẩu qua đường này; xuất dữ liệu gom nhiều bảng nên cũng hạn chế
+  accountDelete: { max: 5, windowSec: 3600 },
+  accountExport: { max: 5, windowSec: 3600 },
+  waitlist: { max: 20, windowSec: 600 },
+  recurring: { max: 10, windowSec: 3600 },
+  // OTP điện thoại: mỗi tin nhắn là tiền thật và dễ bị lợi dụng để spam số người khác
+  otpSendByIp: { max: 10, windowSec: 3600 },
+  otpSendByPhone: { max: 3, windowSec: 600 },
+  otpVerifyByIp: { max: 30, windowSec: 600 },
+  otpVerifyByPhone: { max: 10, windowSec: 600 },
+  zaloByIp: { max: 30, windowSec: 600 },
 } satisfies Record<string, RateRule>
 
 export type RateAction = keyof typeof RATE_RULES
 
-/** Địa chỉ IP của người gọi, lấy từ header do Vercel/proxy đặt; không có thì 'unknown'. */
-export function clientIp(h: { get(name: string): string | null }): string {
-  const forwarded = h.get('x-forwarded-for')?.split(',')[0]?.trim()
+/**
+ * Địa chỉ IP của người gọi; không xác định được thì 'unknown'.
+ *
+ * Client tự đặt được x-forwarded-for, và mỗi proxy chỉ NỐI THÊM IP của bên gửi vào cuối. Vì vậy phần tử đầu tiên không
+ * đáng tin (gửi `X-Forwarded-For: 1.1.1.1` là đổi được "IP" mỗi lần để né giới hạn). Ta lấy phần tử do proxy tin cậy
+ * của mình ghi, đếm từ cuối: TRUSTED_PROXY_HOPS proxy (mặc định 1). Trên Vercel header chỉ có đúng một IP của người
+ * gọi nên mặc định đúng; sau 2 lớp proxy (vd CDN rồi nginx) đặt TRUSTED_PROXY_HOPS=2.
+ */
+export function clientIp(
+  h: { get(name: string): string | null },
+  hops: number = Number(process.env.TRUSTED_PROXY_HOPS) || 1
+): string {
+  const parts = (h.get('x-forwarded-for') ?? '')
+    .split(',')
+    .map((p) => p.trim())
+    .filter(Boolean)
+  const forwarded = parts[Math.max(0, parts.length - Math.max(1, Math.floor(hops)))]
   return forwarded || h.get('x-real-ip')?.trim() || 'unknown'
 }
 
@@ -63,7 +89,13 @@ export async function enforceRateLimit(action: RateAction, identity: string): Pr
     if (row && row.allowed === false) return retryMessage(Number(row.retry_after) || rule.windowSec)
     return null
   } catch (err) {
-    console.warn(`rate-limit: bỏ qua kiểm tra "${action}" do lỗi`, err instanceof Error ? err.message : err)
+    // Lớp chống spam/dò mật khẩu đang TẮT cho tới khi sửa (thường do chưa áp migration hoặc database lỗi): cần người biết
+    captureMessage(
+      'rate-limit.fail-open',
+      `Bỏ qua kiểm tra giới hạn tần suất "${action}" do lỗi`,
+      { action, error: err instanceof Error ? err.message : String(err) },
+      { alert: true, level: 'warning' }
+    )
     return null
   }
 }

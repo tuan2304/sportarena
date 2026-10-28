@@ -69,9 +69,10 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
+      # Ghim phiên bản CLI để CI không đổi hành vi khi Supabase phát hành bản mới; muốn nâng thì sửa số này (và thử `supabase start` cục bộ)
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.84.2
       # Supabase cục bộ trong Docker: áp toàn bộ migration, có Auth, REST và Storage thật (bỏ các dịch vụ không cần để khởi động nhanh)
       # (mailpit/inbucket được giữ lại: ca quên mật khẩu cần dịch vụ gửi thư để GoTrue không báo lỗi)
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,postgres-meta,supavisor
@@ -97,7 +98,7 @@ jobs:
         run: bash supabase/tests/run.sh
 
   mobile:
-    name: Mobile (typecheck)
+    name: Mobile (typecheck, lint, test)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -110,4 +111,6 @@ jobs:
           cache: npm
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test

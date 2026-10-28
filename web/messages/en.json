@@ -142,7 +142,35 @@
       "metaDescription": "Set a new password for your account"
     },
     "email": "Email",
-    "passwordLabel": "Password"
+    "passwordLabel": "Password",
+    "errors": {
+      "oauth": "We couldn't sign you in with that account. Please try again or use another method.",
+      "zalo": "Zalo sign-in didn't work. Please try again.",
+      "zalo_unavailable": "Zalo sign-in is not available right now."
+    },
+    "social": {
+      "or": "or continue with",
+      "google": "Continue with Google",
+      "apple": "Continue with Apple",
+      "zalo": "Continue with Zalo",
+      "phone": "Sign in with phone number",
+      "failed": "Couldn't start sign-in. Please try again."
+    },
+    "phone": {
+      "phoneLabel": "Phone number",
+      "phoneHint": "We'll text you a 6-digit code. A new account is created automatically.",
+      "sendCode": "Send code",
+      "sendFailed": "Couldn't send the code. Please try again.",
+      "cancel": "Back to email sign-in",
+      "codeLabel": "Enter the code sent to {phone}",
+      "verify": "Confirm",
+      "changePhone": "Change number",
+      "resend": "Resend code",
+      "resendIn": "Resend in {seconds}s",
+      "nameLabel": "Full name",
+      "nameHint": "This name is shown to venue owners and other players.",
+      "finish": "Finish"
+    }
   },
   "common": {
     "sports": {
@@ -278,7 +306,12 @@
       "full": "Booked",
       "slotBooked": "{label}, booked",
       "duration": "Duration",
-      "hours": "{count} h"
+      "hours": "{count} h",
+      "waitlistTitle": "Your time is taken?",
+      "waitlistHint": "Join the waitlist and we'll alert you as soon as someone cancels or releases the slot.",
+      "waitlistSelect": "Pick a time to wait for",
+      "waitlistJoin": "Notify me",
+      "waitlistJoined": "You're on the waitlist for {label}. We'll notify you when it opens up."
     },
     "match": {
       "title": "Open a Match",
@@ -450,7 +483,8 @@
     "cost": "Cost",
     "free": "Free",
     "matchDetails": "Match Details",
-    "courtFallback": "Court"
+    "courtFallback": "Court",
+    "recurringLink": "Weekly recurring bookings & waitlist →"
   },
   "matches": {
     "metaTitle": "Open sports matches",
@@ -561,7 +595,16 @@
       "applicant": "Applicant",
       "message": "Message: “{message}”",
       "accept": "Accept",
-      "reject": "Decline"
+      "reject": "Decline",
+      "markNoShow": "Report no-show",
+      "undoNoShow": "Undo",
+      "noShowBadge": "No-show",
+      "noShowConfirmTitle": "Report this member as a no-show?",
+      "noShowConfirmText": "The member will be notified and their reliability score drops. You can undo this within 14 days.",
+      "noShowConfirm": "Report no-show",
+      "noShowKeep": "Not yet",
+      "noShowMarked": "Marked the member as a no-show",
+      "noShowCleared": "Removed the no-show report"
     },
     "panel": {
       "title": "Cost & Joining",
@@ -630,6 +673,27 @@
       "supportHint": "Send a request or read replies",
       "logout": "Log out",
       "logoutHint": "Sign out of this device"
+    },
+    "account": {
+      "title": "Data and account",
+      "description": "Download a copy of your data or permanently delete your account.",
+      "exportTitle": "Download my data",
+      "exportHint": "A JSON file with your profile, bookings, payments, matches, reviews, support tickets and notifications.",
+      "exportButton": "Download",
+      "exportFailed": "Could not download your data. Please try again.",
+      "deleteTitle": "Delete account",
+      "deleteHint": "Permanently deletes your personal information. This cannot be undone.",
+      "deleteButton": "Delete account",
+      "dialogTitle": "Permanently delete your account?",
+      "dialogIntro": "This cannot be undone and you will be signed out right away.",
+      "willDelete": "Deleted: your name, phone number, avatar, reviews, match chat messages, support tickets, notifications and sign-in details.",
+      "willKeep": "Kept (with your name removed): booking and payment history, as required for transaction records.",
+      "ownerNote": "If you own a venue, it stops taking bookings. Upcoming bookings and refunds you owe must be settled first.",
+      "passwordLabel": "Current password",
+      "confirmLabel": "Type {phrase} to confirm",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently",
+      "deleting": "Deleting..."
     }
   },
   "notifications": {
@@ -743,7 +807,9 @@
       "payments": "Get Paid",
       "refunds": "Refunds",
       "billing": "Plans",
-      "support": "Support"
+      "support": "Support",
+      "recurring": "Recurring bookings",
+      "analytics": "Analytics"
     },
     "sidebar": {
       "for": "For Venue Owners",
@@ -970,7 +1036,17 @@
     "badgeCancelled": "Cancelled",
     "approveDeposit": "Approve Deposit",
     "markDone": "Mark Completed",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "noShow": "No-show",
+    "reportNoShow": "Report no-show",
+    "undoNoShow": "Undo",
+    "noShowConfirmTitle": "Report the customer as a no-show?",
+    "noShowConfirmText": "The customer will be notified and their reliability score drops. You can undo this within 14 days.",
+    "noShowConfirm": "Report no-show",
+    "noShowKeep": "Not yet",
+    "noShowMarked": "Marked the customer as a no-show",
+    "noShowCleared": "Removed the no-show report",
+    "recurringBadge": "Recurring"
   },
   "ownerRefunds": {
     "metaTitle": "Refunds",
@@ -1089,7 +1165,9 @@
       "plans": "Plans",
       "openTickets": "{count} open requests",
       "home": "Back to home",
-      "logout": "Log out"
+      "logout": "Log out",
+      "payments": "Payment reconciliation",
+      "paymentIssues": "{count} items need attention"
     },
     "overview": {
       "metaTitle": "Operations",
@@ -1195,6 +1273,46 @@
         "linkHint": "Only addresses inside the site, starting with /.",
         "submit": "Send announcement"
       }
+    },
+    "payments": {
+      "metaTitle": "Payment reconciliation",
+      "title": "Payment reconciliation",
+      "subtitle": "Deposits that are out of sync and need a person: the customer paid but there is no court, or paid but the booking was not confirmed.",
+      "empty": "Nothing needs attention.",
+      "refundTitle": "Refund due to customer ({count})",
+      "refundHint": "Money arrived after the booking expired and the court was already taken. Send the deposit back to the customer (through the venue if the money sits in their account), then press \"Refunded\".",
+      "stuckTitle": "Paid but booking not confirmed ({count})",
+      "stuckHint": "The customer paid but the booking is still pending or was cancelled on expiry. Confirm the booking; if the court has been taken by someone else, the item moves to the refund list.",
+      "overdueTitle": "Venue refunds overdue ({count})",
+      "overdueHint": "The customer cancelled in time and is owed a refund, but the venue has not paid it back after {days} days. Please remind the venue.",
+      "overdueDays": "{days} days overdue",
+      "channelClub": "Venue channel",
+      "channelPlatform": "Platform channel",
+      "reasonSlotTaken": "Court already taken",
+      "rowCustomer": "Customer: {name}",
+      "rowOwner": "Venue owner: {name}",
+      "rowPaidAt": "Paid {time}",
+      "rowPlayAt": "Play time {time}",
+      "rowCancelledAt": "Cancelled {time}",
+      "bookingStatus": {
+        "pending": "Booking pending",
+        "confirmed": "Booking confirmed",
+        "completed": "Booking completed",
+        "cancelled": "Booking cancelled"
+      },
+      "actions": {
+        "refundButton": "Refunded",
+        "refundConfirmTitle": "Confirm the customer has been refunded?",
+        "refundConfirmBody": "This closes the item and notifies the customer that the deposit was returned.",
+        "repairButton": "Confirm booking",
+        "repairConfirmTitle": "Confirm this booking again?",
+        "repairConfirmBody": "The booking is confirmed and the customer is notified. If the court has been taken by someone else, the item moves to the refund list.",
+        "noteLabel": "Refund note",
+        "notePlaceholder": "Note (e.g. transfer reference)",
+        "refunded": "Refund item closed",
+        "repaired": "Booking confirmed",
+        "slotTaken": "The court was already taken: this item moved to the refund list"
+      }
     }
   },
   "tabbar": {
@@ -1206,5 +1324,118 @@
     "login": "Log in",
     "owner": "Owner",
     "admin": "Admin"
+  },
+  "reputation": {
+    "title": "Player reliability",
+    "new": "New player",
+    "excellent": "Very reliable",
+    "good": "Reliable",
+    "fair": "Average",
+    "risky": "Use caution",
+    "score": "{score} pts",
+    "detail": "Played {played} · No-shows {noShows} · Late cancels/leaves {lateCancels} (last 180 days)",
+    "explain": "The score comes from no-shows and late cancellations in the last 180 days. New players have no score yet."
+  },
+  "recurring": {
+    "metaTitle": "Weekly recurring bookings",
+    "heading": "Recurring bookings & waitlist",
+    "subheading": "Reserve the same slot every week (for example every Tuesday at 7pm) and track the time slots you are waiting for.",
+    "formTitle": "Book a weekly recurring slot",
+    "formHint": "Once the owner approves, the system holds the next 4 weeks for you and keeps rolling forward. Payment is usually made at the venue.",
+    "noCourts": "No courts are accepting bookings yet.",
+    "court": "Court",
+    "weekday": "Day of week",
+    "from": "From",
+    "to": "To",
+    "endsOn": "Ends on (optional)",
+    "endsOnHint": "Leave empty to play long term (up to 1 year).",
+    "note": "Note for the owner",
+    "notePlaceholder": "e.g. group of 10, need to rent balls",
+    "approvalHint": "The request must be approved by the owner.",
+    "submit": "Send request",
+    "requested": "Request sent. The owner will review it.",
+    "mySeries": "My recurring bookings",
+    "noSeries": "You have no recurring bookings yet.",
+    "seriesLabel": "Every {day}, {start} - {end}",
+    "until": "until {date}",
+    "statusActive": "Active",
+    "statusPending": "Awaiting owner approval",
+    "end": "End",
+    "withdraw": "Withdraw",
+    "endTitle": "End this recurring booking?",
+    "endText": "Sessions far from play time will be cancelled. Sessions inside the venue's cancellation window stay as they are; cancel those individually if you cannot make it.",
+    "endConfirm": "End it",
+    "endKeep": "Keep it",
+    "ended": "Recurring booking ended.",
+    "seriesBookingsHint": "The sessions already held appear under My bookings.",
+    "seeBookings": "View bookings",
+    "waitlist": "Time slots you are waiting for",
+    "noWaits": "You are not waiting for any slot. When the time you want is full, join the waitlist at the time-picking step.",
+    "waitWaiting": "Waiting",
+    "waitNotified": "Open now, book it!",
+    "waitLeave": "Leave",
+    "waitLeft": "Removed from the waitlist."
+  },
+  "ownerRecurring": {
+    "title": "Weekly recurring bookings",
+    "subtitle": "Customers reserve the same slot every week. Once you approve, the system holds the next 4 weeks and keeps rolling forward.",
+    "guest": "Customer",
+    "pending": "Awaiting approval",
+    "noPending": "No pending requests.",
+    "active": "Active",
+    "noActive": "No recurring bookings are running.",
+    "seriesLabel": "Every {day}, {start} - {end}",
+    "until": "until {date}",
+    "approve": "Approve",
+    "reject": "Decline",
+    "approved": "Recurring booking approved.",
+    "rejected": "Request declined.",
+    "end": "End",
+    "endTitle": "End this recurring booking?",
+    "endText": "All upcoming sessions will be cancelled and the customer will be notified. The customer is not charged a late cancellation.",
+    "endConfirm": "End it",
+    "endKeep": "Keep it",
+    "ended": "Recurring booking ended."
+  },
+  "ownerAnalytics": {
+    "title": "Analytics",
+    "subtitle": "Revenue, occupancy and peak hours across the venues you manage.",
+    "guest": "Customer",
+    "export": "Export CSV",
+    "range": "{days} days",
+    "allClubs": "All venues",
+    "truncated": "This period has too many bookings, so the numbers may be incomplete. Choose a shorter range.",
+    "kpi": {
+      "revenue": "Revenue",
+      "revenueHint": "Total rental value of confirmed bookings",
+      "bookings": "Bookings",
+      "bookingsHint": "Average {avg} per booking",
+      "occupancy": "Occupancy",
+      "occupancyHint": "{booked} / {available} hours",
+      "cancelRate": "Cancel / no-show rate",
+      "cancelHint": "{cancelled} cancelled · {noShows} no-shows"
+    },
+    "definition": "Revenue is the total rental value of confirmed or completed bookings in the period (by play date), excluding cancelled bookings and no-shows. Occupancy = booked hours ÷ opening hours of active courts.",
+    "revenueByDay": "Revenue by day",
+    "revenueByWeek": "Revenue by week",
+    "revenueChartLabel": "Revenue bar chart",
+    "weekOf": "Week of {date}",
+    "noData": "No data in this period yet.",
+    "peakTitle": "Peak hours",
+    "peakHint": "The time slots with the most booked hours in the period.",
+    "peakHours": "{hours} h",
+    "busiestHour": "{hour}:00 is the busiest hour of the day.",
+    "byCourt": "Performance by court",
+    "noCourts": "No courts yet.",
+    "col": {
+      "court": "Court",
+      "revenue": "Revenue",
+      "bookings": "Bookings",
+      "occupancy": "Occupancy"
+    },
+    "heatmapTitle": "Heatmap by weekday and hour",
+    "heatmapHint": "The darker the cell, the more that slot is booked.",
+    "legendLow": "Low",
+    "legendHigh": "High"
   }
 }

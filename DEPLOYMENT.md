@@ -51,6 +51,9 @@ Sao chép các biến sau từ file `.env.local` vào mục **Environment Variab
 | `PAYOS_API_KEY` | *(API Key từ payos.vn)* | Cổng VietQR PayOS |
 | `PAYOS_CHECKSUM_KEY` | *(Checksum Key từ payos.vn)* | Xác thực chữ ký số Webhook |
 | `NEXT_PUBLIC_APP_URL` | `https://tên-dự-án.vercel.app` | Domain chính thức của bạn |
+| `TRUSTED_PROXY_HOPS` | *(bỏ trống = 1)* | Không bắt buộc. Số proxy tin cậy trước ứng dụng, dùng để lấy đúng IP người gọi cho giới hạn tần suất. Chỉ cần đặt khi tự host sau nhiều lớp proxy |
+| `SENTRY_DSN` | *(DSN của dự án Sentry)* | Không bắt buộc nhưng nên có: gom lỗi máy chủ, xem chi tiết trong Sentry |
+| `ALERT_WEBHOOK_URL` | *(webhook Slack hoặc Discord)* | Không bắt buộc nhưng nên có: báo ngay khi webhook thanh toán lỗi 5xx, lớp giới hạn tần suất tự tắt, hoặc trợ lý AI hỏng |
 
 ### Bước 5: Bấm "Deploy"
 Vercel sẽ tự động build và cung cấp cho bạn một domain HTTPS miễn phí (ví dụ: `https://sportarena.vercel.app`).
@@ -287,3 +290,38 @@ Với app mobile: tính năng ghim vị trí dùng `expo-location`, nên sau khi
 2. App mobile cần cài lại phụ thuộc (`npm install` trong `mobile/`, có thêm `expo-localization`); bản dev build/APK cũ phải build lại.
 3. Thêm câu thông báo hoặc lỗi mới: viết tiếng Việt như cũ, rồi thêm bản tiếng Anh vào [web/src/i18n/server-messages.ts](web/src/i18n/server-messages.ts); test sẽ báo nếu quên.
 
+
+## 📱 Phát hành mobile (EAS Build + OTA)
+
+CI chạy `typecheck`, `lint` và `test` cho mobile ở mọi PR (`npm run check` trong `mobile/` để chạy cục bộ). Phát hành nằm ở [mobile-eas.yml](.github/workflows/mobile-eas.yml), **mặc định tắt** cho đến khi làm xong phần cài đặt một lần dưới đây:
+
+1. `cd mobile && npx eas-cli login && npx eas-cli init` (ghi `extra.eas.projectId` vào `app.json`), rồi `npx eas-cli update:configure` (ghi `updates.url`).
+2. Định danh ứng dụng đã đặt là `vn.sportarena.app` (`ios.bundleIdentifier` và `android.package` trong `app.json`). Không đổi được sau khi lên store.
+3. Khai báo biến môi trường cho từng môi trường EAS (`preview`, `production`): `npx eas-cli env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL --value ... --visibility plaintext`, tương tự `EXPO_PUBLIC_SUPABASE_ANON_KEY` và `EXPO_PUBLIC_API_URL` (xem `mobile/.env.example`).
+4. Trên GitHub: tạo secret `EXPO_TOKEN` (expo.dev > Access tokens) và biến repo `EAS_ENABLED=true`.
+
+Cách dùng:
+
+- **Đẩy vào `master` có đổi `mobile/`** → tự đẩy OTA lên kênh `preview` (sau khi `npm run check` qua).
+- **Actions > Mobile (EAS) > Run workflow**: chọn `update` (OTA) hoặc `build`, và profile `preview` / `production`. Bản `production` luôn do người bấm chủ động.
+- OTA chỉ thay JavaScript và tài nguyên. Đổi `app.json`, thêm gói có mã native hay nâng Expo SDK thì phải `build` lại và nâng `version` (chính sách `runtimeVersion: appVersion` sẽ giữ OTA không chạy nhầm trên bản app cũ).
+- Phiên bản EAS CLI ghim ở `26.x` trong workflow và `cli.version` trong `mobile/eas.json`; Supabase CLI ở job `e2e-real` ghim `2.84.2` trong [ci.yml](.github/workflows/ci.yml). Muốn nâng thì sửa số rồi chạy thử.
+
+## 🔔 Nhắc lịch, danh sách chờ, lịch cố định, uy tín, thống kê, đăng nhập mới
+
+Đợt cập nhật này thêm 5 nhóm tính năng. Thứ tự triển khai:
+
+1. **Áp migration** (`supabase db push`): `20261107` (điểm uy tín), `20261108` (nhắc lịch + danh sách chờ + lịch cố định), `20261109` (đăng nhập điện thoại/Zalo). Sau đó chạy lại `npm run db:types --prefix web` để sinh lại kiểu dữ liệu (file `supabase.generated.ts` hiện có đã được bổ sung tay các bảng mới cho tới lúc đó).
+2. **Bật tác vụ định kỳ.** Nhắc lịch ~2 giờ trước giờ chơi, báo người trong danh sách chờ và sinh buổi của lịch cố định đều do endpoint `/api/cron/tick` làm:
+   - Tạo `CRON_SECRET` (xem `web/.env.example`), đặt trên Vercel rồi **Redeploy**.
+   - Thêm hai secret `APP_URL` và `CRON_SECRET` vào GitHub → Settings → Secrets and variables → Actions. Workflow [cron-tick.yml](.github/workflows/cron-tick.yml) gọi endpoint mỗi 10 phút (GitHub chạy lịch kiểu cố gắng hết sức nên có thể trễ vài phút).
+   - Cần chính xác hơn: dùng Vercel Cron (gói Pro cho phép chạy dưới 1 lần/ngày) hoặc `pg_cron` + `pg_net` gọi cùng endpoint với header `Authorization: Bearer <CRON_SECRET>`.
+   - Kiểm tra: `curl -X POST -H "Authorization: Bearer $CRON_SECRET" $APP_URL/api/cron/tick` phải trả JSON `{reminders, waitlist, recurring}`.
+   - Chưa đặt `CRON_SECRET` thì endpoint trả 503 và các tính năng trên không chạy (đặt sân và thanh toán vẫn bình thường).
+3. **Điểm uy tín**: không cần cấu hình. Chủ sân bấm "Báo không đến" ở Lịch đặt sân, chủ kèo bấm ở danh sách thành viên sau giờ bắt đầu; hủy muộn và rời kèo sát giờ được ghi tự động.
+4. **Thống kê chủ sân**: `/owner/analytics` (doanh thu, lấp đầy, giờ cao điểm, xuất CSV). Không cần cấu hình.
+5. **Đăng nhập**:
+   - **Google / Apple**: Supabase Dashboard → Authentication → Providers, bật và điền Client ID/Secret; thêm `{NEXT_PUBLIC_APP_URL}/auth/callback` vào *Redirect URLs* (Authentication → URL Configuration). Apple bắt buộc nếu app iOS có đăng nhập mạng xã hội khác.
+   - **OTP điện thoại**: Authentication → Providers → Phone, bật và chọn nhà cung cấp SMS (Twilio, MessageBird, Vonage, Textlocal). Muốn dùng nhà cung cấp SMS Việt Nam (eSMS, SpeedSMS, Zalo ZNS) thì dùng *Send SMS hook* của Supabase. Mỗi tin nhắn tốn phí; web đã giới hạn 3 mã/10 phút/số và 10 mã/giờ/IP.
+   - **Zalo**: tạo ứng dụng ở developers.zalo.me, thêm Callback URL `{NEXT_PUBLIC_APP_URL}/api/auth/zalo/callback`, đặt `ZALO_APP_ID` và `ZALO_APP_SECRET` trên Vercel.
+   - Đặt `AUTH_PROVIDERS=google,apple,phone` trên Vercel (chỉ liệt kê nhà cung cấp đã bật ở Supabase), rồi **Redeploy**.

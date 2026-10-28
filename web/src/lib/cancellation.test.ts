@@ -5,6 +5,7 @@ import {
   describeOutcome,
   describePolicy,
   formatHours,
+  isLateCancel,
   parseFreeCancelHours,
   refundStatusLabel,
   type CancelInput,
@@ -117,5 +118,35 @@ describe('mô tả kết quả cho người dùng', () => {
     expect(refundStatusLabel('pending', 30000, money)).toContain('Chờ chủ sân hoàn cọc 30000đ')
     expect(refundStatusLabel('refunded', 30000, money)).toContain('Đã hoàn cọc')
     expect(refundStatusLabel('none', 0, money)).toBeNull()
+  })
+})
+
+describe('isLateCancel', () => {
+  const input = { by: 'player', status: 'confirmed', hoursBeforeStart: 10, freeCancelHours: 24 } as const
+
+  it('người chơi hủy đơn đã xác nhận trong hạn miễn phí còn lại là hủy muộn', () => {
+    expect(isLateCancel(input)).toBe(true)
+  })
+
+  it('hủy đúng mốc hoặc sớm hơn thì không phải hủy muộn', () => {
+    expect(isLateCancel({ ...input, hoursBeforeStart: 24 })).toBe(false)
+    expect(isLateCancel({ ...input, hoursBeforeStart: 72 })).toBe(false)
+  })
+
+  it('đơn chưa cọc (pending) hủy lúc nào cũng không bị tính', () => {
+    expect(isLateCancel({ ...input, status: 'pending', hoursBeforeStart: 1 })).toBe(false)
+  })
+
+  it('chủ sân hủy không bao giờ là hủy muộn của người chơi', () => {
+    expect(isLateCancel({ ...input, by: 'owner', hoursBeforeStart: 1 })).toBe(false)
+  })
+
+  it('đơn không có cọc thật (khách cố định) hủy sát giờ vẫn tính là hủy muộn', () => {
+    expect(decideCancellation({ ...base, paidAmount: 0, start: hoursFromNow(2) })).toMatchObject({ forfeited: false })
+    expect(isLateCancel({ ...input, hoursBeforeStart: 2 })).toBe(true)
+  })
+
+  it('chính sách 0 giờ: không có hủy muộn', () => {
+    expect(isLateCancel({ ...input, freeCancelHours: 0, hoursBeforeStart: 0.1 })).toBe(false)
   })
 })

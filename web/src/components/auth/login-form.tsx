@@ -11,9 +11,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 
 import { LogoMark } from '@/components/brand/logo'
-export function LoginForm() {
+import { SocialLogin } from '@/components/auth/social-login'
+import { hasAnyProvider, type AuthProviders } from '@/lib/auth-providers'
+
+interface LoginFormProps {
+  providers?: AuthProviders
+  /** Trang cần quay lại sau khi đăng nhập */
+  next?: string
+  /** Lỗi từ luồng đăng nhập ngoài (Google/Apple/Zalo) do trang đăng nhập đọc từ ?error= */
+  initialError?: string | null
+}
+
+export function LoginForm({ providers, next, initialError = null }: LoginFormProps = {}) {
   const t = useTranslations('auth')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialError)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -102,6 +113,12 @@ export function LoginForm() {
               </>
             )}
           </Button>
+
+          {providers && hasAnyProvider(providers) && (
+            <div className="w-full">
+              <SocialLogin providers={providers} next={next} onError={(message) => setError(message || null)} />
+            </div>
+          )}
 
           <p className="text-center text-xs text-muted-foreground">
             {t('login.noAccount')}{' '}

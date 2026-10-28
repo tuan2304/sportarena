@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { notifyUser } from '@/lib/notify'
+import { notifyUser, pushAfterResponse } from '@/lib/notify'
+import { notifyFreedWaitlist } from '@/lib/waitlist'
 import { formatVnd } from '@/lib/format'
-import { decideCancellation, type CancelDecision, type CancelledBy } from '@/lib/cancellation'
+import { decideCancellation, isLateCancel, type CancelDecision, type CancelledBy } from '@/lib/cancellation'
 import { revalidateBookingPages } from '@/lib/booking-service'
 import type { Database } from '@/types/database'
 
@@ -74,6 +75,12 @@ export async function performCancellation(
       cancelled_at: now.toISOString(),
       refund_amount: decision.refundAmount,
       refund_status: decision.refundStatus,
+      late_cancel: isLateCancel({
+        by,
+        status: booking.status,
+        hoursBeforeStart: decision.hoursBeforeStart,
+        freeCancelHours: booking.court.club.free_cancel_hours,
+      }),
     })
     .eq('id', booking.id)
     .eq('status', booking.status)
@@ -117,6 +124,10 @@ export async function performCancellation(
   }
 
   revalidateBookingPages()
+  // Khung giờ vừa được nhả: báo ngay cho người đang chờ thay vì đợi lượt chạy định kỳ kế tiếp
+  await pushAfterResponse(async () => {
+    await notifyFreedWaitlist(admin)
+  })
   return { ok: true, decision, booking }
 }
 

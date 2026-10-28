@@ -1,26 +1,19 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notifyUser } from '@/lib/notify'
-import {
-  AI_DECISION_SCHEMA,
-  AI_SENDER_NAME,
-  AI_SYSTEM_PROMPT,
-  aiSkipReason,
-  buildAiUserPrompt,
-  parseAiDecision,
-} from '@/lib/support-ai'
+import { captureError } from '@/lib/monitoring'
+import { AI_SENDER_NAME, aiSkipReason } from '@/lib/support-ai'
+import { answerTicket } from '@/lib/support-faq'
 
 /**
- * Trợ lý AI tự trả lời phiếu hỗ trợ (chỉ khi đủ điều kiện, xem support-ai.ts).
- * Model chỉ trả về văn bản; nó không có công cụ nên không thể đổi dữ liệu, hoàn tiền hay đóng phiếu.
+ * Trợ lý tự trả lời phiếu hỗ trợ (chỉ khi đủ điều kiện, xem support-ai.ts). Chạy hoàn toàn trong app: câu trả lời
+ * là một mục có sẵn trong kho FAQ (support-faq.ts), không có dịch vụ ngoài, không tốn phí và không thể đổi dữ liệu,
+ * hoàn tiền hay đóng phiếu.
  */
 
-const DEFAULT_MODEL = 'claude-opus-5-5'
-
-/** Cần ANTHROPIC_API_KEY; đặt SUPPORT_AI_ENABLED=false để tắt mà không phải xóa khóa. */
+/** Bật mặc định (không cần khóa nào); đặt SUPPORT_AI_ENABLED=false để tắt, khi đó mọi phiếu do quản trị trả lời. */
 export function isSupportAiEnabled(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY) && process.env.SUPPORT_AI_ENABLED !== 'false'
+  return process.env.SUPPORT_AI_ENABLED !== 'false'
 }
 
 /**
@@ -28,12 +21,6 @@ export function isSupportAiEnabled(): boolean {
  * superseded: có tin mới hơn nên lượt này bỏ qua (lượt của tin mới sẽ lo).
  */
 export type AiReplyOutcome = 'replied' | 'escalated' | 'skipped' | 'failed' | 'superseded'
-
-let client: Anthropic | null = null
-function getClient(): Anthropic {
-  client ??= new Anthropic({ timeout: 90_000, maxRetries: 1 })
-  return client
-}
 
 export async function maybeAutoReply(ticketId: string): Promise<AiReplyOutcome> {
   if (!isSupportAiEnabled()) return 'skipped'
@@ -62,32 +49,10 @@ export async function maybeAutoReply(ticketId: string): Promise<AiReplyOutcome> 
 
   let decision
   try {
-    const response = await getClient().messages.create({
-      model: process.env.SUPPORT_AI_MODEL?.trim() || DEFAULT_MODEL,
-      max_tokens: 8000,
-      system: AI_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: buildAiUserPrompt({
-            subject: ticket.subject,
-            category: ticket.category,
-            clubName: ticket.club?.name,
-            messages,
-          }),
-        },
-      ],
-      output_config: { effort: 'medium', format: { type: 'json_schema', schema: AI_DECISION_SCHEMA } },
-    })
-    console.info(`support-ai: phiếu ${ticketId} stop=${response.stop_reason} in=${response.usage.input_tokens} out=${response.usage.output_tokens}`)
-
-    // Bị từ chối hoặc cụt giữa chừng thì không có câu trả lời đáng tin: giao cho người
-    if (response.stop_reason !== 'end_turn') return 'escalated'
-    const text = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text ?? ''
-    decision = parseAiDecision(text)
+    decision = answerTicket({ subject: ticket.subject, messages })
   } catch (err) {
-    if (err instanceof Anthropic.APIError) console.error(`support-ai: lỗi API ${err.status} cho phiếu ${ticketId}`, err.message)
-    else console.error(`support-ai: lỗi không mong đợi cho phiếu ${ticketId}`, err)
+    // Không bao giờ nên xảy ra (hàm thuần), nhưng nếu có thì mọi phiếu sau đó cũng hỏng: báo cho người trực
+    captureError('support-ai', err, { ticketId }, { alert: true })
     return 'failed'
   }
 
@@ -96,7 +61,7 @@ export async function maybeAutoReply(ticketId: string): Promise<AiReplyOutcome> 
     return 'escalated'
   }
 
-  // Trong lúc model nghĩ, người dùng hoặc nhân viên có thể đã nhắn thêm: nếu vậy thì câu trả lời này đã cũ
+  // Người dùng hoặc nhân viên có thể nhắn thêm ngay lúc ta đang xử lý: nếu vậy thì câu trả lời này đã cũ
   const { data: latest } = await admin
     .from('ticket_messages')
     .select('id')
@@ -115,7 +80,7 @@ export async function maybeAutoReply(ticketId: string): Promise<AiReplyOutcome> 
     body: decision.reply,
   })
   if (error) {
-    console.error(`support-ai: không lưu được câu trả lời cho phiếu ${ticketId}`, error)
+    captureError('support-ai', error, { ticketId, step: 'save-reply' }, { alert: true })
     return 'failed'
   }
 

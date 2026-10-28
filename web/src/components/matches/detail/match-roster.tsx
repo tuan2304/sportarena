@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Crown, MessageSquare, AlertCircle, CheckCircle2, XCircle } from 'lucide-react'
+import { ReputationBadge } from '@/components/profile/reputation-badge'
+import type { Reputation } from '@/lib/reputation'
 import type { MatchDetail, MatchParticipantItem } from './types'
 
 interface MatchRosterProps {
@@ -13,10 +15,25 @@ interface MatchRosterProps {
   isFull: boolean
   loading: boolean
   onRespond: (participantId: string, status: 'accepted' | 'rejected') => void
+  /** Điểm uy tín theo user id */
+  reputations?: Record<string, Reputation>
+  /** Kèo đã đến giờ chơi: chủ kèo báo được thành viên không đến */
+  canReportNoShow?: boolean
+  onNoShow?: (participantId: string, noShow: boolean) => void
 }
 
 /** Danh sách chủ kèo, thành viên đã duyệt và (với chủ kèo) các yêu cầu đang chờ. */
-export function MatchRoster({ match, participants, isHost, isFull, loading, onRespond }: MatchRosterProps) {
+export function MatchRoster({
+  match,
+  participants,
+  isHost,
+  isFull,
+  loading,
+  onRespond,
+  reputations = {},
+  canReportNoShow = false,
+  onNoShow,
+}: MatchRosterProps) {
   const t = useTranslations('matches.roster')
   const acceptedParticipants = participants.filter((p) => p.status === 'accepted')
   const pendingParticipants = participants.filter((p) => p.status === 'pending')
@@ -66,6 +83,7 @@ export function MatchRoster({ match, participants, isHost, isFull, loading, onRe
                   {t('hostBadge')}
                 </Badge>
               </div>
+              <ReputationBadge reputation={reputations[match.creator_id]} className="mt-1" />
               <div className="text-xs text-muted-foreground">{t('organizer')}</div>
             </div>
           </div>
@@ -103,6 +121,7 @@ export function MatchRoster({ match, participants, isHost, isFull, loading, onRe
                         t('memberFallback')
                       )}
                     </div>
+                    <ReputationBadge reputation={reputations[p.user_id]} className="mt-1" />
                     {p.message && (
                       <div className="text-xs text-muted-foreground italic flex items-center gap-1">
                         <MessageSquare className="w-3 h-3 text-muted-foreground/60" />
@@ -113,9 +132,26 @@ export function MatchRoster({ match, participants, isHost, isFull, loading, onRe
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
-                    {t('approvedBadge')}
-                  </Badge>
+                  {p.no_show_at ? (
+                    <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400 border-red-500/30">
+                      {t('noShowBadge')}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                      {t('approvedBadge')}
+                    </Badge>
+                  )}
+                  {isHost && canReportNoShow && onNoShow && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={loading}
+                      onClick={() => onNoShow(p.id, !p.no_show_at)}
+                      className="h-7 text-xs cursor-pointer"
+                    >
+                      {p.no_show_at ? t('undoNoShow') : t('markNoShow')}
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -157,6 +193,7 @@ export function MatchRoster({ match, participants, isHost, isFull, loading, onRe
                             t('applicant')
                           )}
                         </div>
+                        <ReputationBadge reputation={reputations[p.user_id]} className="mt-1" />
                         {p.message && (
                           <div className="text-xs text-muted-foreground">
                             {t('message', { message: p.message })}
