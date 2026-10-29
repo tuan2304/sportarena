@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
-import { OwnerSidebar } from '@/components/owner/owner-sidebar'
+import { OwnerSidebar, OwnerMobileNav } from '@/components/owner/owner-sidebar'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 
@@ -42,20 +42,21 @@ export default async function OwnerLayout({
         userName={profile?.full_name || t('defaultName')}
       />
       <main className="flex-1 flex flex-col min-w-0 bg-muted/20">
-        <header className="h-16 border-b border-border/80 px-8 flex items-center justify-between bg-card/40 backdrop-blur-sm sticky top-0 z-20">
-          <div className="flex items-center gap-2">
+        <header className="h-16 border-b border-border/80 px-4 md:px-8 flex items-center justify-between gap-2 bg-card/60 md:bg-card/40 backdrop-blur-sm sticky top-0 z-20">
+          <div className="flex items-center gap-2 min-w-0">
+            <OwnerMobileNav userEmail={user.email} userName={profile?.full_name || t('defaultName')} />
             <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
               {t('badge')}
             </span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-2 md:gap-4 text-xs text-muted-foreground">
             <ThemeToggle />
             <NotificationBell userId={user.id} />
-            <span>{t('system')} <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">{t('realtime')}</strong></span>
+            <span className="hidden sm:inline">{t('system')} <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">{t('realtime')}</strong></span>
           </div>
         </header>
 
-        <div className="p-8 flex-1">
+        <div className="p-4 sm:p-6 md:p-8 flex-1 min-w-0">
           {children}
         </div>
       </main>

@@ -151,13 +151,6 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  @media (pointer: coarse) {
-    input:not([type='checkbox']):not([type='radio']),
-    select,
-    textarea {
-      font-size: 16px;
-    }
-  }
   h1,
   h2 {
     font-family: var(--font-display);
@@ -165,6 +158,16 @@
   }
   ::selection {
     background: oklch(0.696 0.17 162.5 / 0.35);
+  }
+}
+
+/* Cảm ứng: ô nhập luôn >= 16px, nếu không iOS Safari tự phóng to cả trang mỗi khi chạm vào ô.
+   Cố ý đặt NGOÀI @layer: kiểu không thuộc lớp nào thắng mọi class tiện ích (text-xs, text-sm...) trong lớp utilities. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px;
   }
 }
 

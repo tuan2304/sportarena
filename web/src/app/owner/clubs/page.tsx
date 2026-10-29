@@ -69,10 +69,10 @@ export default async function OwnerClubsPage() {
             return (
               <Card key={club.id} className="border-border/80 shadow-sm overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b border-border/60 pb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-xl font-bold text-foreground">
+                  <div className="flex min-w-0 flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <CardTitle className="text-xl font-bold text-foreground break-words">
                           {club.name}
                         </CardTitle>
                         {canAcceptBookings(club.accepts_online_payment, club.accepts_manual_transfer) ? (
@@ -89,12 +89,12 @@ export default async function OwnerClubsPage() {
                       </div>
                       <CardDescription className="flex items-center gap-1.5 mt-1 text-xs">
                         <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <span>{club.address}, {club.district}, {club.city}</span>
+                        <span className="min-w-0">{club.address}, {club.district}, {club.city}</span>
                       </CardDescription>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                         <Clock className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                         <span>{club.open_time?.slice(0, 5)} - {club.close_time?.slice(0, 5)}</span>
                       </div>
@@ -135,7 +135,7 @@ export default async function OwnerClubsPage() {
                   )}
                 </CardHeader>
 
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       <span>{t('courtList', { count: courtList.length })}</span>
@@ -167,9 +167,9 @@ export default async function OwnerClubsPage() {
                                 : 'border-border/50 bg-muted/30 opacity-75'
                             }`}
                           >
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-1.5">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5">
                                   <h4 className="font-bold text-sm text-foreground">{court.name}</h4>
                                   {!court.is_active && (
                                     <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 py-0">

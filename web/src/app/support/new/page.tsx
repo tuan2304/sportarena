@@ -24,7 +24,7 @@ export default async function NewSupportTicketPage() {
     <div className="min-h-screen bg-background text-foreground">
       <MainHeader />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <Link href="/support" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/support" className="py-2.5 -my-2.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4" aria-hidden /> {t('back')}
         </Link>
         <div>

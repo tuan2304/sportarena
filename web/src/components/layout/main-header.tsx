@@ -17,7 +17,7 @@ async function HeaderFallback() {
   const t = await getTranslations('header')
   return (
     <header className="border-b border-border/70 bg-background/85 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" aria-label={t('homeLabel')} className="flex items-center">
           <Logo size={36} />
         </Link>
@@ -45,11 +45,12 @@ async function HeaderContent() {
 
   return (
     <header className="border-b border-border/70 bg-background/85 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" aria-label={t('homeLabel')} className="group/logo flex items-center">
           <Logo
             size={36}
+            className="max-[339px]:[&>span]:hidden"
             markClassName="transition-transform duration-300 group-hover/logo:rotate-6 group-hover/logo:scale-105"
           />
         </Link>
@@ -99,11 +100,11 @@ async function HeaderContent() {
         </nav>
 
         {/* User Auth Info */}
-        <div className="flex items-center gap-1 sm:gap-3">
+        <div className="flex items-center gap-0.5 min-[360px]:gap-1 sm:gap-3">
           <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1 min-[360px]:gap-2 sm:gap-3">
               {isAdmin && (
                 <Link href="/admin">
                   <Button size="sm" className="text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer shadow-sm shadow-amber-500/20">

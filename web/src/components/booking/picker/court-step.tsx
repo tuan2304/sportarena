@@ -52,7 +52,7 @@ export function CourtStep({ courts, selectedCourtId, onSelect, clubOpenTime, clu
                 type="button"
                 onClick={() => setDetailId(court.id)}
                 aria-label={t('detailOf', { court: court.name })}
-                className="absolute bottom-2 left-3 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                className="absolute bottom-0 left-1 h-9 px-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
               >
                 <Info className="w-3.5 h-3.5" aria-hidden />
                 {t('detailButton')}

@@ -79,7 +79,7 @@ export function LoginForm({ providers, next, initialError = null }: LoginFormPro
               <Label htmlFor="password">{t('passwordLabel')}</Label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
+                className="inline-block py-2.5 -my-2.5 text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
               >
                 {t('login.forgot')}
               </Link>
@@ -124,7 +124,7 @@ export function LoginForm({ providers, next, initialError = null }: LoginFormPro
             {t('login.noAccount')}{' '}
             <Link
               href="/register"
-              className="font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
+              className="inline-block py-2.5 -my-2.5 font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
             >
               {t('login.signUpNow')}
             </Link>

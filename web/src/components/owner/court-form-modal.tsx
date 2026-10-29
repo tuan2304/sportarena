@@ -66,7 +66,7 @@ export function CourtFormModal({ clubId, clubName, court }: CourtFormModalProps)
           size="sm"
           variant="ghost"
           onClick={() => setOpen(true)}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+          className="h-10 px-3 text-xs md:h-7 md:px-2 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
         >
           <Pencil className="w-3 h-3 mr-1" />
           {t('editButton')}

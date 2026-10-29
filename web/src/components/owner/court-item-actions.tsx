@@ -54,7 +54,7 @@ export function CourtItemActions({ courtId, isActive, children }: CourtItemActio
             size="sm"
             variant="ghost"
             onClick={handleToggle}
-            className={`h-7 px-2 text-xs cursor-pointer ${
+            className={`h-10 px-3 text-xs md:h-7 md:px-2 cursor-pointer ${
               isActive
                 ? 'text-amber-700 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-500/10'
                 : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10'
@@ -68,7 +68,7 @@ export function CourtItemActions({ courtId, isActive, children }: CourtItemActio
             size="sm"
             variant="ghost"
             onClick={handleDelete}
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+            className="h-10 w-10 p-0 md:h-7 md:w-7 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
           >
             <Trash2 className="w-3 h-3" />
           </Button>

@@ -175,24 +175,24 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
       {/* Control Bar */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
         {/* Date Selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="icon"
             onClick={() => changeDate(-1)}
             aria-label={t('prevDay')}
-            className="h-9 w-9 cursor-pointer"
+            className="h-10 w-10 shrink-0 cursor-pointer md:h-9 md:w-9"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/30">
+          <div className="flex min-w-[9.5rem] flex-1 items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/30 md:flex-none">
             <CalendarDays className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent text-sm font-semibold focus:outline-none cursor-pointer"
+              className="min-w-0 flex-1 bg-transparent text-sm font-semibold focus:outline-none cursor-pointer"
             />
           </div>
 
@@ -201,7 +201,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
             size="icon"
             onClick={() => changeDate(1)}
             aria-label={t('nextDay')}
-            className="h-9 w-9 cursor-pointer"
+            className="h-10 w-10 shrink-0 cursor-pointer md:h-9 md:w-9"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -210,24 +210,24 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
             variant="ghost"
             size="sm"
             onClick={() => setSelectedDate(vnDateKey(Date.now()))}
-            className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer"
+            className="h-10 shrink-0 px-3 text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-400 cursor-pointer md:h-8"
           >
             {t('today')}
           </Button>
         </div>
 
         {/* View Switcher Toggle & Realtime Badge */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>{isLive ? t('live') : t('connecting')}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-muted rounded-lg border border-border/60 self-start md:self-auto">
+          <div className="flex w-full items-center gap-1.5 p-1 bg-muted rounded-lg border border-border/60 md:w-auto">
             <button
               type="button"
               onClick={() => setViewMode('timeline')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-semibold transition-all cursor-pointer md:flex-none md:py-1.5 ${
                 viewMode === 'timeline'
                   ? 'bg-background text-emerald-700 dark:text-emerald-400 shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -239,7 +239,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-2 rounded-md text-xs font-semibold transition-all cursor-pointer md:flex-none md:py-1.5 ${
                 viewMode === 'table'
                   ? 'bg-background text-emerald-700 dark:text-emerald-400 shadow-xs'
                   : 'text-muted-foreground hover:text-foreground'
@@ -510,7 +510,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleStatusChange(b.id, 'confirmed')}
-                                    className="h-7 text-xs text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                                    className="h-9 text-xs md:h-7 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
                                   >
                                     <CheckCircle2 className="w-3 h-3 mr-1" />
                                     {t('approveDeposit')}
@@ -521,7 +521,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleStatusChange(b.id, 'completed')}
-                                    className="h-7 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
+                                    className="h-9 text-xs md:h-7 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer"
                                   >
                                     {t('markDone')}
                                   </Button>
@@ -532,7 +532,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleNoShow(b.id, !b.no_show)}
-                                      className="h-7 text-xs cursor-pointer"
+                                      className="h-9 text-xs md:h-7 cursor-pointer"
                                     >
                                       {b.no_show ? t('undoNoShow') : t('reportNoShow')}
                                     </Button>
@@ -542,7 +542,7 @@ export function ScheduleView({ courts, initialBookings, reputations = {}, server
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleStatusChange(b.id, 'cancelled')}
-                                    className="h-7 text-xs text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                    className="h-9 text-xs md:h-7 text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
                                   >
                                     <XCircle className="w-3 h-3 mr-1" />
                                     {t('cancel')}

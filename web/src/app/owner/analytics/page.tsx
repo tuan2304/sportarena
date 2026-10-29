@@ -87,7 +87,7 @@ export default async function OwnerAnalyticsPage({ searchParams }: AnalyticsPage
             key={d}
             href={href({ days: d })}
             aria-current={d === days ? 'true' : undefined}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+            className={`px-3 py-2.5 md:py-1.5 rounded-lg text-xs font-bold border transition-colors ${
               d === days ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-card border-border text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -100,7 +100,7 @@ export default async function OwnerAnalyticsPage({ searchParams }: AnalyticsPage
             <Link
               href={href({ club: null })}
               aria-current={!clubId ? 'true' : undefined}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+              className={`px-3 py-2.5 md:py-1.5 rounded-lg text-xs font-bold border transition-colors ${
                 !clubId ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-card border-border text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -111,7 +111,7 @@ export default async function OwnerAnalyticsPage({ searchParams }: AnalyticsPage
                 key={c.id}
                 href={href({ club: c.id })}
                 aria-current={c.id === clubId ? 'true' : undefined}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                className={`px-3 py-2.5 md:py-1.5 rounded-lg text-xs font-bold border transition-colors ${
                   c.id === clubId ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-card border-border text-muted-foreground hover:text-foreground'
                 }`}
               >

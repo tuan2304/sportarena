@@ -87,7 +87,7 @@ export default async function MyBookingsPage() {
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {t('subheading')}
           </p>
-          <Link href="/recurring" className="inline-block mt-2 text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:underline underline-offset-2">
+          <Link href="/recurring" className="inline-block mt-2 py-2.5 -my-1 text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:underline underline-offset-2">
             {t('recurringLink')}
           </Link>
         </div>

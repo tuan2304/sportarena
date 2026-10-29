@@ -83,7 +83,7 @@ export default async function OwnerDashboardPage() {
             {t('subtitle')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link href="/owner/clubs">
             <Button className="bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm shadow-emerald-600/20 cursor-pointer">
               <Plus className="w-4 h-4 mr-1.5" />

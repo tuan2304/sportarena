@@ -51,7 +51,7 @@ export function ForgotPasswordForm() {
           >
             {t('forgot.sendAgain')}
           </Button>
-          <Link href="/login" className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+          <Link href="/login" className="inline-block py-2.5 -my-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
             {t('forgot.backToLogin')}
           </Link>
         </CardFooter>
@@ -106,7 +106,7 @@ export function ForgotPasswordForm() {
             )}
           </Button>
 
-          <Link href="/login" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+          <Link href="/login" className="inline-flex items-center gap-1 py-2.5 -my-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
             <ArrowLeft className="w-3 h-3" aria-hidden />
             {t('forgot.backToLogin')}
           </Link>

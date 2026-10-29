@@ -33,7 +33,7 @@ export function MatchBanner({ match, isFull, slotsLeft, phase }: MatchBannerProp
   return (
     <Card className="border-border shadow-sm overflow-hidden">
       <CardHeader className="bg-muted/30 border-b border-border/60 pb-5">
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-xs font-semibold py-1 px-2.5 bg-background">
               <SportIcon sport={match.sport_type} className="w-3.5 h-3.5 mr-1" />
@@ -64,7 +64,7 @@ export function MatchBanner({ match, isFull, slotsLeft, phase }: MatchBannerProp
           </Badge>
         </div>
 
-        <CardTitle className="text-xl sm:text-2xl font-black text-foreground">
+        <CardTitle className="text-xl sm:text-2xl font-black text-foreground break-words">
           {match.title}
         </CardTitle>
 

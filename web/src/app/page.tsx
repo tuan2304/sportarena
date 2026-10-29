@@ -47,9 +47,9 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-emerald-500 selection:text-white">
       {/* Header Navigation */}
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 min-[360px]:px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Logo size={40} />
+          <Logo size={40} className="max-[339px]:[&>span]:hidden" />
 
           {/* Nav links (chỉ hiện khi đã đăng nhập) */}
           {user && (
@@ -79,11 +79,11 @@ export default async function Home() {
           )}
 
           {/* Auth section */}
-          <div className="flex items-center gap-1 sm:gap-3">
+          <div className="flex items-center gap-0.5 min-[360px]:gap-1 sm:gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
             {user ? (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1 min-[360px]:gap-2 sm:gap-3">
                 <NotificationBell userId={user.id} />
 
                 <Link
@@ -156,8 +156,8 @@ export default async function Home() {
         {/* Nền: lưới mờ + các đốm sáng trôi chậm */}
         <HeroBackground />
 
-        <div className="max-w-5xl mx-auto px-4 text-center relative z-10 space-y-7">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold shadow-xs animate-fade-up">
+        <div className="w-full max-w-5xl mx-auto px-4 text-center relative z-10 space-y-7">
+          <div className="inline-flex max-w-full items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold shadow-xs animate-fade-up">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser, getCurrentProfile } from '@/lib/supabase/session'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { countReconciliationIssues } from '@/lib/reconciliation'
-import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import { AdminSidebar, AdminMobileNav } from '@/components/admin/admin-sidebar'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 
@@ -32,16 +32,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen flex bg-background text-foreground">
       <AdminSidebar userName={profile.full_name || undefined} userEmail={user.email} openTickets={count ?? 0} paymentIssues={paymentIssues} />
       <main className="flex-1 flex flex-col min-w-0 bg-muted/20">
-        <header className="h-16 border-b border-border/80 px-8 flex items-center justify-between bg-card/40 backdrop-blur-sm sticky top-0 z-20">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-            {t('badge')}
-          </span>
-          <div className="flex items-center gap-3">
+        <header className="h-16 border-b border-border/80 px-4 md:px-8 flex items-center justify-between gap-2 bg-card/60 md:bg-card/40 backdrop-blur-sm sticky top-0 z-20">
+          <div className="flex items-center gap-2 min-w-0">
+            <AdminMobileNav userName={profile.full_name || undefined} userEmail={user.email} openTickets={count ?? 0} paymentIssues={paymentIssues} />
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+              {t('badge')}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 md:gap-3">
             <ThemeToggle />
             <NotificationBell userId={user.id} />
           </div>
         </header>
-        <div className="p-8 flex-1">{children}</div>
+        <div className="p-4 sm:p-6 md:p-8 flex-1 min-w-0">{children}</div>
       </main>
     </div>
   )

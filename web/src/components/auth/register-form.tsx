@@ -170,7 +170,7 @@ export function RegisterForm() {
             {t('register.haveAccount')}{' '}
             <Link
               href="/login"
-              className="font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
+              className="inline-block py-2.5 -my-2.5 font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-500 hover:underline"
             >
               {t('register.logInHere')}
             </Link>

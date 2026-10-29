@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { cn } from 'cn'
 
 /**
@@ -26,6 +27,10 @@ interface LogoMarkProps {
 export function LogoMark({ size = 40, variant = 'badge', className, decorative = true }: LogoMarkProps) {
   const bare = variant === 'bare-dark' || variant === 'bare-light'
   const sColor = variant === 'white' || variant === 'bare-light' ? '#047857' : '#FFFFFF'
+  // id riêng cho từng bản logo: id trùng khiến gradient bị lấy từ bản đang display:none (vd. thanh bên ẩn trên điện thoại) và nền logo biến mất
+  const uid = useId()
+  const gradId = `${uid}-g`
+  const hlId = `${uid}-h`
 
   return (
     <svg
@@ -38,17 +43,17 @@ export function LogoMark({ size = 40, variant = 'badge', className, decorative =
       {variant === 'badge' && (
         <>
           <defs>
-            <linearGradient id="sa-mark-g" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stopColor="#10A674" />
               <stop offset="1" stopColor="#064E3B" />
             </linearGradient>
-            <radialGradient id="sa-mark-h" cx="0.28" cy="0.18" r="0.75">
+            <radialGradient id={hlId} cx="0.28" cy="0.18" r="0.75">
               <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.28" />
               <stop offset="0.6" stopColor="#FFFFFF" stopOpacity="0" />
             </radialGradient>
           </defs>
-          <rect x="2" y="2" width="92" height="92" rx="28" fill="url(#sa-mark-g)" />
-          <rect x="2" y="2" width="92" height="92" rx="28" fill="url(#sa-mark-h)" />
+          <rect x="2" y="2" width="92" height="92" rx="28" fill={`url(#${gradId})`} />
+          <rect x="2" y="2" width="92" height="92" rx="28" fill={`url(#${hlId})`} />
           <rect x="3.5" y="3.5" width="89" height="89" rx="26.5" fill="none" stroke="#FFFFFF" strokeOpacity="0.18" />
         </>
       )}

@@ -173,6 +173,7 @@
     }
   },
   "common": {
+    "openMenu": "Open menu",
     "sports": {
       "football": "Football",
       "badminton": "Badminton",

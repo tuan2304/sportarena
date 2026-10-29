@@ -140,3 +140,45 @@ test.describe('Thêm vào màn hình chính (không bắt buộc)', () => {
     await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /viewport-fit=cover/)
   })
 })
+
+test.describe('Khu chủ sân và quản trị trên điện thoại', () => {
+  test.setTimeout(90_000)
+
+  // Giả lập di động tự nới viewport theo nội dung, nên so với bề rộng khai báo (390) thay vì innerWidth
+  const widthOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth - 390)
+
+  for (const [who, paths] of [
+    ['owner', ['/owner/dashboard', '/owner/clubs', '/owner/schedule', '/owner/pricing', '/owner/payments', '/owner/analytics']],
+    ['admin', ['/admin', '/admin/payments', '/admin/finance', '/admin/announcements']],
+  ] as const) {
+    for (const path of paths) {
+      test(`${who} ${path}: thanh bên ẩn, không tràn ngang`, async ({ page }) => {
+        await login(page, who)
+        await page.goto(path)
+        await expect(page.locator('aside')).toBeHidden()
+        expect(await widthOverflow(page)).toBeLessThanOrEqual(0)
+      })
+    }
+  }
+
+  test('nút menu mở ngăn kéo, bấm mục thì chuyển trang và ngăn kéo tự đóng', async ({ page }) => {
+    await login(page, 'owner')
+    await page.goto('/owner/dashboard')
+    await page.getByRole('button', { name: 'Mở menu' }).tap()
+    const drawer = page.getByRole('dialog')
+    await expect(drawer).toBeVisible()
+    await drawer.getByRole('link', { name: /Cụm sân/ }).tap()
+    await expect(page).toHaveURL(/\/owner\/clubs$/)
+    await expect(drawer).toBeHidden()
+  })
+
+  test('màn hình rộng giữ thanh bên cố định, không có nút menu', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, baseURL: 'http://127.0.0.1:3100' })
+    const page = await ctx.newPage()
+    await login(page, 'owner')
+    await page.goto('/owner/dashboard')
+    await expect(page.locator('aside')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mở menu' })).toBeHidden()
+    await ctx.close()
+  })
+})

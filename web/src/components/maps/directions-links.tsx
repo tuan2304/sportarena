@@ -25,7 +25,7 @@ export function DirectionsLinks({ place, compact = false, className = '' }: Dire
         href={directions}
         target="_blank"
         rel="noopener noreferrer"
-        className={`inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline ${className}`}
+        className={`inline-flex items-center gap-1 py-2.5 -my-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline ${className}`}
       >
         <Navigation className="w-3.5 h-3.5" aria-hidden />
         {t('directions')}

@@ -42,7 +42,7 @@ export function ClubItemActions({ clubId, clubName }: ClubItemActionsProps) {
           size="sm"
           variant="ghost"
           onClick={handleDelete}
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+          className="h-10 w-10 p-0 md:h-8 md:w-8 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
           title={t('deleteConfirm')}
         >
           <Trash2 className="w-3.5 h-3.5" />

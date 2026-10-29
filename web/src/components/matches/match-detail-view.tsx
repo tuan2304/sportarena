@@ -207,7 +207,7 @@ export function MatchDetailView({
       <div>
         <Link
           href="/matches"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+          className="py-2.5 -my-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           {t('back')}

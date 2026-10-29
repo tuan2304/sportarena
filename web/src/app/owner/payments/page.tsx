@@ -61,14 +61,14 @@ export default async function OwnerPaymentsPage() {
             <li>
               {t.rich('step1', {
                 strong: (c) => <strong>{c}</strong>,
-                link: (c) => <a href="https://my.payos.vn" target="_blank" rel="noreferrer" className="underline text-emerald-700 dark:text-emerald-400">{c}</a>,
+                link: (c) => <a href="https://my.payos.vn" target="_blank" rel="noreferrer" className="inline-block py-1 underline text-emerald-700 dark:text-emerald-400">{c}</a>,
               })}
             </li>
             <li>{t.rich('step2', { strong: (c) => <strong>{c}</strong> })}</li>
             <li>
               {t.rich('step3', {
                 strong: (c) => <strong>{c}</strong>,
-                code: (c) => <code className="mx-1 px-1.5 py-0.5 rounded bg-muted text-xs">{c}</code>,
+                code: (c) => <code className="mx-1 px-1.5 py-0.5 rounded bg-muted text-xs break-all">{c}</code>,
                 url: `${resolveAppUrl()}/api/payos/webhook`,
               })}
             </li>

@@ -61,7 +61,7 @@ export function ClubFormModal({ club }: { club?: EditableClub }) {
           size="sm"
           variant="ghost"
           onClick={() => setOpen(true)}
-          className="h-8 w-8 p-0 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+          className="h-10 w-10 p-0 md:h-8 md:w-8 text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
           title={t('editButton')}
           aria-label={t('editButton')}
         >

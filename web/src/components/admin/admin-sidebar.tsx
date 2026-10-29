@@ -8,6 +8,7 @@ import { logout } from '@/app/actions/auth'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LogoMark, Wordmark } from '@/components/brand/logo'
+import { PortalNavDrawer } from '@/components/layout/portal-nav-drawer'
 
 const NAV_ITEMS = [
   { key: 'stats', href: '/admin', icon: BarChart3, exact: true },
@@ -25,12 +26,30 @@ interface AdminSidebarProps {
   paymentIssues: number
 }
 
-export function AdminSidebar({ userName, userEmail, openTickets, paymentIssues }: AdminSidebarProps) {
+/** Thanh bên cố định cho màn hình rộng (từ md); điện thoại dùng AdminMobileNav. */
+export function AdminSidebar(props: AdminSidebarProps) {
+  return (
+    <aside className="hidden md:flex w-64 border-r border-border bg-card/60 backdrop-blur-md flex-col shrink-0 min-h-screen sticky top-0 h-screen overflow-y-auto">
+      <SidebarPanel {...props} />
+    </aside>
+  )
+}
+
+/** Nút menu + ngăn kéo cho điện thoại, đặt ở đầu trang. */
+export function AdminMobileNav(props: AdminSidebarProps) {
+  return (
+    <PortalNavDrawer>
+      <SidebarPanel {...props} />
+    </PortalNavDrawer>
+  )
+}
+
+function SidebarPanel({ userName, userEmail, openTickets, paymentIssues }: AdminSidebarProps) {
   const t = useTranslations('admin.sidebar')
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 border-r border-border bg-card/60 backdrop-blur-md flex flex-col justify-between shrink-0 min-h-screen sticky top-0">
+    <div className="flex flex-1 flex-col justify-between">
       <div>
         <div className="h-16 px-6 border-b border-border flex items-center gap-3">
           <LogoMark size={36} />
@@ -100,6 +119,6 @@ export function AdminSidebar({ userName, userEmail, openTickets, paymentIssues }
           </Button>
         </form>
       </div>
-    </aside>
+    </div>
   )
 }

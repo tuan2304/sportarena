@@ -151,7 +151,7 @@ export default async function ClubDetailPage({ params }: ClubDetailPageProps) {
         <div>
           <Link
             href="/clubs"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            className="py-2.5 -my-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> {t('backToList')}
           </Link>

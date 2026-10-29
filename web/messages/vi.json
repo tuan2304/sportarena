@@ -173,6 +173,7 @@
     }
   },
   "common": {
+    "openMenu": "Mở menu",
     "sports": {
       "football": "Bóng đá",
       "badminton": "Cầu lông",

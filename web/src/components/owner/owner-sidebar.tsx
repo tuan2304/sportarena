@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { PortalNavDrawer } from '@/components/layout/portal-nav-drawer'
 
 import { LogoMark, Wordmark } from '@/components/brand/logo'
 const NAV_ITEMS = [
@@ -81,12 +82,30 @@ interface OwnerSidebarProps {
   userName?: string
 }
 
-export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
+/** Thanh bên cố định cho màn hình rộng (từ md); điện thoại dùng OwnerMobileNav. */
+export function OwnerSidebar(props: OwnerSidebarProps) {
+  return (
+    <aside className="hidden md:flex w-64 border-r border-border bg-card/60 backdrop-blur-md flex-col shrink-0 min-h-screen sticky top-0 h-screen overflow-y-auto">
+      <SidebarPanel {...props} />
+    </aside>
+  )
+}
+
+/** Nút menu + ngăn kéo cho điện thoại, đặt ở đầu trang. */
+export function OwnerMobileNav(props: OwnerSidebarProps) {
+  return (
+    <PortalNavDrawer>
+      <SidebarPanel {...props} />
+    </PortalNavDrawer>
+  )
+}
+
+function SidebarPanel({ userEmail, userName }: OwnerSidebarProps) {
   const t = useTranslations('owner')
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 border-r border-border bg-card/60 backdrop-blur-md flex flex-col justify-between shrink-0 min-h-screen sticky top-0">
+    <div className="flex flex-1 flex-col justify-between">
       <div>
         {/* Brand Header */}
         <div className="h-16 px-6 border-b border-border flex items-center gap-3">
@@ -159,6 +178,6 @@ export function OwnerSidebar({ userEmail, userName }: OwnerSidebarProps) {
           </Button>
         </form>
       </div>
-    </aside>
+    </div>
   )
 }

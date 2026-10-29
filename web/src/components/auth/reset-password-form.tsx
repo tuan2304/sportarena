@@ -94,7 +94,7 @@ export function ResetPasswordForm({ recoveryActive }: { recoveryActive: boolean 
           >
             {t('reset.requestNew')}
           </Link>
-          <Link href="/login" className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
+          <Link href="/login" className="inline-block py-2.5 -my-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline">
             {t('forgot.backToLogin')}
           </Link>
         </CardFooter>
