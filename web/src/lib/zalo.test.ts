@@ -61,6 +61,11 @@ describe('state cookie', () => {
     expect(decodeStateCookie(encodeStateCookie(value))).toEqual(value)
   })
 
+  it('giữ challenge của app khi có', () => {
+    const value = { state: 's', verifier: 'v', next: '', appChallenge: 'c'.repeat(43) }
+    expect(decodeStateCookie(encodeStateCookie(value))).toEqual(value)
+  })
+
   it('cookie thiếu, hỏng hoặc thiếu trường thì trả null', () => {
     expect(decodeStateCookie(undefined)).toBeNull()
     expect(decodeStateCookie('không phải base64 json')).toBeNull()

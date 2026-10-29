@@ -27,6 +27,7 @@ const STEPS = ['1', '2', '3', '4'] as const
 export default async function Home() {
   const t = await getTranslations('home')
   const th = await getTranslations('header')
+  const tl = await getTranslations('legal')
   const supabase = await getSupabase()
   const user = await getCurrentUser()
 
@@ -269,6 +270,10 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         <p>{t('footer')}</p>
+        <p className="mt-2 flex justify-center gap-4">
+          <Link href="/privacy" className="inline-block py-2.5 hover:underline">{tl('footerPrivacy')}</Link>
+          <Link href="/delete-account" className="inline-block py-2.5 hover:underline">{tl('footerDelete')}</Link>
+        </p>
       </footer>
     </div>
   )

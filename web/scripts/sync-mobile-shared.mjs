@@ -4,7 +4,7 @@ import { copyFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const SHARED_FILES = ['datetime.ts', 'pricing.ts', 'booking-slots.ts', 'cancellation.ts', 'profile.ts', 'image-upload.ts', 'match-time.ts', 'banks.ts']
+export const SHARED_FILES = ['datetime.ts', 'pricing.ts', 'booking-slots.ts', 'cancellation.ts', 'profile.ts', 'image-upload.ts', 'match-time.ts', 'banks.ts', 'reputation-score.ts']
 
 const here = dirname(fileURLToPath(import.meta.url))
 const from = join(here, '..', 'src', 'lib')

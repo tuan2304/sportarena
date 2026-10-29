@@ -5,6 +5,8 @@ import { ChevronLeft } from 'lucide-react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { Match } from '../types'
+import { apiPost } from '../lib/api'
+import { fetchReputations, type Reputation } from '../lib/reputation'
 import { matchPhase } from '../shared/match-time'
 import { HostAndMembers } from './match-detail/HostAndMembers'
 import { JoinSection } from './match-detail/JoinSection'
@@ -35,6 +37,7 @@ const MATCH_SELECT = `
     status,
     message,
     joined_at,
+    no_show_at,
     profile:profiles (
       id,
       full_name,
@@ -53,6 +56,9 @@ export default function MatchDetailScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(true)
   const [joinMessage, setJoinMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [reputations, setReputations] = useState<Record<string, Reputation>>({})
+  const [userId, setUserId] = useState<string | null>(null)
+  const [noShowBusy, setNoShowBusy] = useState(false)
 
   const loadMatchDetail = useCallback(async () => {
     try {
@@ -60,6 +66,10 @@ export default function MatchDetailScreen({ route, navigation }: any) {
 
       if (error) throw error
       setMatch(data as any)
+      const loaded = data as any as Match
+      const { data: auth } = await supabase.auth.getUser()
+      setUserId(auth.user?.id ?? null)
+      setReputations(await fetchReputations([loaded.creator_id, ...(loaded.participants ?? []).map((p) => p.user_id)]))
     } catch (err: any) {
       console.error('Lỗi tải chi tiết kèo:', err.message)
     } finally {
@@ -110,6 +120,21 @@ export default function MatchDetailScreen({ route, navigation }: any) {
     }
   }
 
+  function reportNoShow(participantId: string, noShow: boolean) {
+    const send = async () => {
+      setNoShowBusy(true)
+      const res = await apiPost<unknown>(`/api/mobile/matches/participants/${participantId}/no-show`, { noShow })
+      setNoShowBusy(false)
+      if (!res.ok) return Alert.alert(t('common.error'), res.error)
+      loadMatchDetail()
+    }
+    if (!noShow) return send()
+    Alert.alert(t('match.noShowConfirmTitle'), t('match.noShowConfirmText'), [
+      { text: t('match.noShowKeep'), style: 'cancel' },
+      { text: t('match.noShowConfirm'), style: 'destructive', onPress: send },
+    ])
+  }
+
   if (loading || !match) {
     return (
       <View style={styles.centerContainer}>
@@ -135,7 +160,14 @@ export default function MatchDetailScreen({ route, navigation }: any) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.body}>
           <MatchSummary match={match} phase={phase} />
-          <HostAndMembers match={match} openProfile={(userId) => navigation.navigate('PlayerProfile', { userId })} />
+          <HostAndMembers
+            match={match}
+            openProfile={(profileId) => navigation.navigate('PlayerProfile', { userId: profileId })}
+            reputations={reputations}
+            canReportNoShow={userId === match.creator_id && Date.now() >= new Date(match.start_time).getTime()}
+            noShowBusy={noShowBusy}
+            onNoShow={reportNoShow}
+          />
           <JoinSection phase={phase} message={joinMessage} onMessageChange={setJoinMessage} submitting={submitting} onSubmit={handleJoinMatch} />
         </View>
       </ScrollView>

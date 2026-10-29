@@ -839,7 +839,8 @@
       "paid": "Deposit paid",
       "pending": "Awaiting deposit",
       "guest": "Walk-in guest",
-      "deposit": "Deposit: {amount}"
+      "deposit": "Deposit: {amount}",
+      "analytics": "Analytics"
     },
     "clubs": {
       "title": "Manage Venues & Courts",
@@ -1312,7 +1313,9 @@
         "notePlaceholder": "Note (e.g. transfer reference)",
         "refunded": "Refund item closed",
         "repaired": "Booking confirmed",
-        "slotTaken": "The court was already taken: this item moved to the refund list"
+        "slotTaken": "The court was already taken: this item moved to the refund list",
+        "remindButton": "Remind venue",
+        "reminded": "Reminder sent to the venue"
       }
     }
   },
@@ -1438,5 +1441,119 @@
     "heatmapHint": "The darker the cell, the more that slot is booked.",
     "legendLow": "Low",
     "legendHigh": "High"
+  },
+  "legal": {
+    "back": "Back to home",
+    "updated": "Last updated: 29 Oct 2026",
+    "privacy": {
+      "metaTitle": "Privacy policy",
+      "title": "Privacy policy",
+      "intro": "SportArena is a platform for booking courts and finding sports matches. This page explains what data we collect, what we use it for, and how you control it.",
+      "sections": {
+        "s1": {
+          "title": "Data we collect",
+          "items": {
+            "1": "Profile: full name, phone number, avatar, skill level.",
+            "2": "Sign-in details: your email or phone number, or the Google, Apple or Zalo account you sign in with.",
+            "3": "Your booking history and deposit payments.",
+            "4": "Content you create: matches, match chat messages, venue reviews, support tickets.",
+            "5": "Location, only when you allow it, to suggest courts near you.",
+            "6": "Your device push token, to send reminders and booking updates."
+          }
+        },
+        "s2": {
+          "title": "What we use it for",
+          "items": {
+            "1": "Running bookings, deposits, matchmaking and support.",
+            "2": "Sending notifications about your bookings, payments and matches.",
+            "3": "Detecting fraud, abuse and technical problems."
+          }
+        },
+        "s3": {
+          "title": "Who can see your data",
+          "items": {
+            "1": "The venue where you book sees your name and phone number so it can contact you.",
+            "2": "Other players see your name, avatar, skill level and reputation score on your public profile and in matches.",
+            "3": "PayOS processes the deposit. We do not store your card or bank account details.",
+            "4": "Infrastructure providers (Supabase, Vercel) host and run the system for us.",
+            "5": "When the AI support assistant is on, the text of a support ticket you send is passed to Anthropic to draft a reply.",
+            "6": "We do not sell your personal data."
+          }
+        },
+        "s4": {
+          "title": "How long we keep it",
+          "items": {
+            "1": "Your profile and content are kept until you delete your account.",
+            "2": "After you delete your account, booking and payment history is kept without your name, because the law requires transaction records to be retained. These rows are no longer linked to your name, phone number or email."
+          }
+        },
+        "s5": {
+          "title": "Your rights",
+          "items": {
+            "1": "View and edit your profile in Profile.",
+            "2": "Download a copy of all your data (a JSON file) in Profile, under \"Data and account\".",
+            "3": "Delete your account and personal data in the same place. See the Delete account page for steps.",
+            "4": "Send any other request about your personal data through Support."
+          }
+        },
+        "s6": {
+          "title": "Security",
+          "items": {
+            "1": "Data travels over encrypted HTTPS. Access to data is enforced per user at the database level.",
+            "2": "Venue payment keys are encrypted before they are stored.",
+            "3": "No system is perfectly secure. If an incident affects your data, we will notify you as required by law."
+          }
+        },
+        "s7": {
+          "title": "Changes and contact",
+          "items": {
+            "1": "When this policy changes we update this page and the date at the top.",
+            "2": "For any question about your personal data, use Support in the app."
+          }
+        }
+      }
+    },
+    "deleteAccount": {
+      "metaTitle": "Delete your account and data",
+      "title": "Delete your account and data",
+      "intro": "You can delete your SportArena account and personal data yourself at any time, on the web or in the app.",
+      "stepsTitle": "How to delete your account",
+      "steps": {
+        "1": "Sign in to the account you want to delete, on the web or in the SportArena app.",
+        "2": "Open Profile and scroll to \"Data and account\".",
+        "3": "If you want a copy first, press \"Download\" to save your data.",
+        "4": "Press \"Delete account\", enter your password (if the account has one) and type DELETE to confirm."
+      },
+      "loginCta": "Sign in to delete your account",
+      "deletedTitle": "Data that is deleted",
+      "deleted": {
+        "1": "Your name, phone number, email and avatar.",
+        "2": "Reviews, match chat messages, support tickets and notifications.",
+        "3": "Sign-in details, Zalo link and push tokens.",
+        "4": "For venue owners: venues stop taking bookings and payout details (PayOS keys, bank account) are deleted."
+      },
+      "keptTitle": "Data that is kept",
+      "kept": {
+        "1": "Booking and payment history, without your name, because the law requires transaction records to be retained."
+      },
+      "blockedTitle": "When deletion is not possible yet",
+      "blocked": {
+        "1": "You have upcoming bookings: cancel them or wait until you have played.",
+        "2": "You are waiting for a deposit refund, or (for venue owners) you still owe a deposit refund to a customer.",
+        "3": "Your venue has upcoming bookings."
+      },
+      "cannotLoginTitle": "Can't sign in?",
+      "cannotLogin": "Reset your password with \"Forgot password\" on the sign-in page, then follow the steps above.",
+      "contact": "If that does not work, contact {email} with the email or phone number of the account.",
+      "privacyLink": "Read the privacy policy"
+    },
+    "footerPrivacy": "Privacy policy",
+    "footerDelete": "Delete account"
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "body": "This page ran into a problem. It has been logged. Please try again or go back home.",
+    "retry": "Try again",
+    "home": "Back to home"
   }
 }

@@ -35,7 +35,7 @@ export default async function AdminTicketPage({ params }: { params: Promise<{ id
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <Link href="/admin/tickets" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/admin/tickets" className="py-2.5 -my-2.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="w-4 h-4" aria-hidden /> {t('back')}
       </Link>
 

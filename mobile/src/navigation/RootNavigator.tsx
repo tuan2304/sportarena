@@ -17,6 +17,7 @@ import NotificationsScreen from '../screens/NotificationsScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 import PlayerProfileScreen from '../screens/PlayerProfileScreen'
 import OwnerScreen from '../screens/OwnerScreen'
+import RecurringScreen from '../screens/RecurringScreen'
 import { useRole } from '../lib/role'
 
 // Icons
@@ -143,6 +144,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Booking" component={BookingScreen} />
         <Stack.Screen name="BookingPayment" component={BookingPaymentScreen} />
         <Stack.Screen name="PlayerProfile" component={PlayerProfileScreen} />
+        <Stack.Screen name="Recurring" component={RecurringScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   )

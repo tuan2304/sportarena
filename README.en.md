@@ -42,7 +42,16 @@ Pick a free slot, pay the deposit with a VietQR code and invite more players to 
 - **Works right in the phone's browser, no app to install.** The web has a bottom tab bar (Explore, Matches, Bookings, Profile, plus an Owner or Admin tab by role), a compact header, large touch targets, inputs that do not trigger iOS zoom, a button that jumps straight to the time picker, and a fixed bottom bar showing the deposit and the Hold slot button as soon as a time is chosen. You can optionally "Add to Home Screen" to open it full screen.
 - The web interface and the mobile app are available in **Vietnamese and English** (web: language button in the header; mobile: Profile tab; the default follows your browser or phone). This covers the owner and admin areas and notifications too (new notifications are stored with an English copy; older ones stay Vietnamese).
 
+**Advanced booking**
+- Weekly recurring bookings ("every Tuesday at 7pm"): players send a request, the owner approves, and the system holds the next 4 weeks and keeps rolling forward; sessions that clash are skipped and reported.
+- Push reminder about 2 hours before play time (to the booker and the match members).
+- Waitlist: when a slot is full, join the waitlist; when someone cancels or a hold expires, the earliest sign-up is alerted first (held for 15 minutes).
+- Player reliability score (no-shows, late cancellations, late leaves) shown when hosts approve players, on profiles and in the owner's schedule.
+- Sign in with Google, Apple, Zalo or a phone OTP next to email + password.
+- Scheduled work runs through `/api/cron/tick` (see `DEPLOYMENT.md`).
+
 **Venue owners**
+- Analytics: revenue, occupancy, peak hours by weekday and hour, per-court performance, and CSV export of bookings (`/owner/analytics`).
 - Manage venues, courts, opening hours and location; upload venue photos directly (JPG, PNG, WebP) and choose a cover. Edit venue details (name, address, description, area, opening hours, amenities) and court details (name, surface, base price, deposit %) on both web and mobile.
 - A venue only appears in the public list once it can receive payments (PayOS or a VietQR bank account); until then the owner sees a notice linking to the payments page. Linking a bank account also works from the mobile app.
 - Flexible pricing by time slot and day of the week, with a deposit percentage per court.

@@ -6,6 +6,10 @@ import RootNavigator, { navigationRef } from './src/navigation/RootNavigator'
 import { supabase } from './src/lib/supabase'
 import { handleNotificationResponse, registerForPush, registerNotificationCategories } from './src/lib/push'
 import { I18nProvider, currentLang, useI18n, type Lang } from './src/i18n'
+import { installGlobalErrorReporting } from './src/lib/report-error'
+
+// Phải cài trước khi bất kỳ màn hình nào render để bắt cả lỗi ở lần chạy đầu
+installGlobalErrorReporting()
 
 /** Ghi ngôn ngữ vào hồ sơ để thông báo đẩy gửi đúng ngôn ngữ; không có phiên đăng nhập thì bỏ qua êm. */
 async function saveLocale(lang: Lang) {

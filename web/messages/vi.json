@@ -839,7 +839,8 @@
       "paid": "Đã cọc",
       "pending": "Chờ cọc",
       "guest": "Khách vãng lai",
-      "deposit": "Cọc: {amount}"
+      "deposit": "Cọc: {amount}",
+      "analytics": "Thống kê"
     },
     "clubs": {
       "title": "Quản Lý Cụm Sân & Sân Con",
@@ -1312,7 +1313,9 @@
         "notePlaceholder": "Ghi chú (vd. mã chuyển khoản)",
         "refunded": "Đã đóng khoản hoàn tiền",
         "repaired": "Đã xác nhận đơn",
-        "slotTaken": "Sân đã có người đặt: khoản này đã chuyển sang danh sách cần hoàn tiền"
+        "slotTaken": "Sân đã có người đặt: khoản này đã chuyển sang danh sách cần hoàn tiền",
+        "remindButton": "Nhắc chủ sân",
+        "reminded": "Đã gửi nhắc cho chủ sân"
       }
     }
   },
@@ -1438,5 +1441,119 @@
     "heatmapHint": "Màu càng đậm, khung giờ đó càng được đặt nhiều.",
     "legendLow": "Ít",
     "legendHigh": "Nhiều"
+  },
+  "legal": {
+    "back": "Về trang chủ",
+    "updated": "Cập nhật lần cuối: 29/10/2026",
+    "privacy": {
+      "metaTitle": "Chính sách quyền riêng tư",
+      "title": "Chính sách quyền riêng tư",
+      "intro": "SportArena là nền tảng đặt sân và ghép kèo thể thao. Trang này giải thích chúng tôi thu thập dữ liệu nào, dùng vào việc gì và bạn kiểm soát dữ liệu của mình ra sao.",
+      "sections": {
+        "s1": {
+          "title": "Dữ liệu chúng tôi thu thập",
+          "items": {
+            "1": "Hồ sơ: họ tên, số điện thoại, ảnh đại diện, trình độ chơi.",
+            "2": "Thông tin đăng nhập: email hoặc số điện thoại, hoặc tài khoản Google, Apple, Zalo bạn dùng để đăng nhập.",
+            "3": "Lịch sử đặt sân và thanh toán tiền cọc.",
+            "4": "Nội dung bạn tạo: kèo ghép, tin nhắn trong kèo, đánh giá cụm sân, phiếu hỗ trợ.",
+            "5": "Vị trí, chỉ khi bạn cho phép, để gợi ý sân gần bạn.",
+            "6": "Mã thông báo đẩy của thiết bị, để gửi nhắc lịch và cập nhật đơn đặt."
+          }
+        },
+        "s2": {
+          "title": "Chúng tôi dùng dữ liệu để làm gì",
+          "items": {
+            "1": "Vận hành đặt sân, thanh toán cọc, ghép kèo và hỗ trợ bạn.",
+            "2": "Gửi thông báo về đơn đặt, thanh toán và kèo của bạn.",
+            "3": "Phát hiện gian lận, lạm dụng và sự cố kỹ thuật."
+          }
+        },
+        "s3": {
+          "title": "Ai nhìn thấy dữ liệu của bạn",
+          "items": {
+            "1": "Chủ sân nơi bạn đặt sân thấy tên và số điện thoại của bạn để liên hệ khi cần.",
+            "2": "Người chơi khác thấy tên, ảnh đại diện, trình độ và điểm uy tín của bạn trên hồ sơ công khai và trong kèo.",
+            "3": "PayOS xử lý khoản cọc. Chúng tôi không lưu thông tin thẻ hay tài khoản ngân hàng của bạn.",
+            "4": "Nhà cung cấp hạ tầng (Supabase, Vercel) lưu trữ và vận hành hệ thống thay chúng tôi.",
+            "5": "Khi trợ lý AI hỗ trợ được bật, nội dung phiếu hỗ trợ bạn gửi được chuyển tới Anthropic để soạn câu trả lời.",
+            "6": "Chúng tôi không bán dữ liệu cá nhân của bạn."
+          }
+        },
+        "s4": {
+          "title": "Thời gian lưu trữ",
+          "items": {
+            "1": "Hồ sơ và nội dung của bạn được giữ cho tới khi bạn xóa tài khoản.",
+            "2": "Sau khi xóa tài khoản, lịch sử đặt sân và thanh toán được giữ lại dưới dạng đã bỏ tên, vì quy định pháp luật yêu cầu lưu chứng từ giao dịch. Các dòng này không còn gắn với tên, số điện thoại hay email của bạn."
+          }
+        },
+        "s5": {
+          "title": "Quyền của bạn",
+          "items": {
+            "1": "Xem và chỉnh sửa hồ sơ trong mục Hồ sơ.",
+            "2": "Tải bản sao toàn bộ dữ liệu của bạn (tệp JSON) trong Hồ sơ, mục \"Dữ liệu và tài khoản\".",
+            "3": "Xóa tài khoản và dữ liệu cá nhân trong cùng mục đó. Xem hướng dẫn tại trang Xóa tài khoản.",
+            "4": "Gửi yêu cầu khác về dữ liệu cá nhân qua mục Hỗ trợ."
+          }
+        },
+        "s6": {
+          "title": "Bảo mật",
+          "items": {
+            "1": "Dữ liệu được truyền qua kết nối mã hóa HTTPS. Quyền truy cập dữ liệu được kiểm soát theo từng người dùng ở tầng cơ sở dữ liệu.",
+            "2": "Khóa thanh toán của chủ sân được mã hóa trước khi lưu.",
+            "3": "Không hệ thống nào an toàn tuyệt đối. Nếu có sự cố ảnh hưởng đến dữ liệu của bạn, chúng tôi sẽ thông báo theo quy định."
+          }
+        },
+        "s7": {
+          "title": "Thay đổi chính sách và liên hệ",
+          "items": {
+            "1": "Khi chính sách thay đổi, chúng tôi cập nhật trang này và ngày cập nhật ở đầu trang.",
+            "2": "Mọi câu hỏi về dữ liệu cá nhân, hãy gửi qua mục Hỗ trợ trong ứng dụng."
+          }
+        }
+      }
+    },
+    "deleteAccount": {
+      "metaTitle": "Xóa tài khoản và dữ liệu",
+      "title": "Xóa tài khoản và dữ liệu",
+      "intro": "Bạn có thể tự xóa tài khoản SportArena và dữ liệu cá nhân bất cứ lúc nào, trên web hoặc trong ứng dụng.",
+      "stepsTitle": "Cách xóa tài khoản",
+      "steps": {
+        "1": "Đăng nhập vào tài khoản bạn muốn xóa, trên web hoặc trong ứng dụng SportArena.",
+        "2": "Mở mục Hồ sơ (Cá nhân) và kéo xuống phần \"Dữ liệu và tài khoản\".",
+        "3": "Nếu muốn giữ một bản sao, bấm \"Tải về\" để lưu dữ liệu của bạn trước.",
+        "4": "Bấm \"Xóa tài khoản\", nhập mật khẩu (nếu tài khoản có mật khẩu) và gõ XÓA hoặc DELETE để xác nhận."
+      },
+      "loginCta": "Đăng nhập để xóa tài khoản",
+      "deletedTitle": "Dữ liệu bị xóa",
+      "deleted": {
+        "1": "Tên, số điện thoại, email và ảnh đại diện.",
+        "2": "Đánh giá, tin nhắn trong kèo, phiếu hỗ trợ và thông báo.",
+        "3": "Thông tin đăng nhập, liên kết Zalo và mã thông báo đẩy.",
+        "4": "Với chủ sân: cụm sân ngừng nhận khách, thông tin nhận tiền (khóa PayOS, tài khoản ngân hàng) bị xóa."
+      },
+      "keptTitle": "Dữ liệu được giữ lại",
+      "kept": {
+        "1": "Lịch sử đặt sân và thanh toán, ở dạng đã bỏ tên, vì quy định pháp luật yêu cầu lưu chứng từ giao dịch."
+      },
+      "blockedTitle": "Khi nào chưa xóa được",
+      "blocked": {
+        "1": "Bạn còn đơn đặt sân sắp tới: hãy hủy đơn hoặc chờ chơi xong.",
+        "2": "Bạn đang chờ nhận lại tiền cọc, hoặc (với chủ sân) còn khoản cọc phải hoàn cho khách.",
+        "3": "Cụm sân của bạn còn khách đặt sắp tới."
+      },
+      "cannotLoginTitle": "Không đăng nhập được?",
+      "cannotLogin": "Hãy đặt lại mật khẩu bằng liên kết \"Quên mật khẩu\" ở trang đăng nhập rồi làm theo các bước trên.",
+      "contact": "Nếu vẫn không được, liên hệ {email} và nêu email hoặc số điện thoại của tài khoản.",
+      "privacyLink": "Xem chính sách quyền riêng tư"
+    },
+    "footerPrivacy": "Chính sách quyền riêng tư",
+    "footerDelete": "Xóa tài khoản"
+  },
+  "errorPage": {
+    "title": "Đã có lỗi xảy ra",
+    "body": "Trang này gặp sự cố. Lỗi đã được ghi nhận, bạn thử lại hoặc quay về trang chủ nhé.",
+    "retry": "Thử lại",
+    "home": "Về trang chủ"
   }
 }

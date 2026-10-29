@@ -3,6 +3,7 @@ import { getSupabase, getCurrentUser } from '@/lib/supabase/session'
 import { RegisterForm } from '@/components/auth/register-form'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { enabledAuthProviders } from '@/lib/auth-providers'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('auth')
@@ -28,5 +29,5 @@ export default async function RegisterPage() {
     }
   }
 
-  return <RegisterForm />
+  return <RegisterForm providers={enabledAuthProviders()} />
 }

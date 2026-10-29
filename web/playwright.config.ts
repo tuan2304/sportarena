@@ -13,6 +13,8 @@ const mockUrl = `http://127.0.0.1:${MOCK_PORT}`
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
+  // Đăng nhập + điều hướng khi nhiều worker cùng chạy trên một máy có thể vượt 30s mặc định (chạy riêng thì mỗi test chỉ ~3s)
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,

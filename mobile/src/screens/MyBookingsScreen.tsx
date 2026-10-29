@@ -206,6 +206,9 @@ export default function MyBookingsScreen({ navigation }: any) {
       <View style={styles.header}>
         <Text style={styles.title}>{t('myBookings.title')}</Text>
         <Text style={styles.subtitle}>{t('myBookings.subtitle')}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Recurring')} style={{ minHeight: 40, justifyContent: 'center' }} accessibilityRole="button">
+          <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>{t('myBookings.recurringLink')}</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (

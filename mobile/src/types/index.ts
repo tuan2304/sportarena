@@ -89,6 +89,8 @@ export interface Match {
 }
 
 export interface MatchParticipant {
+  /** Chủ kèo đã báo thành viên không đến */
+  no_show_at?: string | null
   id: string
   match_id: string
   user_id: string

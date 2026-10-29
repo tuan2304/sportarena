@@ -78,7 +78,29 @@
     "sendLink": "Send reset link",
     "forgotSentTitle": "Check your email",
     "forgotSentText": "If {email} is registered, we just sent a password reset link. Open the email, set a new password, then come back here to log in. Check your spam folder too.",
-    "backToLogin": "Back to log in"
+    "backToLogin": "Back to log in",
+    "social": {
+      "or": "or continue with",
+      "google": "Continue with Google",
+      "apple": "Continue with Apple",
+      "zalo": "Continue with Zalo",
+      "phone": "Sign in with phone number",
+      "failed": "Couldn't sign you in. Please try again.",
+      "zaloFailed": "Zalo sign-in didn't work. Please try again."
+    },
+    "phone": {
+      "invalid": "Invalid phone number",
+      "sendFailed": "Couldn't send the code. Please try again later.",
+      "badCode": "The verification code is incorrect or has expired",
+      "hint": "We'll text you a 6-digit code. A new account is created automatically; you can add your name in the Profile tab.",
+      "sendCode": "Send code",
+      "codeLabel": "Enter the code sent to {phone}",
+      "verify": "Confirm",
+      "changePhone": "Change number",
+      "resend": "Resend code",
+      "resendIn": "Resend in {seconds}s",
+      "cancel": "Back to email sign-in"
+    }
   },
   "profile": {
     "saveFailed": "Could not save",
@@ -118,7 +140,9 @@
       "passwordLabel": "Current password",
       "confirmLabel": "Type {phrase} to confirm",
       "confirm": "Delete permanently",
-      "deleted": "Your account has been deleted."
+      "deleted": "Your account has been deleted.",
+      "privacyTitle": "Privacy policy",
+      "privacyHint": "What data is collected, how it is used and your rights."
     }
   },
   "player": {
@@ -211,7 +235,11 @@
     "total": "Court total",
     "deposit": "Booking deposit",
     "pickHint": "Choose a day, duration and start time to see the price.",
-    "submit": "Hold slot & pay deposit"
+    "submit": "Hold slot & pay deposit",
+    "waitlistTitle": "Your time is taken?",
+    "waitlistHint": "Tap a time to join the waitlist, and we'll alert you as soon as someone cancels.",
+    "waitlistJoinedTitle": "Added to the waitlist",
+    "waitlistJoined": "You'll be notified when {label} opens up."
   },
   "payment": {
     "claimFailed": "Could not send",
@@ -259,7 +287,8 @@
     "title": "My Bookings",
     "subtitle": "The time slots you have booked or held",
     "emptyTitle": "You don't have any bookings yet",
-    "emptyText": "Explore venues and book a court to get playing!"
+    "emptyText": "Explore venues and book a court to get playing!",
+    "recurringLink": "Weekly recurring bookings & waitlist →"
   },
   "match": {
     "loginTitle": "Not logged in",
@@ -293,7 +322,14 @@
     "join": "Request to Join",
     "joinPlaceholder": "Say hello or describe your level...",
     "sending": "Sending...",
-    "sendRequest": "Send Join Request"
+    "sendRequest": "Send Join Request",
+    "markNoShow": "Report no-show",
+    "undoNoShow": "Undo",
+    "noShowBadge": "No-show",
+    "noShowConfirmTitle": "Report this member as a no-show?",
+    "noShowConfirmText": "The member will be notified and their reliability score drops. You can undo this within 14 days.",
+    "noShowKeep": "Not yet",
+    "noShowConfirm": "Report no-show"
   },
   "matches": {
     "live": "In progress",
@@ -432,6 +468,101 @@
       "add": "Add photo",
       "save": "Save photos",
       "close": "Close"
+    },
+    "segRecurring": "Recurring",
+    "segStats": "Stats",
+    "noShow": "No-show",
+    "undoNoShow": "Undo",
+    "noShowConfirmTitle": "Report the customer as a no-show?",
+    "noShowConfirmText": "The customer will be notified and their reliability score drops. You can undo this within 14 days.",
+    "noShowConfirm": "Report no-show",
+    "recurring": {
+      "endTitle": "End this recurring booking?",
+      "endText": "All upcoming sessions will be cancelled and the customer will be notified. The customer is not charged a late cancellation.",
+      "end": "End",
+      "approve": "Approve",
+      "reject": "Decline",
+      "emptyTitle": "No recurring bookings",
+      "emptyText": "When a customer reserves the same slot every week, the request shows up here for you to approve.",
+      "pending": "Awaiting approval",
+      "active": "Active"
+    },
+    "stats": {
+      "revenue": "Revenue",
+      "revenueHint": "Total rental value of confirmed bookings",
+      "bookings": "Bookings",
+      "bookingsHint": "Average {avg} per booking",
+      "occupancy": "Occupancy",
+      "occupancyHint": "{booked} / {available} hours",
+      "cancelRate": "Cancel / no-show",
+      "cancelHint": "{cancelled} cancelled · {noShows} no-shows",
+      "range": "{days} days",
+      "truncated": "This period has too many bookings, so the numbers may be incomplete. Choose a shorter range.",
+      "peakTitle": "Peak hours",
+      "noData": "No data in this period yet.",
+      "peakHours": "{hours} h",
+      "byCourt": "Performance by court",
+      "courtLine": "{bookings} bookings · {occupancy} occupancy",
+      "definition": "Revenue is the total rental value of confirmed or completed bookings in the period (by play date), excluding cancelled bookings and no-shows."
     }
+  },
+  "reputation": {
+    "title": "Player reliability",
+    "new": "New player",
+    "excellent": "Very reliable",
+    "good": "Reliable",
+    "fair": "Average",
+    "risky": "Use caution",
+    "score": "{score} pts",
+    "detail": "Played {played}, no-shows {noShows}, late cancels/leaves {lateCancels} (last 180 days)"
+  },
+  "recurring": {
+    "title": "Recurring bookings & waitlist",
+    "formTitle": "Book a weekly recurring slot",
+    "formHint": "Once the owner approves, the system holds the next 4 weeks for you and keeps rolling forward. Payment is usually made at the venue.",
+    "court": "Court",
+    "search": "Search venue or court",
+    "weekday": "Day of week",
+    "from": "Start time",
+    "duration": "Duration",
+    "hours": "{count} h",
+    "note": "Note for the owner (optional)",
+    "approvalHint": "The request must be approved by the owner.",
+    "submit": "Send request",
+    "chooseCourt": "Please choose a court",
+    "tooLate": "A session cannot run past midnight. Choose an earlier start time.",
+    "requestedTitle": "Request sent",
+    "requestedText": "The owner will review it. You will be notified once it is approved.",
+    "endTitle": "End this recurring booking?",
+    "endText": "Sessions far from play time will be cancelled. Sessions inside the venue's cancellation window stay as they are; cancel those individually if you cannot make it.",
+    "endKeep": "Keep it",
+    "endConfirm": "End it",
+    "mySeries": "My recurring bookings",
+    "noSeries": "You have no recurring bookings yet.",
+    "seriesLabel": "Every {day}, {start} - {end}",
+    "until": "until {date}",
+    "statusActive": "Active",
+    "statusPending": "Awaiting owner approval",
+    "end": "End",
+    "withdraw": "Withdraw",
+    "waitlist": "Time slots you are waiting for",
+    "noWaits": "You are not waiting for any slot. When the time you want is full, join the waitlist at the time-picking step.",
+    "waitNotified": "Open now, book it!",
+    "waitWaiting": "Waiting",
+    "waitLeave": "Leave",
+    "day0": "Sunday",
+    "short0": "Sun",
+    "day1": "Monday",
+    "short1": "Mon",
+    "day2": "Tuesday",
+    "short2": "Tue",
+    "day3": "Wednesday",
+    "short3": "Wed",
+    "day4": "Thursday",
+    "short4": "Thu",
+    "day5": "Friday",
+    "short5": "Fri",
+    "day6": "Saturday",
+    "short6": "Sat"
   }
 }

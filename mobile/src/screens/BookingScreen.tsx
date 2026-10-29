@@ -11,7 +11,7 @@ import {
   Switch,
   TextInput,
 } from 'react-native'
-import { ChevronLeft, ShieldCheck } from 'lucide-react-native'
+import { Bell, ChevronLeft, ShieldCheck } from 'lucide-react-native'
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { apiPost } from '../lib/api'
@@ -47,6 +47,7 @@ export default function BookingScreen({ route, navigation }: any) {
   const [startHour, setStartHour] = useState<number | null>(null)
   const [busy, setBusy] = useState<BusySlot[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const [waitBusy, setWaitBusy] = useState<number | null>(null)
   // Mở kèo ghép cùng lúc đặt sân: server tính chi phí mỗi người từ tổng tiền, app chỉ gửi lựa chọn
   const [openMatch, setOpenMatch] = useState(false)
   const [matchTitle, setMatchTitle] = useState('')
@@ -125,6 +126,17 @@ export default function BookingScreen({ route, navigation }: any) {
   }, [court, startHour, selectedValid, dateKey, duration])
 
   const acceptsBookings = Boolean(club?.accepts_online_payment || club?.accepts_manual_transfer)
+
+  async function joinWaitlist(hour: number) {
+  if (!court) return
+  const start = vnDateTime(dateKey, hour)
+  const end = new Date(start.getTime() + 60 * 60 * 1000)
+  setWaitBusy(hour)
+  const res = await apiPost<{ id: string }>('/api/mobile/waitlist', { courtId: court.id, startTime: start.toISOString(), endTime: end.toISOString() })
+  setWaitBusy(null)
+  if (!res.ok) return Alert.alert(t('common.error'), res.error)
+  Alert.alert(t('booking.waitlistJoinedTitle'), t('booking.waitlistJoined', { label: `${String(hour).padStart(2, '0')}:00` }))
+}
 
   async function handleBook() {
     if (!quote || !court) return
@@ -262,6 +274,23 @@ export default function BookingScreen({ route, navigation }: any) {
         </View>
         {hours.length === 0 && <Text style={styles.muted}>{t('booking.noHours', { open: openHour, close: closeHour })}</Text>}
 
+        {hours.some((h) => isHourBooked(busy, court.id, dateKey, h) && !isHourPast(dateKey, h, nowMs)) && (
+          <View style={styles.waitBox}>
+            <View style={styles.waitHead}>
+              <Bell size={14} color={colors.accent} />
+              <Text style={styles.waitTitle}>{t('booking.waitlistTitle')}</Text>
+            </View>
+            <Text style={styles.muted}>{t('booking.waitlistHint')}</Text>
+            <View style={styles.chipRowWrap}>
+              {hours
+                .filter((h) => isHourBooked(busy, court.id, dateKey, h) && !isHourPast(dateKey, h, nowMs))
+                .map((h) => (
+                  <Chip key={h} label={`🔔 ${String(h).padStart(2, '0')}:00`} active={false} disabled={waitBusy !== null} onPress={() => joinWaitlist(h)} />
+                ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.matchBox}>
           <View style={styles.matchHead}>
             <View style={{ flex: 1 }}>
@@ -381,6 +410,9 @@ function Chip({ label, active, disabled, onPress }: { label: string; active: boo
 }
 
 const styles = StyleSheet.create({
+  waitBox: { marginTop: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.cardBorder, gap: 6 },
+  waitHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  waitTitle: { color: colors.textPrimary, fontWeight: '700', fontSize: 13 },
   container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background, gap: 12 },
   headerBar: {

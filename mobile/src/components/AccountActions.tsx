@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { Download, Trash2 } from 'lucide-react-native'
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Modal, Platform, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Download, ShieldCheck, Trash2 } from 'lucide-react-native'
 import { colors } from '../theme/colors'
 import { useI18n } from '../i18n'
 import { supabase } from '../lib/supabase'
@@ -16,6 +16,9 @@ interface Props {
   needsPassword: boolean
   onDeleted: () => void
 }
+
+// Cùng địa chỉ máy chủ web mà app dùng cho mọi lời gọi API
+const WEB_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+$/, '')
 
 export default function AccountActions({ needsPassword, onDeleted }: Props) {
   const { t, lang } = useI18n()
@@ -87,6 +90,16 @@ export default function AccountActions({ needsPassword, onDeleted }: Props) {
           <Text style={styles.rowHint}>{t('profile.account.exportHint')}</Text>
         </View>
       </TouchableOpacity>
+
+      {WEB_URL !== '' && (
+        <TouchableOpacity style={styles.row} onPress={() => Linking.openURL(`${WEB_URL}/privacy`).catch(() => {})} accessibilityRole="link">
+          <ShieldCheck size={18} color={colors.textSecondary} />
+          <View style={styles.rowText}>
+            <Text style={styles.rowTitle}>{t('profile.account.privacyTitle')}</Text>
+            <Text style={styles.rowHint}>{t('profile.account.privacyHint')}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity style={styles.row} onPress={() => setOpen(true)} accessibilityRole="button">
         <Trash2 size={18} color={colors.danger} />

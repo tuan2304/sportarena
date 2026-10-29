@@ -8,9 +8,15 @@ import { apiPost } from '../lib/api'
 import { formatDate, formatTime, formatVnd } from '../lib/format'
 import { useI18n } from '../i18n'
 import OwnerVenuesPanel from './OwnerVenuesPanel'
+import OwnerRecurringPanel from './OwnerRecurringPanel'
+import OwnerStatsPanel from './OwnerStatsPanel'
+import ReputationBadge from '../components/ReputationBadge'
+import { fetchReputations, type Reputation } from '../lib/reputation'
 
 interface OwnerBooking {
   id: string
+  user_id: string
+  no_show_at: string | null
   status: string
   start_time: string
   end_time: string
@@ -27,7 +33,7 @@ type Contacts = Record<string, { full_name: string; phone_number: string | null 
 type Section = { key: 'pending' | 'refunds' | 'upcoming'; data: OwnerBooking[] }
 
 const SELECT = `
-  id, status, start_time, end_time, total_price, deposit_amount, refund_status, refund_amount,
+  id, user_id, no_show_at, status, start_time, end_time, total_price, deposit_amount, refund_status, refund_amount,
   court:courts!inner ( name, club:clubs!inner ( name, owner_id ) ),
   profile:profiles ( full_name ),
   payments ( status, metadata )
@@ -38,7 +44,7 @@ const SELECT = `
  */
 export default function OwnerScreen() {
   const { t } = useI18n()
-  const [tab, setTab] = useState<'bookings' | 'venues'>('bookings')
+  const [tab, setTab] = useState<'bookings' | 'recurring' | 'stats' | 'venues'>('bookings')
 
   return (
     <View style={styles.container}>
@@ -46,7 +52,7 @@ export default function OwnerScreen() {
         <Text style={styles.title}>{t('owner.title')}</Text>
         <Text style={styles.subtitle}>{t('owner.subtitle')}</Text>
         <View style={styles.segments}>
-          {(['bookings', 'venues'] as const).map((key) => (
+          {(['bookings', 'recurring', 'stats', 'venues'] as const).map((key) => (
             <TouchableOpacity
               key={key}
               style={[styles.segment, tab === key && styles.segmentOn]}
@@ -54,12 +60,14 @@ export default function OwnerScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: tab === key }}
             >
-              <Text style={[styles.segmentText, tab === key && styles.segmentTextOn]}>{t(key === 'bookings' ? 'owner.segBookings' : 'owner.segVenues')}</Text>
+              <Text style={[styles.segmentText, tab === key && styles.segmentTextOn]} numberOfLines={1}>
+                {t(key === 'bookings' ? 'owner.segBookings' : key === 'recurring' ? 'owner.segRecurring' : key === 'stats' ? 'owner.segStats' : 'owner.segVenues')}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
-      {tab === 'bookings' ? <BookingsPanel /> : <OwnerVenuesPanel />}
+      {tab === 'bookings' ? <BookingsPanel /> : tab === 'recurring' ? <OwnerRecurringPanel /> : tab === 'stats' ? <OwnerStatsPanel /> : <OwnerVenuesPanel />}
     </View>
   )
 }
@@ -75,6 +83,7 @@ function BookingsPanel() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [reputations, setReputations] = useState<Record<string, Reputation>>({})
 
   const load = useCallback(async () => {
     try {
@@ -93,6 +102,7 @@ function BookingsPanel() {
       if (error) throw error
       const list = (data ?? []) as unknown as OwnerBooking[]
       setRows(list)
+      setReputations(await fetchReputations(list.map((b) => b.user_id)))
 
       if (list.length > 0) {
         const { data: info } = await supabase.rpc('get_booking_contacts', { p_booking_ids: list.map((b) => b.id) })
@@ -141,6 +151,15 @@ function BookingsPanel() {
     ])
   }
 
+  function noShow(b: OwnerBooking) {
+    const send = () => run(b.id, `/api/mobile/owner/bookings/${b.id}/no-show`, { noShow: !b.no_show_at })
+    if (b.no_show_at) return send()
+    Alert.alert(t('owner.noShowConfirmTitle'), t('owner.noShowConfirmText'), [
+      { text: t('owner.notYet'), style: 'cancel' },
+      { text: t('owner.noShowConfirm'), style: 'destructive', onPress: send },
+    ])
+  }
+
   function refunded(b: OwnerBooking) {
     const name = contacts[b.id]?.full_name ?? b.profile?.full_name ?? ''
     Alert.alert(t('owner.refundTitle'), t('owner.refundText', { amount: formatVnd(b.refund_amount), name }), [
@@ -154,7 +173,7 @@ function BookingsPanel() {
     [
       { key: 'pending', data: rows.filter((b) => b.status === 'pending') },
       { key: 'refunds', data: rows.filter((b) => b.refund_status === 'pending') },
-      { key: 'upcoming', data: rows.filter((b) => b.status === 'confirmed' && new Date(b.end_time).getTime() > now) },
+      { key: 'upcoming', data: rows.filter((b) => b.status === 'confirmed' && new Date(b.end_time).getTime() > now - 12 * 3_600_000) },
     ] as Section[]
   ).filter((s) => s.data.length > 0)
 
@@ -180,6 +199,7 @@ function BookingsPanel() {
               </Text>
             </View>
             <Text style={styles.customer}>{contact?.full_name ?? b.profile?.full_name ?? t('owner.customer')}</Text>
+            <ReputationBadge reputation={reputations[b.user_id]} />
           </View>
           {contact?.phone_number ? (
             <TouchableOpacity
@@ -213,6 +233,9 @@ function BookingsPanel() {
           {section.key === 'upcoming' && (
             <>
               {started && (
+                <ActionButton busy={busy} kind="danger" label={b.no_show_at ? t('owner.undoNoShow') : t('owner.noShow')} icon={<XCircle size={16} color={colors.danger} />} onPress={() => noShow(b)} />
+              )}
+              {started && !b.no_show_at && (
                 <ActionButton busy={busy} kind="primary" label={t('owner.complete')} icon={<CalendarCheck size={16} color={colors.white} />} onPress={() => run(b.id, statusPath(b), { status: 'completed' })} />
               )}
               <ActionButton busy={busy} kind="danger" label={t('owner.cancel')} icon={<XCircle size={16} color={colors.danger} />} onPress={() => cancel(b)} />

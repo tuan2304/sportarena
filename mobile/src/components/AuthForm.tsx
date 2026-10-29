@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { colors } from '../theme/colors'
 import { supabase } from '../lib/supabase'
 import { apiPostPublic } from '../lib/api'
+import SocialAuth from './SocialAuth'
 
 const MIN_PASSWORD = 8 // khớp với web (actions/auth.ts)
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -143,6 +144,8 @@ export default function AuthForm({ onSignedIn }: AuthFormProps) {
       <TouchableOpacity style={[styles.btn, busy && styles.btnDisabled]} onPress={submit} disabled={busy} accessibilityRole="button">
         {busy ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>{isForgot ? t('auth.sendLink') : isRegister ? t('auth.register') : t('auth.loginTitle')}</Text>}
       </TouchableOpacity>
+
+      {!isForgot && <SocialAuth onSignedIn={onSignedIn} onError={setError} />}
 
       <TouchableOpacity
         onPress={() => {

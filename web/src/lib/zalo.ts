@@ -65,6 +65,8 @@ export interface ZaloStateCookie {
   state: string
   verifier: string
   next: string
+  /** Có khi đăng nhập từ app mobile: challenge PKCE của app, để callback trả "vé" thay vì mở phiên cookie */
+  appChallenge?: string
 }
 
 export function encodeStateCookie(value: ZaloStateCookie): string {
@@ -76,7 +78,12 @@ export function decodeStateCookie(raw: string | undefined): ZaloStateCookie | nu
   try {
     const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf-8')) as Partial<ZaloStateCookie>
     if (typeof parsed.state === 'string' && typeof parsed.verifier === 'string' && typeof parsed.next === 'string') {
-      return { state: parsed.state, verifier: parsed.verifier, next: parsed.next }
+      return {
+        state: parsed.state,
+        verifier: parsed.verifier,
+        next: parsed.next,
+        ...(typeof parsed.appChallenge === 'string' ? { appChallenge: parsed.appChallenge } : {}),
+      }
     }
   } catch {
     // cookie hỏng → coi như không có

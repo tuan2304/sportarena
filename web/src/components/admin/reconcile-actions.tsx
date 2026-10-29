@@ -23,16 +23,16 @@ export function ReconcileActions({ paymentId, kind, summary }: Props) {
   const [note, setNote] = useState('')
   const [message, setMessage] = useState<{ text: string; tone: 'ok' | 'error' } | null>(null)
 
-  function run() {
-    startTransition(async () => {
-      const ok = await confirm({
-        title: kind === 'refund' ? t('refundConfirmTitle') : t('repairConfirmTitle'),
-        description: `${summary}. ${kind === 'refund' ? t('refundConfirmBody') : t('repairConfirmBody')}`,
-        confirmText: kind === 'refund' ? t('refundButton') : t('repairButton'),
-        destructive: false,
-      })
-      if (!ok) return
+  async function run() {
+    const ok = await confirm({
+      title: kind === 'refund' ? t('refundConfirmTitle') : t('repairConfirmTitle'),
+      description: `${summary}. ${kind === 'refund' ? t('refundConfirmBody') : t('repairConfirmBody')}`,
+      confirmText: kind === 'refund' ? t('refundButton') : t('repairButton'),
+      destructive: false,
+    })
+    if (!ok) return
 
+    startTransition(async () => {
       const res = kind === 'refund' ? await markPaymentRefunded(paymentId, note) : await repairStuckPayment(paymentId)
       if (res.error) setMessage({ text: res.error, tone: 'error' })
       else if (res.outcome === 'slot_taken') setMessage({ text: t('slotTaken'), tone: 'error' })

@@ -3,6 +3,7 @@ import { resolveAppUrl } from '@/lib/app-url'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { enforceRateLimitByIp } from '@/lib/rate-limit'
+import { APP_REDIRECT, sealTicket } from '@/lib/zalo-ticket'
 import {
   decodeStateCookie,
   homeForRole,
@@ -87,7 +88,8 @@ async function ensureZaloUser(profile: ZaloProfile): Promise<string | null> {
 export async function GET(request: NextRequest) {
   const origin = resolveAppUrl()
   const fail = () => {
-    const res = NextResponse.redirect(`${origin}/login?error=zalo`)
+    const failedFromApp = Boolean(decodeStateCookie(request.cookies.get(ZALO_STATE_COOKIE)?.value)?.appChallenge)
+    const res = NextResponse.redirect(failedFromApp ? `${APP_REDIRECT}?error=zalo` : `${origin}/login?error=zalo`)
     res.cookies.delete({ name: ZALO_STATE_COOKIE, path: '/api/auth/zalo' })
     return res
   }
@@ -112,6 +114,13 @@ export async function GET(request: NextRequest) {
     if (linkError || !tokenHash) {
       console.error('zalo callback: không tạo được liên kết đăng nhập', linkError?.message)
       return fail()
+    }
+
+    // Từ app mobile: trả vé mã hóa gắn với challenge của app, không mở phiên cookie ở trình duyệt
+    if (saved.appChallenge) {
+      const res = NextResponse.redirect(`${APP_REDIRECT}?ticket=${encodeURIComponent(sealTicket({ tokenHash, challenge: saved.appChallenge }))}`)
+      res.cookies.delete({ name: ZALO_STATE_COOKIE, path: '/api/auth/zalo' })
+      return res
     }
 
     const supabase = await createClient()

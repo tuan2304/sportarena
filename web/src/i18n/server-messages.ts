@@ -6,6 +6,8 @@
  */
 export const EN_EXACT: Record<string, string> = {
   // --- Uy tín, danh sách chờ, lịch cố định
+  'Mã đăng ký chờ không hợp lệ': 'Invalid waitlist entry code',
+  'Mã lịch cố định không hợp lệ': 'Invalid recurring booking code',
   'Số điện thoại không hợp lệ': 'Invalid phone number',
   'Không gửi được mã xác thực. Vui lòng thử lại sau.': 'Could not send the verification code. Please try again later.',
   'Mã xác thực không đúng hoặc đã hết hạn': 'The verification code is incorrect or has expired',
@@ -80,6 +82,10 @@ export const EN_EXACT: Record<string, string> = {
 
   // --- Đối soát thanh toán (quản trị)
   'Mã giao dịch không hợp lệ': 'Invalid transaction ID',
+  'Mã đơn không hợp lệ': 'Invalid booking code',
+  'Khoản hoàn cọc này đã được xử lý': 'This refund has already been handled',
+  'Đã nhắc chủ sân trong hôm nay. Vui lòng thử lại vào ngày mai.': 'The venue was already reminded today. Please try again tomorrow.',
+  'Nhắc hoàn cọc cho khách': 'Refund reminder',
   'Ghi chú tối đa 500 ký tự': 'Notes can be at most 500 characters',
   'Không cập nhật được giao dịch. Vui lòng thử lại.': 'Could not update the transaction. Please try again.',
   'Giao dịch này đã được xử lý trước đó': 'This transaction has already been handled',
@@ -258,7 +264,6 @@ export const EN_EXACT: Record<string, string> = {
   'Dữ liệu gửi lên quá lớn': 'The request is too large',
   'Dữ liệu gửi lên không phải JSON': 'The request is not valid JSON',
   'Dữ liệu gửi lên không hợp lệ': 'The request data is not valid',
-  'Mã đơn không hợp lệ': 'Invalid booking code',
   'Mã yêu cầu không hợp lệ': 'Invalid request code',
   'Mã sân không hợp lệ': 'Invalid court code',
   'Vui lòng nhập email hợp lệ': 'Please enter a valid email',
@@ -319,6 +324,10 @@ export const EN_EXACT: Record<string, string> = {
 
 /** Câu có chèn số/tên: khớp theo mẫu, $1.. là phần bắt được */
 export const EN_PATTERNS: Array<[RegExp, string]> = [
+  [
+    /^Cụm sân "(.+)" còn khoản hoàn cọc (.+)đ cho khách đã hủy đơn\. Vui lòng chuyển trả và bấm "Đã hoàn cọc"\.$/,
+    'Venue "$1" still owes a $2đ deposit refund to a customer who cancelled. Please send it back and press "Refunded".',
+  ],
   // --- Uy tín, danh sách chờ, lịch cố định
   [/^Đã quá (\d+) ngày kể từ buổi chơi nên không thể thay đổi báo không đến$/, 'It has been more than $1 days since the session, so the no-show report can no longer be changed'],
   [/^Bạn đang chờ tối đa (\d+) khung giờ\. Hãy rút bớt rồi đăng ký thêm\.$/, 'You can wait for at most $1 time slots. Leave some before joining more.'],

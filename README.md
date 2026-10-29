@@ -42,7 +42,16 @@ Chọn giờ trống, cọc bằng mã VietQR, rủ thêm người chơi vào k�
 - **Dùng thẳng trên điện thoại, không cần tải app.** Web có thanh điều hướng dưới cùng (Khám phá, Kèo, Lịch đặt, Cá nhân; thêm tab Chủ sân hoặc Quản trị theo vai trò), đầu trang gọn, vùng chạm lớn, ô nhập không làm iOS tự phóng to, nút nhảy thẳng tới bước chọn giờ và thanh cố định ở đáy hiện tiền cọc cùng nút Giữ chỗ ngay khi chọn giờ. Có thể "Thêm vào màn hình chính" để mở toàn màn hình (không bắt buộc).
 - Giao diện web và app mobile có **tiếng Việt và tiếng Anh**: đổi bằng nút ngôn ngữ (web: thanh đầu trang; mobile: tab Cá Nhân), mặc định theo trình duyệt hoặc điện thoại. Gồm cả khu vực chủ sân, quản trị và thông báo (thông báo mới được lưu kèm bản tiếng Anh, thông báo cũ vẫn hiện tiếng Việt).
 
+**Đặt sân nâng cao**
+- Lịch cố định hằng tuần ("thứ 3 hằng tuần 19h"): người chơi gửi yêu cầu, chủ sân duyệt, hệ thống tự giữ chỗ 4 tuần tới và cuốn chiếu; buổi trùng lịch được bỏ qua và báo lại.
+- Nhắc lịch bằng thông báo đẩy khoảng 2 giờ trước giờ chơi (cho người đặt và các thành viên của kèo).
+- Danh sách chờ: giờ đã kín thì đăng ký chờ, khi có người hủy hoặc hết hạn giữ chỗ thì người đăng ký sớm nhất được báo trước (giữ 15 phút).
+- Điểm uy tín người chơi (không đến, hủy muộn, rời kèo sát giờ) hiện khi chủ kèo duyệt người, trên hồ sơ và lịch của chủ sân.
+- Đăng nhập bằng Google, Apple, Zalo hoặc OTP điện thoại bên cạnh email + mật khẩu.
+- Các tác vụ định kỳ chạy qua `/api/cron/tick` (xem `DEPLOYMENT.md`).
+
 **Chủ sân**
+- Thống kê doanh thu, tỉ lệ lấp đầy, giờ cao điểm theo thứ và giờ, hiệu quả từng sân; xuất CSV đơn đặt sân (`/owner/analytics`).
 - Quản lý cụm sân, sân con, giờ mở cửa và vị trí; tải ảnh sân trực tiếp (JPG, PNG, WebP), chọn ảnh bìa. Sửa được thông tin cụm sân (tên, địa chỉ, mô tả, khu vực, giờ mở cửa, tiện ích) và sân con (tên, mặt sân, giá cơ bản, % cọc) trên cả web và mobile.
 - Cụm sân chỉ hiện ở danh sách công khai khi đã nhận thanh toán (PayOS hoặc tài khoản VietQR); chưa liên kết thì chủ sân thấy lời nhắc kèm đường dẫn tới trang nhận thanh toán. Liên kết tài khoản ngân hàng làm được ngay trên app mobile.
 - Bảng giá linh hoạt theo khung giờ và ngày trong tuần, tự đặt phần trăm cọc cho từng sân.

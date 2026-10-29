@@ -33,6 +33,10 @@ export const RATE_RULES = {
   // Xóa tài khoản kèm nhập lại mật khẩu: chặn dò mật khẩu qua đường này; xuất dữ liệu gom nhiều bảng nên cũng hạn chế
   accountDelete: { max: 5, windowSec: 3600 },
   accountExport: { max: 5, windowSec: 3600 },
+  // Quản trị nhắc chủ sân hoàn cọc: khóa theo đơn nên mỗi đơn chỉ nhắc được một lần mỗi ngày
+  refundReminder: { max: 1, windowSec: 86400 },
+  // Báo lỗi từ trình duyệt/app không cần đăng nhập: chặn việc dùng nó để làm ngập hệ thống giám sát
+  clientError: { max: 20, windowSec: 600 },
   waitlist: { max: 20, windowSec: 600 },
   recurring: { max: 10, windowSec: 3600 },
   // OTP điện thoại: mỗi tin nhắn là tiền thật và dễ bị lợi dụng để spam số người khác

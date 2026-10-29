@@ -325,3 +325,17 @@ Cách dùng:
    - **OTP điện thoại**: Authentication → Providers → Phone, bật và chọn nhà cung cấp SMS (Twilio, MessageBird, Vonage, Textlocal). Muốn dùng nhà cung cấp SMS Việt Nam (eSMS, SpeedSMS, Zalo ZNS) thì dùng *Send SMS hook* của Supabase. Mỗi tin nhắn tốn phí; web đã giới hạn 3 mã/10 phút/số và 10 mã/giờ/IP.
    - **Zalo**: tạo ứng dụng ở developers.zalo.me, thêm Callback URL `{NEXT_PUBLIC_APP_URL}/api/auth/zalo/callback`, đặt `ZALO_APP_ID` và `ZALO_APP_SECRET` trên Vercel.
    - Đặt `AUTH_PROVIDERS=google,apple,phone` trên Vercel (chỉ liệt kê nhà cung cấp đã bật ở Supabase), rồi **Redeploy**.
+
+### OTP qua SpeedSMS / eSMS (Send SMS hook)
+Dùng khi muốn gửi OTP bằng nhà cung cấp SMS Việt Nam thay cho Twilio...:
+1. Đặt `SMS_PROVIDER` (`speedsms` hoặc `esms`) cùng khóa tương ứng (xem `web/.env.example`) trên Vercel.
+2. Supabase Dashboard → Authentication → Hooks → **Send SMS** → loại HTTPS, URL `{NEXT_PUBLIC_APP_URL}/api/auth/sms-hook`; sao chép secret (`v1,whsec_...`) vào biến `SEND_SMS_HOOK_SECRET` trên Vercel, **Redeploy**.
+3. Vẫn bật Authentication → Providers → Phone (bước này chỉ để Supabase sinh mã; tin nhắn đi qua hook). Chữ ký của hook được kiểm tra theo chuẩn Standard Webhooks, yêu cầu không ký hoặc quá 5 phút bị từ chối.
+4. Gửi thử bằng số của bạn trước khi mở cho người dùng. Mã gọi API SpeedSMS/eSMS được viết theo tài liệu công khai nhưng chưa chạy với tài khoản thật, nên kiểm tra phản hồi trong log của Vercel (`sendOtpSms: nhà cung cấp từ chối`).
+
+### Đăng nhập trên app mobile (Google / Apple / Zalo / OTP)
+1. Trong `mobile/.env` đặt `EXPO_PUBLIC_AUTH_PROVIDERS` (ví dụ `google,apple,phone,zalo`), chỉ liệt kê cách đã bật ở web/Supabase.
+2. **Google / Apple**: thêm `sportarena://auth-callback` vào Supabase Dashboard → Authentication → URL Configuration → *Redirect URLs*.
+3. **Zalo**: dùng chung `ZALO_APP_ID` / `ZALO_APP_SECRET` của web. Web không đưa token qua đường dẫn của app mà trả một "vé" mã hóa (hạn 120 giây) chỉ đổi được khi app nộp đúng mã PKCE đã giữ kín; vé được mã hóa bằng `PAYMENT_SETTINGS_ENCRYPTION_KEY` nên biến này phải được đặt trên Vercel.
+4. **OTP điện thoại**: dùng Supabase trực tiếp (xem phần OTP ở trên); không cần cấu hình thêm cho app.
+5. App có thêm hai module native (`expo-web-browser`, `expo-crypto`) và URL scheme `sportarena`, nên cần **build lại** bản dev/APK (`eas build`); cập nhật OTA không đủ.

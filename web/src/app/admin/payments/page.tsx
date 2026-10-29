@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ReconcileActions } from '@/components/admin/reconcile-actions'
+import { RemindOwnerButton } from '@/components/admin/remind-owner-button'
 import { loadReconciliation, OVERDUE_REFUND_DAYS, type ReconPayment } from '@/lib/reconciliation'
 import { formatDate, formatTime, formatVnd } from '@/lib/format'
 
@@ -83,15 +84,18 @@ export default async function AdminPaymentsPage() {
         <CardContent className="space-y-3">
           {overdue.length === 0 && <p className="text-sm text-muted-foreground">{t('empty')}</p>}
           {overdue.map((o) => (
-            <div key={o.bookingId} className="p-4 rounded-xl border border-border space-y-1">
-              <div className="font-bold flex items-center gap-2 flex-wrap">
-                {formatVnd(o.amount)}
-                <Badge className="bg-red-600 text-white">{t('overdueDays', { days: o.daysOverdue })}</Badge>
+            <div key={o.bookingId} className="p-4 rounded-xl border border-border flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-1 min-w-0">
+                <div className="font-bold flex items-center gap-2 flex-wrap">
+                  {formatVnd(o.amount)}
+                  <Badge className="bg-red-600 text-white">{t('overdueDays', { days: o.daysOverdue })}</Badge>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('rowCustomer', { name: o.customerName })} · {o.clubName} · {t('rowOwner', { name: o.ownerName })}
+                </div>
+                <div className="text-xs text-muted-foreground">{t('rowCancelledAt', { time: when(o.cancelledAt) })}</div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {t('rowCustomer', { name: o.customerName })} · {o.clubName} · {t('rowOwner', { name: o.ownerName })}
-              </div>
-              <div className="text-xs text-muted-foreground">{t('rowCancelledAt', { time: when(o.cancelledAt) })}</div>
+              <RemindOwnerButton bookingId={o.bookingId} />
             </div>
           ))}
         </CardContent>

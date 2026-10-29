@@ -12,7 +12,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowRight, Loader2, AlertCircle, Building2, User } from 'lucide-react'
 
 import { LogoMark } from '@/components/brand/logo'
-export function RegisterForm() {
+import { SocialLogin } from '@/components/auth/social-login'
+import { hasAnyProvider, type AuthProviders } from '@/lib/auth-providers'
+
+export function RegisterForm({ providers }: { providers?: AuthProviders } = {}) {
   const t = useTranslations('auth')
   const [role, setRole] = useState<UserRole>('owner')
   const [error, setError] = useState<string | null>(null)
@@ -165,6 +168,13 @@ export function RegisterForm() {
               </>
             )}
           </Button>
+
+          {/* Đăng nhập ngoài luôn tạo tài khoản người chơi; chủ sân đăng ký bằng form để chọn đúng vai trò */}
+          {providers && hasAnyProvider(providers) && role === 'player' && (
+            <div className="w-full">
+              <SocialLogin providers={providers} onError={(message) => setError(message || null)} />
+            </div>
+          )}
 
           <p className="text-center text-xs text-muted-foreground">
             {t('register.haveAccount')}{' '}

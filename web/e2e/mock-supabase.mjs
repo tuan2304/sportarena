@@ -129,7 +129,43 @@ const matchUpcoming = makeMatch(1, 'Kèo Sắp Diễn Ra', 5, 6)
 const matchLive = makeMatch(2, 'Kèo Đang Chơi', -0.5, 0.5)
 const matchEnded = makeMatch(3, 'Kèo Đã Qua Giờ', -3, -2)
 
+// Khoản cần đối soát cho trang /admin/payments. user_id là một khách khác, không trùng người chơi mẫu để các trang cá nhân không thấy chúng.
+const reconBooking = (id, status) => ({
+  id,
+  status,
+  start_time: inDays(5, 11),
+  cancelled_by: null,
+  court: { name: court.name, club: { name: club.name } },
+})
+const payments = [
+  {
+    id: '99999999-9999-4999-8999-9999999999a1',
+    user_id: '99999999-9999-4999-8999-999999999991',
+    order_code: 7001,
+    amount: 36000,
+    status: 'paid',
+    paid_at: inDays(-1, 3),
+    created_at: inDays(-1, 3),
+    metadata: { channel: 'club', needs_refund: true, reason: 'slot_taken_after_expiry' },
+    customer: { full_name: 'Khách Cần Hoàn' },
+    booking: reconBooking('99999999-9999-4999-8999-9999999999b1', 'cancelled'),
+  },
+  {
+    id: '99999999-9999-4999-8999-9999999999a2',
+    user_id: '99999999-9999-4999-8999-999999999992',
+    order_code: 7002,
+    amount: 54000,
+    status: 'paid',
+    paid_at: inDays(-2, 3),
+    created_at: inDays(-2, 3),
+    metadata: { channel: 'platform' },
+    customer: { full_name: 'Khách Đơn Kẹt' },
+    booking: reconBooking('99999999-9999-4999-8999-9999999999b2', 'pending'),
+  },
+]
+
 const tables = {
+  payments,
   matches: [matchUpcoming, matchLive, matchEnded],
   clubs: [club],
   courts: [court],
@@ -155,6 +191,11 @@ const rpcs = {
     { court_id: COURT_ID, start_time: '2027-03-15T07:00:00Z', end_time: '2027-03-15T08:00:00Z', status: 'confirmed' },
   ],
   get_booking_contacts: () => [],
+  // Xóa tài khoản / xuất dữ liệu / đối soát (máy chủ gọi bằng service_role nên không có người dùng kèm theo)
+  account_deletion_blockers: () => ['active_bookings'],
+  export_user_data: () => ({ profile: { full_name: 'Người dùng thử', phone_number: '0912345678' }, bookings: [] }),
+  admin_mark_payment_refunded: () => 'refunded',
+  admin_repair_paid_payment: () => 'confirmed',
 }
 
 const recoverRequests = []
@@ -181,7 +222,7 @@ function authUser(user) {
     role: 'authenticated',
     email: user.email,
     email_confirmed_at: '2026-01-01T00:00:00Z',
-    app_metadata: { provider: 'email' },
+    app_metadata: { provider: 'email', providers: ['email'] },
     user_metadata: { full_name: user.name, role: user.role },
     created_at: '2026-01-01T00:00:00Z',
   }
@@ -274,6 +315,23 @@ const server = createServer(async (req, res) => {
     if (userId?.startsWith('eq.')) rows = rows.filter((r) => r.user_id === userId.slice(3))
     const ownerId = url.searchParams.get('owner_id')
     if (ownerId?.startsWith('eq.')) rows = rows.filter((r) => r.owner_id === ownerId.slice(3))
+    // Bộ lọc của trang đối soát (chỉ bảng payments, để không đổi kết quả của các truy vấn khác)
+    if (table === 'payments') {
+      const status = url.searchParams.get('status')
+      if (status?.startsWith('eq.')) rows = rows.filter((r) => r.status === status.slice(3))
+      const needsRefund = url.searchParams.get('metadata->>needs_refund')
+      if (needsRefund?.startsWith('eq.')) rows = rows.filter((r) => String(r.metadata?.needs_refund) === needsRefund.slice(3))
+      const bookingStatus = url.searchParams.get('booking.status')
+      if (bookingStatus?.startsWith('in.(')) {
+        const allowed = bookingStatus.slice(4, -1).split(',')
+        rows = rows.filter((r) => allowed.includes(r.booking?.status))
+      }
+      if (url.searchParams.get('booking.cancelled_by') === 'is.null') rows = rows.filter((r) => r.booking?.cancelled_by == null)
+      for (const cond of url.searchParams.getAll('or')) {
+        if (cond.includes('needs_refund')) rows = rows.filter((r) => r.metadata?.needs_refund !== true)
+        if (cond.includes('simulated')) rows = rows.filter((r) => r.metadata?.simulated !== true)
+      }
+    }
 
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 201, rows[0] ?? {})
 

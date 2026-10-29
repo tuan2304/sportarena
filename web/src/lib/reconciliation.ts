@@ -14,6 +14,11 @@ type Admin = SupabaseClient<Database>
 export const OVERDUE_REFUND_DAYS = 3
 const LIMIT = 100
 
+// Lọc ở database (không chỉ ở JS) để số đếm khớp danh sách và để khoản giả lập không chiếm chỗ trong giới hạn LIMIT.
+// Phải dùng .or(is.null, neq.true): .neq() đơn thuần loại luôn các dòng không có khóa (NULL <> 'true' là NULL).
+const NOT_SIMULATED = 'metadata->>simulated.is.null,metadata->>simulated.neq.true'
+const NOT_NEEDS_REFUND = 'metadata->>needs_refund.is.null,metadata->>needs_refund.neq.true'
+
 export interface ReconPayment {
   id: string
   orderCode: number
@@ -97,6 +102,7 @@ export async function loadReconciliation(admin: Admin, now = new Date()): Promis
       .select(PAYMENT_SELECT)
       .eq('status', 'paid')
       .eq('metadata->>needs_refund', 'true')
+      .or(NOT_SIMULATED)
       .order('paid_at', { ascending: true })
       .limit(LIMIT),
     admin
@@ -105,6 +111,8 @@ export async function loadReconciliation(admin: Admin, now = new Date()): Promis
       .eq('status', 'paid')
       .in('booking.status', ['pending', 'cancelled'])
       .is('booking.cancelled_by', null)
+      .or(NOT_SIMULATED)
+      .or(NOT_NEEDS_REFUND)
       .order('paid_at', { ascending: true })
       .limit(LIMIT),
     admin
@@ -152,13 +160,20 @@ export async function loadReconciliation(admin: Admin, now = new Date()): Promis
 /** Số khoản cần quản trị ra tay (hiện ở thanh bên). Không tính khoản chủ sân chưa hoàn vì quản trị không xử lý trực tiếp được. */
 export async function countReconciliationIssues(admin: Admin): Promise<number> {
   const [refund, stuck] = await Promise.all([
-    admin.from('payments').select('id', { count: 'exact', head: true }).eq('status', 'paid').eq('metadata->>needs_refund', 'true'),
+    admin
+      .from('payments')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'paid')
+      .eq('metadata->>needs_refund', 'true')
+      .or(NOT_SIMULATED),
     admin
       .from('payments')
       .select('id, booking:bookings!inner(id)', { count: 'exact', head: true })
       .eq('status', 'paid')
       .in('booking.status', ['pending', 'cancelled'])
-      .is('booking.cancelled_by', null),
+      .is('booking.cancelled_by', null)
+      .or(NOT_SIMULATED)
+      .or(NOT_NEEDS_REFUND),
   ])
   return (refund.count ?? 0) + (stuck.count ?? 0)
 }

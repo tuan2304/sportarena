@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { UserRole } from '@/types/database'
 import { enforceRateLimit, enforceRateLimitByIp } from '@/lib/rate-limit'
 import { tr } from '@/lib/localize-error'
+import { safeNextPath } from '@/lib/zalo'
 
 export type AuthResult = {
   error?: string
@@ -15,6 +16,8 @@ export type AuthResult = {
 export async function login(formData: FormData): Promise<AuthResult> {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  // Trang cần quay lại sau khi đăng nhập (chỉ nhận đường dẫn nội bộ)
+  const next = safeNextPath(formData.get('next') as string | null, '')
 
   if (!email || !password) {
     return { error: await tr('Vui lòng nhập đầy đủ email và mật khẩu') }
@@ -46,7 +49,9 @@ export async function login(formData: FormData): Promise<AuthResult> {
 
     revalidatePath('/', 'layout')
 
-    if (profile?.role === 'admin') {
+    if (next) {
+      redirect(next)
+    } else if (profile?.role === 'admin') {
       redirect('/admin')
     } else if (profile?.role === 'owner') {
       redirect('/owner/dashboard')

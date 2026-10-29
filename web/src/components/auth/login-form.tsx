@@ -54,6 +54,7 @@ export function LoginForm({ providers, next, initialError = null }: LoginFormPro
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
+        {next && <input type="hidden" name="next" value={next} />}
         <CardContent className="space-y-4">
           {error && (
             <div role="alert" className="flex items-center gap-2 p-3 text-sm text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">

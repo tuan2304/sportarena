@@ -78,7 +78,29 @@
     "sendLink": "Gửi liên kết đặt lại",
     "forgotSentTitle": "Kiểm tra email",
     "forgotSentText": "Nếu {email} đã đăng ký, chúng tôi vừa gửi liên kết đặt lại mật khẩu. Hãy mở thư, đặt mật khẩu mới rồi quay lại đây đăng nhập. Nhớ xem cả thư rác.",
-    "backToLogin": "Quay lại đăng nhập"
+    "backToLogin": "Quay lại đăng nhập",
+    "social": {
+      "or": "hoặc tiếp tục với",
+      "google": "Tiếp tục với Google",
+      "apple": "Tiếp tục với Apple",
+      "zalo": "Tiếp tục với Zalo",
+      "phone": "Đăng nhập bằng số điện thoại",
+      "failed": "Không thể đăng nhập. Vui lòng thử lại.",
+      "zaloFailed": "Đăng nhập Zalo không thành công. Vui lòng thử lại."
+    },
+    "phone": {
+      "invalid": "Số điện thoại không hợp lệ",
+      "sendFailed": "Không gửi được mã. Vui lòng thử lại sau.",
+      "badCode": "Mã xác thực không đúng hoặc đã hết hạn",
+      "hint": "Chúng tôi gửi mã 6 số qua tin nhắn. Tài khoản mới sẽ tự được tạo; bạn có thể cập nhật họ tên trong tab Cá Nhân.",
+      "sendCode": "Gửi mã xác thực",
+      "codeLabel": "Nhập mã đã gửi tới {phone}",
+      "verify": "Xác nhận",
+      "changePhone": "Đổi số",
+      "resend": "Gửi lại mã",
+      "resendIn": "Gửi lại sau {seconds}s",
+      "cancel": "Quay lại đăng nhập bằng email"
+    }
   },
   "profile": {
     "saveFailed": "Không thể lưu",
@@ -118,7 +140,9 @@
       "passwordLabel": "Mật khẩu hiện tại",
       "confirmLabel": "Gõ {phrase} để xác nhận",
       "confirm": "Xóa vĩnh viễn",
-      "deleted": "Tài khoản của bạn đã được xóa."
+      "deleted": "Tài khoản của bạn đã được xóa.",
+      "privacyTitle": "Chính sách quyền riêng tư",
+      "privacyHint": "Dữ liệu nào được thu thập, dùng ra sao và quyền của bạn."
     }
   },
   "player": {
@@ -211,7 +235,11 @@
     "total": "Tổng tiền sân",
     "deposit": "Tiền cọc giữ chỗ",
     "pickHint": "Chọn ngày, thời lượng và giờ bắt đầu để xem giá.",
-    "submit": "Giữ chỗ & đặt cọc"
+    "submit": "Giữ chỗ & đặt cọc",
+    "waitlistTitle": "Giờ bạn muốn đã kín?",
+    "waitlistHint": "Chạm vào giờ để đăng ký chờ, chúng tôi báo ngay khi có người hủy.",
+    "waitlistJoinedTitle": "Đã đăng ký chờ",
+    "waitlistJoined": "Bạn sẽ nhận thông báo khi {label} trống."
   },
   "payment": {
     "claimFailed": "Không thể gửi",
@@ -259,7 +287,8 @@
     "title": "Lịch Đặt Sân Của Tôi",
     "subtitle": "Danh sách các khung giờ bạn đã đặt và giữ chỗ",
     "emptyTitle": "Bạn chưa có đơn đặt sân nào",
-    "emptyText": "Khám phá các cụm sân và đặt chỗ ngay để sẵn sàng tập luyện!"
+    "emptyText": "Khám phá các cụm sân và đặt chỗ ngay để sẵn sàng tập luyện!",
+    "recurringLink": "Đặt lịch cố định hằng tuần & danh sách chờ →"
   },
   "match": {
     "loginTitle": "Chưa đăng nhập",
@@ -293,7 +322,14 @@
     "join": "Đăng Ký Tham Gia",
     "joinPlaceholder": "Nhập lời chào hoặc giới thiệu trình độ...",
     "sending": "Đang gửi...",
-    "sendRequest": "Gửi Yêu Cầu Tham Gia"
+    "sendRequest": "Gửi Yêu Cầu Tham Gia",
+    "markNoShow": "Báo không đến",
+    "undoNoShow": "Gỡ báo",
+    "noShowBadge": "Không đến",
+    "noShowConfirmTitle": "Báo thành viên này không đến?",
+    "noShowConfirmText": "Thành viên sẽ nhận thông báo và điểm uy tín bị trừ. Bạn có thể gỡ báo trong 14 ngày.",
+    "noShowKeep": "Chưa",
+    "noShowConfirm": "Báo không đến"
   },
   "matches": {
     "live": "Đang diễn ra",
@@ -432,6 +468,101 @@
       "add": "Thêm ảnh",
       "save": "Lưu ảnh",
       "close": "Đóng"
+    },
+    "segRecurring": "Lịch cố định",
+    "segStats": "Thống kê",
+    "noShow": "Không đến",
+    "undoNoShow": "Gỡ báo",
+    "noShowConfirmTitle": "Báo khách không đến?",
+    "noShowConfirmText": "Khách sẽ nhận thông báo và điểm uy tín bị trừ. Bạn có thể gỡ báo trong 14 ngày.",
+    "noShowConfirm": "Báo không đến",
+    "recurring": {
+      "endTitle": "Kết thúc lịch cố định này?",
+      "endText": "Mọi buổi sắp tới sẽ bị hủy và khách nhận thông báo. Khách không bị tính hủy muộn.",
+      "end": "Kết thúc",
+      "approve": "Duyệt",
+      "reject": "Từ chối",
+      "emptyTitle": "Chưa có lịch cố định",
+      "emptyText": "Khi khách đặt cố định một khung giờ mỗi tuần, yêu cầu sẽ hiện ở đây để bạn duyệt.",
+      "pending": "Chờ duyệt",
+      "active": "Đang chạy"
+    },
+    "stats": {
+      "revenue": "Doanh thu",
+      "revenueHint": "Tổng giá thuê các đơn đã xác nhận",
+      "bookings": "Số đơn",
+      "bookingsHint": "Trung bình {avg} / đơn",
+      "occupancy": "Tỉ lệ lấp đầy",
+      "occupancyHint": "{booked} / {available} giờ",
+      "cancelRate": "Hủy / không đến",
+      "cancelHint": "{cancelled} hủy · {noShows} không đến",
+      "range": "{days} ngày",
+      "truncated": "Khoảng này có quá nhiều đơn nên số liệu có thể chưa đầy đủ. Hãy chọn khoảng ngắn hơn.",
+      "peakTitle": "Giờ cao điểm",
+      "noData": "Chưa có dữ liệu trong khoảng này.",
+      "peakHours": "{hours} giờ",
+      "byCourt": "Hiệu quả từng sân",
+      "courtLine": "{bookings} đơn · lấp đầy {occupancy}",
+      "definition": "Doanh thu là tổng giá thuê của đơn đã xác nhận hoặc hoàn thành trong kỳ (theo ngày chơi), không gồm đơn hủy hay khách không đến."
     }
+  },
+  "reputation": {
+    "title": "Uy tín người chơi",
+    "new": "Người mới",
+    "excellent": "Rất uy tín",
+    "good": "Uy tín",
+    "fair": "Trung bình",
+    "risky": "Cần cân nhắc",
+    "score": "{score} điểm",
+    "detail": "Đã chơi {played} buổi, không đến {noShows}, hủy/rời muộn {lateCancels} (180 ngày gần nhất)"
+  },
+  "recurring": {
+    "title": "Lịch cố định & danh sách chờ",
+    "formTitle": "Đặt lịch cố định hằng tuần",
+    "formHint": "Chủ sân duyệt xong, hệ thống tự giữ chỗ 4 tuần tới và cuốn chiếu hằng tuần. Thường thanh toán trực tiếp tại sân.",
+    "court": "Sân",
+    "search": "Tìm cụm sân hoặc sân",
+    "weekday": "Thứ trong tuần",
+    "from": "Giờ bắt đầu",
+    "duration": "Thời lượng",
+    "hours": "{count} tiếng",
+    "note": "Ghi chú cho chủ sân (không bắt buộc)",
+    "approvalHint": "Yêu cầu cần được chủ sân duyệt.",
+    "submit": "Gửi yêu cầu",
+    "chooseCourt": "Vui lòng chọn sân",
+    "tooLate": "Buổi chơi không được kéo qua nửa đêm. Hãy chọn giờ bắt đầu sớm hơn.",
+    "requestedTitle": "Đã gửi yêu cầu",
+    "requestedText": "Chủ sân sẽ xem và phản hồi. Bạn nhận thông báo khi được duyệt.",
+    "endTitle": "Kết thúc lịch cố định này?",
+    "endText": "Các buổi còn xa giờ chơi sẽ được hủy. Các buổi trong thời hạn hủy của cụm sân vẫn giữ nguyên; nếu không đến được, hãy hủy riêng từng buổi.",
+    "endKeep": "Giữ lại",
+    "endConfirm": "Kết thúc",
+    "mySeries": "Lịch cố định của tôi",
+    "noSeries": "Bạn chưa có lịch cố định nào.",
+    "seriesLabel": "{day} hằng tuần, {start} - {end}",
+    "until": "đến {date}",
+    "statusActive": "Đang chạy",
+    "statusPending": "Chờ chủ sân duyệt",
+    "end": "Kết thúc",
+    "withdraw": "Rút yêu cầu",
+    "waitlist": "Khung giờ đang chờ",
+    "noWaits": "Bạn chưa chờ khung giờ nào. Khi giờ bạn muốn đã kín, hãy đăng ký chờ ở bước chọn giờ.",
+    "waitNotified": "Đã trống, đặt ngay!",
+    "waitWaiting": "Đang chờ",
+    "waitLeave": "Rút",
+    "day0": "Chủ nhật",
+    "short0": "CN",
+    "day1": "Thứ hai",
+    "short1": "T2",
+    "day2": "Thứ ba",
+    "short2": "T3",
+    "day3": "Thứ tư",
+    "short3": "T4",
+    "day4": "Thứ năm",
+    "short4": "T5",
+    "day5": "Thứ sáu",
+    "short5": "T6",
+    "day6": "Thứ bảy",
+    "short6": "T7"
   }
 }
