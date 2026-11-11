@@ -17,8 +17,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -42,8 +42,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -52,7 +52,7 @@ jobs:
       - run: npm run e2e:install
       # Playwright tự build rồi chạy bản production với Supabase giả (web/e2e/mock-supabase.mjs), không cần database thật
       - run: npm run e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -63,14 +63,14 @@ jobs:
     name: Web (Playwright write flows, real Supabase)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
       # Ghim phiên bản CLI để CI không đổi hành vi khi Supabase phát hành bản mới; muốn nâng thì sửa số này (và thử `supabase start` cục bộ)
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.84.2
       # Supabase cục bộ trong Docker: áp toàn bộ migration, có Auth, REST và Storage thật (bỏ các dịch vụ không cần để khởi động nhanh)
@@ -82,7 +82,7 @@ jobs:
         working-directory: web
       - run: npm run e2e:real
         working-directory: web
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report-real
@@ -93,7 +93,7 @@ jobs:
     name: Database (migrations + RLS tests)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Áp migration lên Postgres tạm và chạy kiểm thử bảo mật
         run: bash supabase/tests/run.sh
 
@@ -104,8 +104,8 @@ jobs:
       run:
         working-directory: mobile
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
